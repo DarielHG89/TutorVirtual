@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Maestro Digital AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-color: #f0f9ff;
+            --scrollbar-track-bg: #f0f9ff;
+            --scrollbar-thumb-bg: #cbd5e1;
+            --scrollbar-thumb-hover-bg: #94a3b8;
+        }
+
+        html.dark {
+            --bg-color: #0f172a; /* slate-900 */
+            --scrollbar-track-bg: #1e293b; /* slate-800 */
+            --scrollbar-thumb-bg: #475569; /* slate-600 */
+            --scrollbar-thumb-hover-bg: #64748b; /* slate-500 */
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-color);
+            position: relative;
+            z-index: 0;
+            transition: background-color 0.5s ease;
+            overflow: hidden; /* Prevent body scroll, let React handle app container */
+        }
+        
+        /* Note: Background animation logic moved to DynamicBackground.tsx component */
+
+        .font-title {
+            font-family: 'Luckiest Guy', cursive;
+        }
+        .text-gradient {
+            background: -webkit-linear-gradient(45deg, #a571f8, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Custom Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--scrollbar-track-bg); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb-bg); 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--scrollbar-thumb-hover-bg); 
+        }
+
+        /* Screen Transition Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        /* NEW: Staggered list item animation */
+        @keyframes staggered-fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-staggered-fade-in {
+            /* Use 'both' to apply starting styles (opacity: 0) before animation begins */
+            animation: staggered-fade-in 0.5s ease-out both; 
+        }
+
+        /* NEW: Modal scale-in animation */
+        @keyframes modal-scale-in {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-modal-scale-in {
+            animation: modal-scale-in 0.3s ease-out forwards;
+        }
+        
+        /* NEW: Progress bar fill animation */
+        @keyframes progress-bar-fill {
+            from { width: 0%; }
+        }
+        .animate-progress-bar {
+            animation: progress-bar-fill 1s 0.3s ease-out forwards; /* Add a small delay */
+        }
+
+        /* Marquee Animation for long titles */
+        @keyframes marquee-scroll {
+            0% { transform: translateX(5px); }
+            100% { transform: translateX(calc(var(--container-width) - var(--scroll-width) - 5px)); }
+        }
+        .animate-marquee-scroll {
+            animation: marquee-scroll 8s linear infinite alternate;
+        }
+        .marquee-container:hover .animate-marquee-scroll {
+            animation-play-state: paused;
+        }
+        .unwon-reward {
+            color: transparent;
+            text-shadow: rgb(156, 163, 175) 0px 0px 0px;
+            filter: grayscale(100%) opacity(0.5);
+        }
+        html.dark .unwon-reward {
+            text-shadow: rgb(71 85 105) 0px 0px 0px; /* slate-600 */
+        }
+
+        .won-reward {
+            text-shadow: rgb(0 0 0 / 48%) 0px 0px 0px;
+        }
+        html.dark .won-reward {
+             text-shadow: none;
+        }
+
+        /* Pronounceable Word Styling */
+        .pronounceable {
+            cursor: pointer;
+            text-decoration: underline dotted;
+            text-decoration-color: #60a5fa;
+            position: relative;
+            transition: background-color 0.3s;
+        }
+        .pronounceable::after {
+            content: '🔊';
+            font-size: 0.7em;
+            position: relative;
+            top: -0.5em;
+            margin-left: 2px;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        .pronounceable:hover::after {
+            opacity: 1;
+        }
+        .pronounceable.speaking {
+            background-color: #fef3c7; /* yellow-100 */
+            border-radius: 4px;
+        }
+        html.dark .pronounceable.speaking {
+             background-color: #4a4a28;
+        }
+
+        /* Avatar Glow Animation */
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px #60a5fa, 0 0 10px #60a5fa; }
+            50% { box-shadow: 0 0 20px #818cf8, 0 0 30px #818cf8; }
+        }
+        .avatar-glow {
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        /* Mic Button Pulse Animation */
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .mic-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Chat Bubble Fade-in Animation */
+        @keyframes bubble-fade-in {
+            from { opacity: 0; transform: translateY(10px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-bubble-in {
+            animation: bubble-fade-in 0.4s ease-out forwards;
+        }
+
+        /* Drag and Drop Exercise Styles */
+        .term-drag-item {
+            cursor: grab;
+        }
+        .term-drag-item:active {
+            cursor: grabbing;
+        }
+        .term-drag-item.placed {
+            opacity: 0.3;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+        .drop-zone.drag-over {
+            transform: scale(1.02);
+            border-color: #60a5fa; /* blue-400 */
+            box-shadow: 0 0 10px #60a5fa;
+        }
+        .drop-zone.correct {
+            background-color: #dcfce7; /* green-100 */
+            border-color: #22c55e; /* green-500 */
+        }
+        html.dark .drop-zone.correct {
+            background-color: #15803d; /* green-700 */
+        }
+        .drop-zone.incorrect {
+            background-color: #fee2e2; /* red-100 */
+            border-color: #ef4444; /* red-500 */
+            animation: shake 0.5s;
+        }
+        html.dark .drop-zone.incorrect {
+            background-color: #b91c1c; /* red-700 */
+        }
+
+        /* Fill in the Blanks (Select) Exercise Styles */
+        .blank-select {
+            border: 2px dashed #94a3b8; /* slate-400 */
+            background-color: #f1f5f9; /* slate-100 */
+            border-radius: 6px;
+            padding: 2px 4px;
+            font-weight: bold;
+            color: #1e293b; /* slate-800 */
+            transition: all 0.2s;
+        }
+        html.dark .blank-select {
+            background-color: #334155; /* slate-700 */
+            border-color: #64748b; /* slate-500 */
+            color: #e2e8f0; /* slate-200 */
+        }
+        .blank-select:focus {
+            outline: none;
+            border-color: #60a5fa; /* blue-400 */
+            box-shadow: 0 0 5px #60a5fa;
+        }
+        .blank-select.correct {
+            border-color: #22c55e; /* green-500 */
+            background-color: #dcfce7; /* green-100 */
+        }
+        html.dark .blank-select.correct {
+            background-color: #166534; /* green-800 */
+            border-color: #4ade80; /* green-400 */
+        }
+        .blank-select.incorrect {
+            border-color: #ef4444; /* red-500 */
+            background-color: #fee2e2; /* red-100 */
+            animation: shake 0.5s;
+        }
+        html.dark .blank-select.incorrect {
+            background-color: #991b1b; /* red-800 */
+            border-color: #f87171; /* red-400 */
+        }
+
+        /* Fill in the Blanks (Input) Exercise Styles */
+        .blank-input {
+            border: 2px dashed #94a3b8; /* slate-400 */
+            background-color: #f1f5f9; /* slate-100 */
+            border-radius: 6px;
+            padding: 2px 6px;
+            font-weight: bold;
+            color: #1e293b; /* slate-800 */
+            transition: all 0.2s;
+            width: 5rem; /* Adjust width as needed */
+            text-align: center;
+        }
+        html.dark .blank-input {
+            background-color: #334155; /* slate-700 */
+            border-color: #64748b; /* slate-500 */
+            color: #e2e8f0; /* slate-200 */
+        }
+        .blank-input:focus {
+            outline: none;
+            border-color: #60a5fa; /* blue-400 */
+            box-shadow: 0 0 5px #60a5fa;
+        }
+        .blank-input.correct {
+            border-color: #22c55e; /* green-500 */
+            background-color: #dcfce7; /* green-100 */
+        }
+        html.dark .blank-input.correct {
+            background-color: #166534; /* green-800 */
+            border-color: #4ade80; /* green-400 */
+        }
+        .blank-input.incorrect {
+            border-color: #ef4444; /* red-500 */
+            background-color: #fee2e2; /* red-100 */
+            animation: shake 0.5s;
+        }
+        html.dark .blank-input.incorrect {
+            background-color: #991b1b; /* red-800 */
+            border-color: #f87171; /* red-400 */
+        }
+
+        /* Number Line Exercise Styles */
+        .number-line-item {
+            touch-action: none; /* For DragDropTouch polyfill */
+        }
+        .number-line-item.animate-shake {
+            animation: shake 0.5s;
+        }
+        .number-line {
+            position: relative;
+        }
+        .number-line-over {
+            transform: scale(1.02);
+            box-shadow: 0 0 10px #60a5fa;
+        }
+        .number-line-tick {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 2px;
+            height: 12px;
+            background-color: #94a3b8; /* slate-400 */
+        }
+        html.dark .number-line-tick {
+            background-color: #64748b; /* slate-500 */
+        }
+        .number-line-tick-label {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #475569; /* slate-600 */
+        }
+        html.dark .number-line-tick-label {
+             color: #cbd5e1; /* slate-300 */
+        }
+        .number-line-placed-item {
+            position: absolute;
+            top: 50%;
+            transform: translateY(calc(-50% - 20px));
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #166534; /* green-800 */
+            background-color: #dcfce7; /* green-100 */
+            border: 2px solid #22c55e; /* green-500 */
+        }
+        html.dark .number-line-placed-item {
+             color: #dcfce7; /* green-100 */
+             background-color: #166534; /* green-800 */
+             border-color: #4ade80; /* green-400 */
+        }
+
+
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+
+        /* Onboarding Styles */
+        .onboarding-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .onboarding-modal {
+            background-color: var(--bg-color);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        html.dark .onboarding-modal {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .onboarding-icon {
+            font-size: 5rem;
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+        .onboarding-title {
+            font-family: 'Luckiest Guy', cursive;
+            font-size: 2.5rem;
+            color: #1e293b; /* slate-800 */
+            margin-bottom: 0.5rem;
+        }
+        html.dark .onboarding-title {
+            color: #e2e8f0; /* slate-200 */
+        }
+        .onboarding-text {
+            font-size: 1.125rem;
+            color: #475569; /* slate-600 */
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        html.dark .onboarding-text {
+            color: #94a3b8; /* slate-400 */
+        }
+        .onboarding-dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+        .onboarding-dot {
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 9999px;
+            background-color: #cbd5e1; /* slate-300 */
+            transition: all 0.3s ease;
+        }
+        html.dark .onboarding-dot {
+            background-color: #475569; /* slate-600 */
+        }
+        .onboarding-dot.active {
+            background-color: #60a5fa; /* blue-400 */
+            transform: scale(1.25);
+        }
+        .onboarding-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        /* Ensure onboarding nav buttons are not overridden */
+        .onboarding-nav > button {
+            min-width: 120px;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.24.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0"
+  }
+}
+</script>
+<script>
+    tailwind.config = {
+      darkMode: 'class', // Enable class-based dark mode
+      theme: {
+        extend: {
+          // You can extend your theme here if needed
+        }
+      }
+    }
+</script>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+    <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
+</body>
+</html>
