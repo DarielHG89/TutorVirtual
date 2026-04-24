@@ -5,7 +5,8 @@ import { lessons } from "../data/lessons";
 
 // Para una futura integración con una IA de Gemini auto-hospedada,
 // se modificaría la inicialización del cliente o se usaría un endpoint de fetch aquí.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY || "";
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 const getSystemInstructionQuiz = (profile: StudentProfile) => {
     const genderTerm = profile.gender === 'boy' ? 'un niño' : 'una niña';
@@ -20,31 +21,36 @@ const getSystemInstructionLive = (profile: StudentProfile) => {
 let isApiAvailable = false;
 
 export async function checkGeminiConnection(): Promise<boolean> {
+    if (!ai || !apiKey || apiKey === "undefined" || apiKey === "null") {
+        isApiAvailable = false;
+        console.warn("Gemini API key is missing. AI features will be disabled.");
+        return false;
+    }
+    
     try {
         // Hacemos una llamada muy ligera para ver si el servicio responde.
         await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-1.5-flash',
             contents: "hola",
-            config: { thinkingConfig: { thinkingBudget: 0 } }
         });
         isApiAvailable = true;
         console.log("Gemini API connection successful.");
     } catch (error) {
         isApiAvailable = false;
-        console.warn("Gemini API connection failed. Falling back to offline mode.", error);
+        console.warn("Gemini API connection failed or key is invalid. Falling back to offline mode.", error);
     }
     return isApiAvailable;
 }
 
 export async function generateExplanation(question: Question, incorrectAnswer: string, profile: StudentProfile): Promise<string> {
-    if (!isApiAvailable) {
-        throw new Error("AI service is not available.");
+    if (!isApiAvailable || !ai) {
+        return `¡Buen intento! La respuesta correcta es ${question.answer}. Sigue practicando para ser un experto en ${question.categoryId || 'matemáticas'}. 🚀`;
     }
     try {
         const prompt = `La pregunta era: "${question.question}". ${profile.gender === 'boy' ? 'El niño' : 'La niña'} respondió "${incorrectAnswer}", pero la respuesta correcta es "${question.answer}". ¡No pasa nada por equivocarse! Explícale de forma súper positiva, divertida y sencilla por qué la respuesta es "${question.answer}". Usa una analogía o un ejemplo genial para que lo entienda. Anímale a seguir intentándolo. Empieza con algo como "¡Casi! ¡Vamos a ver este pequeño truco! 🕵️‍♂️" o "¡Buena intentona! Así es como lo ven los detectives de las mates: 🧠".`;
         
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-1.5-flash',
             contents: prompt,
             config: {
                 systemInstruction: getSystemInstructionQuiz(profile),
@@ -56,25 +62,24 @@ export async function generateExplanation(question: Question, incorrectAnswer: s
         if (typeof explanation === 'string' && explanation.trim().length > 0) {
             return explanation;
         } else {
-            console.warn("Received empty or invalid explanation from AI.");
-            throw new Error("Received empty or invalid explanation from AI.");
+            return `¡Casi lo tienes! La respuesta correcta era ${question.answer}. ¡Vamos a por la siguiente! ✨`;
         }
 
     } catch (error) {
         console.error("Error generating AI explanation:", error);
-        throw error;
+        return `¡Ánimo! La respuesta correcta es ${question.answer}. Tú puedes lograrlo. 💪`;
     }
 }
 
 export async function generateHint(question: Question, profile: StudentProfile): Promise<string> {
-    if (!isApiAvailable) {
-        throw new Error("AI service is not available.");
+    if (!isApiAvailable || !ai) {
+        return `Piensa un poquito... fíjate bien en lo que nos pide la pregunta. ¡Tú puedes hacerlo! 💡`;
     }
     try {
         const prompt = `La pregunta es: "${question.question}". Dame una pista muy creativa y divertida para un ${profile.gender === 'boy' ? 'niño' : 'ña'} de ${profile.age} años. Usa una analogía o una pequeña historia para explicar el concepto. Por ejemplo, si es una multiplicación, podrías hablar de galaxias de galletas 🌌🍪. ¡Hazlo memorable y nada aburrido! Es crucial y de máxima importancia que, bajo NINGUNA circunstancia, reveles la respuesta final ("${question.answer}") ni números que lleven directamente a ella. NO MUESTRES EL RESULTADO. ENFÓCATE EN EL MÉTODO.`;
 
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-1.5-flash',
             contents: prompt,
             config: {
                 systemInstruction: getSystemInstructionQuiz(profile),
@@ -86,29 +91,30 @@ export async function generateHint(question: Question, profile: StudentProfile):
         if (typeof hint === 'string' && hint.trim().length > 0) {
             return hint;
         } else {
-            console.warn("Received empty or invalid hint from AI.");
-            throw new Error("Received empty or invalid hint from AI.");
+            return "Fíjate muy bien en los números y lo que nos cuentan. 🧠";
         }
     } catch (error) {
         console.error("Error generating AI hint:", error);
-        throw error;
+        return "¡Usa tu súper cerebro! Seguro que sabes cómo resolverlo. ✨";
     }
 }
 
+
 export async function generateSpeech(text: string): Promise<string> {
-    if (!isApiAvailable) {
-        throw new Error("AI service is not available for speech generation.");
+    if (!isApiAvailable || !ai) {
+        // Simple fallback or indication that TTS is offline
+        throw new Error("El servicio de voz no está disponible sin conexión.");
     }
     try {
         const promptText = `Lee el siguiente texto en español: "${text}"`;
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-preview-tts",
+            model: "gemini-1.5-flash-preview-tts",
             contents: [{ parts: [{ text: promptText }] }],
             config: {
                 responseModalities: [Modality.AUDIO],
                 speechConfig: {
                     voiceConfig: {
-                      prebuiltVoiceConfig: { voiceName: 'Kore' },
+                        prebuiltVoiceConfig: { voiceName: 'Kore' },
                     },
                 },
             },
@@ -131,15 +137,14 @@ export function connectToLive(
     onMessage: (message: LiveServerMessage) => void,
     onError: (error: ErrorEvent) => void,
     onClose: (close: CloseEvent) => void,
-    // FIX: Replaced deprecated FunctionDeclarationTool with the correct type for the tools parameter.
     tools?: { functionDeclarations: FunctionDeclaration[] }[]
 ) {
-     if (!isApiAvailable) {
-        return Promise.reject(new Error("Gemini API is not available."));
+     if (!isApiAvailable || !ai) {
+        return Promise.reject(new Error("La conversación en vivo requiere una conexión activa a la IA."));
     }
     
     return ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+        model: 'gemini-2.0-flash-exp',
         callbacks: {
             onopen: () => console.log('Live session opened.'),
             onmessage: onMessage,
@@ -160,12 +165,12 @@ export function connectToLive(
 }
 
 export async function generateImageFromText(prompt: string): Promise<string> {
-    if (!isApiAvailable) {
-        throw new Error("El servicio de IA no está disponible para generar imágenes.");
+    if (!isApiAvailable || !ai) {
+        throw new Error("La generación de imágenes requiere una conexión activa a la IA.");
     }
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
+            model: 'gemini-1.5-flash',
             contents: {
                 parts: [{ text: prompt }],
             },
@@ -208,8 +213,8 @@ export async function generateImageFromText(prompt: string): Promise<string> {
 
 
 export async function generateAvatarFromText(description: string, profile: { name: string; age: number; gender: 'boy' | 'girl' | null }): Promise<string> {
-    if (!isApiAvailable) {
-        throw new Error("AI service is not available for image generation.");
+    if (!isApiAvailable || !ai) {
+        throw new Error("La creación personalizada de avatares requiere conexión a la IA.");
     }
     try {
         const genderTerm = profile.gender === 'boy' ? 'un niño' : 'una niña';
@@ -217,7 +222,7 @@ export async function generateAvatarFromText(description: string, profile: { nam
         const fullPrompt = `Crea un avatar de dibujos animados de ${genderTerm} de ${profile.age} años que es ${description}. Estilo alegre y amigable para un niño, fondo simple de un solo color. ${nameTagInstruction}`;
 
         const response = await ai.models.generateImages({
-            model: 'imagen-4.0-generate-001',
+            model: 'imagen-3.0-generate-001',
             prompt: fullPrompt,
             config: {
                 numberOfImages: 1,
@@ -246,8 +251,8 @@ export async function generateAvatarFromText(description: string, profile: { nam
 }
 
 export async function generateAvatarFromPhoto(base64Photo: string, mimeType: string, profile: { name: string; age: number; gender: 'boy' | 'girl' | null }): Promise<string> {
-    if (!isApiAvailable) {
-        throw new Error("AI service is not available for image editing.");
+    if (!isApiAvailable || !ai) {
+        throw new Error("La edición de fotos por IA no está disponible.");
     }
     try {
         const pureBase64 = base64Photo.split(',')[1];
@@ -259,7 +264,7 @@ export async function generateAvatarFromPhoto(base64Photo: string, mimeType: str
         const nameTagInstruction = profile.name.trim() ? `Añade una pequeña etiqueta con el nombre '${profile.name.trim()}' bajo su hombro izquierdo.` : '';
 
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
+            model: 'gemini-1.5-flash',
             contents: {
                 parts: [
                     {
@@ -324,14 +329,14 @@ export async function generateAvatarFromPhoto(base64Photo: string, mimeType: str
 }
 
 export async function processUserFeedback(feedback: string): Promise<string> {
-    if (!isApiAvailable) {
-        throw new Error("El servicio de IA no está disponible.");
+    if (!isApiAvailable || !ai) {
+        return "¡Muchas gracias por tus comentarios! Los guardaremos para mejorar la app. 📝✨";
     }
     try {
         const prompt = `Un usuario ha enviado el siguiente comentario o sugerencia sobre la aplicación educativa "Maestro Digital": "${feedback}". Analiza el comentario y genera una respuesta de agradecimiento corta, amigable y alentadora en español. Agradécele por su tiempo y por ayudar a mejorar la aplicación. Mantén el tono del "Maestro Digital": positivo, cercano y con algún emoji.`;
         
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-1.5-flash',
             contents: prompt,
             config: {
                 systemInstruction: "Eres 'Maestro Digital', un amigable tutor de IA. Tu tarea es responder a los comentarios de los usuarios de forma positiva y agradecida.",
@@ -395,8 +400,8 @@ function summarizePerformance(gameState: GameState): string {
 }
 
 export async function generatePersonalizedSuggestion(gameState: GameState, profile: StudentProfile): Promise<string> {
-    if (!isApiAvailable) {
-        throw new Error("El servicio de IA no está disponible.");
+    if (!isApiAvailable || !ai) {
+        return `¡Hola, ${profile.name}! Sigue así, ¡estás aprendiendo muchísimas cosas nuevas hoy! ✨ Sigue practicando en tus categorías favoritas para ser un maestro.`;
     }
 
     const performanceSummary = summarizePerformance(gameState);
@@ -415,7 +420,7 @@ export async function generatePersonalizedSuggestion(gameState: GameState, profi
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-1.5-flash',
             contents: prompt,
             config: {
                 systemInstruction: getSystemInstructionQuiz(profile),
@@ -442,8 +447,14 @@ export async function generateNumberLineExercise(
     difficulty: 'fácil' | 'medio' | 'difícil', 
     profile: StudentProfile
 ): Promise<{ value: number; label: string; }[]> {
-    if (!isApiAvailable) {
-        throw new Error("AI service is not available.");
+    if (!isApiAvailable || !ai) {
+        // Simple procedural fallback for number line if AI is down
+        const fallbackItems = [];
+        for (let i = 0; i < count; i++) {
+            const v = min + Math.random() * (max - min);
+            fallbackItems.push({ value: v, label: v.toFixed(1) });
+        }
+        return fallbackItems;
     }
 
     const difficultyPrompt = {
@@ -456,7 +467,7 @@ export async function generateNumberLineExercise(
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-1.5-flash',
             contents: prompt,
             config: {
                 systemInstruction: `Eres un generador de contenido educativo. Respondes únicamente con el JSON solicitado, sin texto adicional. Asegúrate de que los valores numéricos ('value') se correspondan exactamente con su etiqueta en formato de cadena ('label'). Por ejemplo, si la etiqueta es "3/4", el valor debe ser 0.75.`,

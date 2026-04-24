@@ -17,6 +17,7 @@ export interface AvatarSelectorModalProps {
     age: number;
     name: string;
     selectedAvatar: string | null;
+    isAiAvailable?: boolean;
 }
 
 export const AvatarSelectorModal: React.FC<AvatarSelectorModalProps> = ({ 
@@ -26,7 +27,8 @@ export const AvatarSelectorModal: React.FC<AvatarSelectorModalProps> = ({
     gender,
     age,
     name,
-    selectedAvatar
+    selectedAvatar,
+    isAiAvailable = false
 }) => {
     // Internal state for the modal's functionality
     const [userUploadedAvatars, setUserUploadedAvatars] = useState<string[]>([]);
@@ -184,6 +186,13 @@ export const AvatarSelectorModal: React.FC<AvatarSelectorModalProps> = ({
                         </button>
                         {showAiTools && (
                             <div className="mt-4 space-y-4">
+                                {!isAiAvailable && (
+                                    <div className="bg-yellow-100 dark:bg-yellow-900/40 p-3 rounded-lg border border-yellow-200 dark:border-yellow-700 mb-4">
+                                        <p className="text-yellow-800 dark:text-yellow-200 text-sm font-semibold text-center italic">
+                                            ¡El Maestro está descansando! 😴 La creación con IA no está activa ahora, pero puedes subir tus propias fotos.
+                                        </p>
+                                    </div>
+                                )}
                                 <input
                                     type="text"
                                     value={avatarDescription}
@@ -193,15 +202,15 @@ export const AvatarSelectorModal: React.FC<AvatarSelectorModalProps> = ({
                                     }}
                                     placeholder="Ej: un astronauta con un gato"
                                     className="p-3 text-base border-2 border-purple-200 dark:border-purple-600 rounded-lg text-center w-full text-black bg-white dark:bg-slate-700 dark:text-white dark:placeholder-slate-400"
-                                    disabled={isGenerating}
+                                    disabled={isGenerating || !isAiAvailable}
                                 />
                                 <div className="text-center font-bold text-slate-500 dark:text-slate-400">O</div>
                                 <input type="file" accept="image/*" ref={geminiFileInputRef} onChange={(e) => handleFileSelected(e, 'gemini')} className="hidden" />
-                                <Button type="button" variant="secondary" onClick={() => geminiFileInputRef.current?.click()} className="w-full !py-2 !text-base" disabled={isGenerating}>
+                                <Button type="button" variant="secondary" onClick={() => geminiFileInputRef.current?.click()} className="w-full !py-2 !text-base" disabled={isGenerating || !isAiAvailable}>
                                     {uploadedPhoto ? "Foto para IA seleccionada ✔️" : "Subir foto para transformar 🖼️"}
                                 </Button>
                                 {error && <p className="text-red-500 font-bold text-sm text-center">{error}</p>}
-                                <Button type="button" variant="special" onClick={handleGenerateAvatar} className="w-full !py-2" disabled={isGenerating || (!avatarDescription && !uploadedPhoto)}>
+                                <Button type="button" variant="special" onClick={handleGenerateAvatar} className="w-full !py-2" disabled={isGenerating || (!avatarDescription && !uploadedPhoto) || !isAiAvailable}>
                                     {isGenerating ? "Generando..." : "¡Generar Avatar!"}
                                 </Button>
                                 {isGenerating && <div className="text-center text-purple-700 dark:text-purple-300">Creando magia... ✨</div>}

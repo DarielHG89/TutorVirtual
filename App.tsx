@@ -843,7 +843,7 @@ export default function App() {
                 />
             )}
             {dashboardUser && <DashboardModal user={dashboardUser} onClose={() => setDashboardUser(null)} />}
-            {avatarSelectorProps && <AvatarSelectorModal isOpen={true} {...avatarSelectorProps} />}
+            {avatarSelectorProps && <AvatarSelectorModal isOpen={true} {...avatarSelectorProps} isAiAvailable={connectionStatus === 'online'} />}
             {isOnboardingVisible && currentUser && (
                 <Onboarding user={currentUser} onFinish={handleFinishOnboarding} />
             )}

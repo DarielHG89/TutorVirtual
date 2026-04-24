@@ -466,8 +466,20 @@ export const LiveConversation: React.FC<LiveConversationProps> = ({ studentProfi
             </div>
 
             <div className="flex-shrink-0 flex flex-col items-center justify-center">
-                {error && <p className="text-red-500 mb-2">{error}</p>}
-                <MicButton status={statusState} onClick={handleMicClick} />
+                {connectionStatus !== 'online' && (
+                    <div className="bg-yellow-100 dark:bg-yellow-900/40 p-4 rounded-xl border border-yellow-200 dark:border-yellow-700 mb-6 max-w-md animate-fade-in shadow-sm">
+                        <p className="text-yellow-800 dark:text-yellow-200 text-base font-bold text-center">
+                            ¡El Maestro está meditando! 🧘‍♂️
+                        </p>
+                        <p className="text-yellow-700 dark:text-yellow-300 text-sm text-center mt-1">
+                            La conversación por voz necesita una conexión activa con la inteligencia del Maestro. ¡Vuelve pronto para charlar!
+                        </p>
+                    </div>
+                )}
+                {error && <p className="text-red-500 mb-2 font-bold">{error}</p>}
+                <div className={connectionStatus !== 'online' ? 'opacity-50 grayscale pointer-events-none' : ''}>
+                    <MicButton status={statusState} onClick={handleMicClick} />
+                </div>
             </div>
         </div>
     );
