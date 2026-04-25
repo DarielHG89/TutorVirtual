@@ -10,21 +10,44 @@ export interface AppTaxonomy {
     categories: { id: string; name: string; subjectId: string }[];
 }
 
+export type AiMode = 'online' | 'local' | 'none';
+
+export interface AiConfig {
+    mode: AiMode;
+    apiKey?: string;
+    localEndpoint?: string;
+    localModel?: string;
+}
+
 export type ConnectionStatus = 'checking' | 'online' | 'offline';
 
 export type VoiceMode = 'auto' | 'local' | 'online';
 
-export interface Question {
-    type: 'mcq' | 'input';
-    question: string;
-    options?: { text: string; imageUrl?: string }[] | string[];
-    answer: string;
+export type QuestionBase = {
     explanation?: string;
     hints?: string[];
-    imageUrl?: string;
     lessonId?: string;
     categoryId?: string;
-}
+};
+
+export type BaseStandardQuestion = QuestionBase & {
+    question: string;
+    imageUrl?: string;
+    answer: string;
+};
+
+export type MCQQuestion = BaseStandardQuestion & {
+    type: 'mcq';
+    options?: { text: string; imageUrl?: string }[] | string[];
+};
+
+export type InputQuestion = BaseStandardQuestion & {
+    type: 'input';
+};
+
+export type InteractiveQuestion = QuestionBase & InteractiveExercise;
+
+export type Question = MCQQuestion | InputQuestion | InteractiveQuestion;
 
 export interface QuestionResult {
     question: string;

@@ -77,47 +77,84 @@ export const QuestionsPanel: React.FC<QuestionsPanelProps> = ({ questions, taxon
 
                     <div className="col-span-1 md:col-span-2">
                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Tipo de Pregunta</label>
-                        <select required value={editingQuestion.type} onChange={e => setEditingQuestion({...editingQuestion, type: e.target.value as any})} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                        <select required value={editingQuestion.type} onChange={e => {
+                            const newType = e.target.value as any;
+                            // Initialize default fields for new types to avoid crashes
+                            let newQ = {...editingQuestion, type: newType};
+                            if (newType === 'match-pairs' && !('pairs' in newQ)) newQ = {...newQ, title: '', pairs: [{term: '', definition: ''}]} as any;
+                            if (newType === 'fill-in-the-blanks' && !('textWithBlanks' in newQ)) newQ = {...newQ, title: '', textWithBlanks: '', blanks: []} as any;
+                            if (newType === 'fill-in-the-text' && !('textWithInputs' in newQ)) newQ = {...newQ, title: '', textWithInputs: '', correctAnswers: []} as any;
+                            if (newType === 'number-line' && !('min' in newQ)) newQ = {...newQ, title: '', min: 0, max: 10, items: []} as any;
+                            if (newType === 'choose-the-operation' && !('problems' in newQ)) newQ = {...newQ, title: '', problems: []} as any;
+                            setEditingQuestion(newQ);
+                        }} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white">
                             <option value="mcq">Selecciones Múltiples (MCQ)</option>
                             <option value="input">Entrada de Texto Libre (Input)</option>
+                            <option value="match-pairs">Parear (Match Pairs)</option>
+                            <option value="fill-in-the-blanks">Rellenar Huecos (Opciones)</option>
+                            <option value="fill-in-the-text">Rellenar Texto (Entrada Libre)</option>
+                            <option value="number-line">Línea Numérica</option>
+                            <option value="choose-the-operation">Elegir Operación (+, -, x, ÷)</option>
                         </select>
                     </div>
 
-                    <div className="col-span-1 md:col-span-2">
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Pregunta Principal</label>
-                        <textarea required value={editingQuestion.question} onChange={e => setEditingQuestion({...editingQuestion, question: e.target.value})} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
-                    </div>
+                    {(editingQuestion.type === 'mcq' || editingQuestion.type === 'input') ? (
+                        <>
+                            <div className="col-span-1 md:col-span-2">
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Pregunta Principal</label>
+                                <textarea required value={(editingQuestion as any).question || ''} onChange={e => setEditingQuestion({...editingQuestion, question: e.target.value})} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
+                            </div>
 
-                    {isMCQ && (
-                        <div className="col-span-1 md:col-span-2 space-y-2">
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Opciones</label>
-                            {(editingQuestion.options || []).map((opt: any, i) => (
-                                <div key={i} className="flex gap-2">
-                                     <input value={typeof opt === 'string' ? opt : opt.text} onChange={e => {
-                                         const newOpts = [...(editingQuestion.options||[])];
-                                         newOpts[i] = typeof newOpts[i] === 'string' ? e.target.value : { ...newOpts[i], text: e.target.value };
-                                         setEditingQuestion({...editingQuestion, options: newOpts});
-                                     }} className="flex-1 p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder={`Opción ${i+1}`} />
-                                     <button type="button" onClick={() => {
-                                         const newOpts = [...(editingQuestion.options||[])];
-                                         newOpts.splice(i, 1);
-                                         setEditingQuestion({...editingQuestion, options: newOpts});
-                                     }} className="px-3 bg-red-100 text-red-600 rounded">X</button>
+                            {isMCQ && (
+                                <div className="col-span-1 md:col-span-2 space-y-2">
+                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Opciones</label>
+                                    {((editingQuestion as any).options || []).map((opt: any, i: number) => (
+                                        <div key={i} className="flex gap-2">
+                                             <input value={typeof opt === 'string' ? opt : opt.text} onChange={e => {
+                                                 const newOpts = [...((editingQuestion as any).options||[])];
+                                                 newOpts[i] = typeof newOpts[i] === 'string' ? e.target.value : { ...newOpts[i], text: e.target.value };
+                                                 setEditingQuestion({...editingQuestion, options: newOpts} as any);
+                                             }} className="flex-1 p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder={`Opción ${i+1}`} />
+                                             <button type="button" onClick={() => {
+                                                 const newOpts = [...((editingQuestion as any).options||[])];
+                                                 newOpts.splice(i, 1);
+                                                 setEditingQuestion({...editingQuestion, options: newOpts} as any);
+                                             }} className="px-3 bg-red-100 text-red-600 rounded">X</button>
+                                        </div>
+                                    ))}
+                                    <button type="button" onClick={() => setEditingQuestion({...editingQuestion, options: [...((editingQuestion as any).options||[]), '']} as any)} className="text-sm text-blue-500 font-bold">+ Añadir opción</button>
                                 </div>
-                            ))}
-                            <button type="button" onClick={() => setEditingQuestion({...editingQuestion, options: [...(editingQuestion.options||[]), '']})} className="text-sm text-blue-500 font-bold">+ Añadir opción</button>
+                            )}
+
+                            <div className="col-span-1 md:col-span-2">
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">URL de Imagen (Opcional)</label>
+                                <input type="url" value={(editingQuestion as any).imageUrl || ''} onChange={e => setEditingQuestion({...editingQuestion, imageUrl: e.target.value} as any)} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="https://ejemplo.com/imagen.png" />
+                            </div>
+
+                            <div className="col-span-1 md:col-span-2">
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Respuesta Correcta</label>
+                                <input required value={(editingQuestion as any).answer || ''} onChange={e => setEditingQuestion({...editingQuestion, answer: e.target.value} as any)} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="Debe coincidir con una de las opciones si es MCQ" />
+                            </div>
+                        </>
+                    ) : (
+                        <div className="col-span-1 md:col-span-2">
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Configuración Avanzada (JSON)</label>
+                            <p className="text-xs text-slate-500 mb-2">Edita las propiedades específicas ({editingQuestion.type}) en formato JSON. Mantén el tipo y los id intactos.</p>
+                            <textarea 
+                                rows={8} 
+                                value={JSON.stringify(editingQuestion, null, 2)} 
+                                onChange={e => {
+                                    try {
+                                        const parsed = JSON.parse(e.target.value);
+                                        setEditingQuestion(parsed);
+                                    } catch (err) {
+                                        // Ignore Invalid JSON while typing
+                                    }
+                                }} 
+                                className="w-full p-2 border rounded font-mono text-sm dark:bg-slate-700 dark:border-slate-600 dark:text-white" 
+                            />
                         </div>
                     )}
-
-                    <div className="col-span-1 md:col-span-2">
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">URL de Imagen (Opcional)</label>
-                        <input type="url" value={editingQuestion.imageUrl || ''} onChange={e => setEditingQuestion({...editingQuestion, imageUrl: e.target.value})} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="https://ejemplo.com/imagen.png" />
-                    </div>
-
-                    <div className="col-span-1 md:col-span-2">
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Respuesta Correcta</label>
-                        <input required value={editingQuestion.answer} onChange={e => setEditingQuestion({...editingQuestion, answer: e.target.value})} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="Debe coincidir con una de las opciones si es MCQ" />
-                    </div>
 
                     <div className="col-span-1 md:col-span-2 space-y-2">
                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Pistas (Hints)</label>

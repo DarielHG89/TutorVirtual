@@ -7,6 +7,11 @@ import { useSpeech } from '../context/SpeechContext';
 import { Confetti } from './Results';
 import { playCorrectSound, playIncorrectSound, playClickSound, playHintSound } from '../utils/sounds';
 import { useMascot } from '../context/MascotContext';
+import { MatchPairsExercise } from './interactive/MatchPairsExercise';
+import { FillInTheBlanksExercise } from './interactive/FillInTheBlanksExercise';
+import { FillInTheTextExercise } from './interactive/FillInTheTextExercise';
+import { NumberLineExercise } from './interactive/NumberLineExercise';
+import { ChooseTheOperationExercise } from './interactive/ChooseTheOperationExercise';
 
 interface QuizProps {
     quizConfig: QuizConfig;
@@ -72,10 +77,13 @@ export const Quiz: React.FC<QuizProps> = ({ quizConfig, onQuizEnd, onBack, isAiE
     const handleDebugShortcut = useCallback(() => {
         if (isAnswered || !currentQuestion) return;
 
+        const qTitle = 'title' in currentQuestion ? currentQuestion.title : (currentQuestion as any).question || 'Ejercicio interactivo';
+        const qAnswer = 'answer' in currentQuestion ? (currentQuestion as any).answer : 'Completado';
+
         const result: QuestionResult = {
-            question: currentQuestion.question,
-            userAnswer: currentQuestion.answer,
-            correctAnswer: currentQuestion.answer,
+            question: qTitle,
+            userAnswer: qAnswer,
+            correctAnswer: qAnswer,
             correct: true,
             time: 0.1,
             hintsUsed: 0,
@@ -116,12 +124,14 @@ export const Quiz: React.FC<QuizProps> = ({ quizConfig, onQuizEnd, onBack, isAiE
         const timeTaken = (Date.now() - startTime) / 1000;
         setIsAnswered(true);
         
-        const isCorrect = answer.trim().toLowerCase() === currentQuestion.answer.toString().toLowerCase();
+        const isCorrect = answer.trim().toLowerCase() === ((currentQuestion as any).answer || '').toString().toLowerCase();
         
+        const qTitle = 'title' in currentQuestion ? currentQuestion.title : (currentQuestion as any).question || 'Ejercicio interactivo';
+
         const result: QuestionResult = {
-            question: currentQuestion.question,
+            question: qTitle,
             userAnswer: answer,
-            correctAnswer: currentQuestion.answer,
+            correctAnswer: (currentQuestion as any).answer || 'Completado',
             correct: isCorrect,
             time: timeTaken,
             hintsUsed: hintsUsedCount,
@@ -144,7 +154,7 @@ export const Quiz: React.FC<QuizProps> = ({ quizConfig, onQuizEnd, onBack, isAiE
 
             const feedbackText = "¡Casi! Sigue intentando 💪";
             let explanation: string;
-            const fallbackExplanation = currentQuestion.explanation || `La respuesta correcta es "${currentQuestion.answer}". ¡Sigue practicando y lo conseguirás!`;
+            const fallbackExplanation = currentQuestion.explanation || `La respuesta correcta es "${(currentQuestion as any).answer || ''}". ¡Sigue practicando y lo conseguirás!`;
 
             if (isAiEnabled) {
                 setIsLoadingAI(true);
@@ -162,7 +172,7 @@ export const Quiz: React.FC<QuizProps> = ({ quizConfig, onQuizEnd, onBack, isAiE
                 explanation = fallbackExplanation;
             }
             setFeedback({ text: feedbackText, correct: false, explanation });
-            speak(`${feedbackText}. La respuesta correcta es ${currentQuestion.answer}. ${explanation}`);
+            speak(`${feedbackText}. La respuesta correcta es ${(currentQuestion as any).answer || ''}. ${explanation}`);
         }
     };
 
@@ -187,7 +197,7 @@ export const Quiz: React.FC<QuizProps> = ({ quizConfig, onQuizEnd, onBack, isAiE
     // Speak question and options
     useEffect(() => {
         if (!currentQuestion) return;
-        let textToSpeak = currentQuestion.question;
+        let textToSpeak = 'title' in currentQuestion ? currentQuestion.title : ((currentQuestion as any).question || 'Resuelve este ejercicio');
         if (currentQuestion.type === 'mcq' && currentQuestion.options) {
             const optionsText = currentQuestion.options.map(opt => typeof opt === 'string' ? opt : opt.text).join(', ');
             textToSpeak += `. ... Opciones son: ${optionsText}`;
@@ -251,6 +261,43 @@ export const Quiz: React.FC<QuizProps> = ({ quizConfig, onQuizEnd, onBack, isAiE
         }
     };
 
+    const handleInteractiveComplete = useCallback((state: any) => {
+        if (isAnswered || !currentQuestion) return;
+        if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+        
+        playCorrectSound();
+        const timeTaken = (Date.now() - startTime) / 1000;
+        setIsAnswered(true);
+        
+        // title or question for the result tracking
+        const questionTitle = 'title' in currentQuestion ? currentQuestion.title : (currentQuestion.question || 'Ejercicio interactivo');
+        
+        const result: QuestionResult = {
+            question: questionTitle,
+            userAnswer: "Completado Correctamente",
+            correctAnswer: "Completado Correctamente",
+            correct: true,
+            time: timeTaken,
+            hintsUsed: hintsUsedCount,
+        };
+        
+        setQuizResults(prev => [...prev, result]);
+        setScore(prev => prev + 1);
+        handleCorrect(currentQuestion);
+        
+        setIsNextDisabled(true);
+        // Wait a bit to let the animation play, then move next
+        setTimeout(() => {
+            setIsNextDisabled(false);
+            if (questionIndex < quizConfig.questions.length - 1) {
+                setQuestionIndex(prev => prev + 1);
+            } else {
+                onQuizEnd([...quizResults, result]);
+            }
+        }, 2500);
+        
+    }, [isAnswered, currentQuestion, startTime, hintsUsedCount, handleCorrect, questionIndex, quizConfig.questions.length, quizResults, onQuizEnd]);
+
     if (!currentQuestion) {
         return <div className="text-center p-8">Cargando preguntas...</div>;
     }
@@ -274,10 +321,12 @@ export const Quiz: React.FC<QuizProps> = ({ quizConfig, onQuizEnd, onBack, isAiE
                 <div className="bg-green-500 h-4 rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }}></div>
             </div>
 
-            <div className="bg-slate-50 dark:bg-slate-700/50 p-6 rounded-2xl min-h-[150px] flex flex-col justify-center items-center text-xl sm:text-2xl font-bold mb-6 shadow-inner text-center">
-                {currentQuestion.imageUrl && <img src={currentQuestion.imageUrl} alt="Pregunta" className="max-h-40 mb-4" />}
-                <p>{currentQuestion.question}</p>
-            </div>
+            {(currentQuestion.type === 'mcq' || currentQuestion.type === 'input') && (
+                <div className="bg-slate-50 dark:bg-slate-700/50 p-6 rounded-2xl min-h-[150px] flex flex-col justify-center items-center text-xl sm:text-2xl font-bold mb-6 shadow-inner text-center">
+                    {currentQuestion.imageUrl && <img src={currentQuestion.imageUrl} alt="Pregunta" className="max-h-40 mb-4" />}
+                    <p>{currentQuestion.question}</p>
+                </div>
+            )}
             
             <div className="space-y-4">
                 {currentQuestion.type === 'mcq' && (
@@ -327,6 +376,13 @@ export const Quiz: React.FC<QuizProps> = ({ quizConfig, onQuizEnd, onBack, isAiE
                         </form>
                     </>
                 )}
+
+                {currentQuestion.type === 'match-pairs' && <MatchPairsExercise exercise={currentQuestion as any} onComplete={handleInteractiveComplete} themeColor="purple" />}
+                {currentQuestion.type === 'fill-in-the-blanks' && <FillInTheBlanksExercise exercise={currentQuestion as any} onComplete={handleInteractiveComplete} themeColor="purple" />}
+                {currentQuestion.type === 'fill-in-the-text' && <FillInTheTextExercise exercise={currentQuestion as any} onComplete={handleInteractiveComplete} themeColor="purple" />}
+                {currentQuestion.type === 'number-line' && <NumberLineExercise exercise={currentQuestion as any} onComplete={handleInteractiveComplete} themeColor="purple" />}
+                {currentQuestion.type === 'choose-the-operation' && <ChooseTheOperationExercise exercise={currentQuestion as any} onComplete={handleInteractiveComplete} themeColor="purple" />}
+
             </div>
             
             {!isAnswered && (

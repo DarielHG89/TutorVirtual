@@ -1,12 +1,33 @@
 import { GoogleGenAI, LiveServerMessage, Modality, FunctionDeclaration, Type } from "@google/genai";
-import type { Question, StudentProfile, GameState, CategoryId, QuestionResult } from "../types";
+import type { Question, StudentProfile, GameState, CategoryId, QuestionResult, AiConfig } from "../types";
 import { categoryNames } from "../utils/constants";
 import { contentManager } from "../utils/contentManager";
+import { aiConfigManager } from "../utils/aiConfigManager";
 
-// Para una futura integración con una IA de Gemini auto-hospedada,
-// se modificaría la inicialización del cliente o se usaría un endpoint de fetch aquí.
-const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY || "";
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
+let aiInstance: GoogleGenAI | null = null;
+let isApiAvailable = false;
+let currentConfig: AiConfig = aiConfigManager.getConfig();
+
+function initAi() {
+    currentConfig = aiConfigManager.getConfig();
+    const apiKey = currentConfig.apiKey || process.env.GEMINI_API_KEY || "";
+    if (currentConfig.mode === 'online' && apiKey && apiKey !== "undefined") {
+        aiInstance = new GoogleGenAI({ apiKey });
+    } else {
+        aiInstance = null;
+    }
+}
+
+// Initialize on load
+initAi();
+
+// Listen for config updates
+if (typeof window !== 'undefined') {
+    window.addEventListener('ai-config-updated', () => {
+        initAi();
+        checkGeminiConnection();
+    });
+}
 
 const getSystemInstructionQuiz = (profile: StudentProfile) => {
     const genderTerm = profile.gender === 'boy' ? 'un niño' : 'una niña';
@@ -15,79 +36,190 @@ const getSystemInstructionQuiz = (profile: StudentProfile) => {
 
 const getSystemInstructionLive = (profile: StudentProfile) => {
     const genderTerm = profile.gender === 'boy' ? 'un niño' : 'una niña';
-    return `Eres 'Maestro Digital', un tutor de IA amigable, paciente y divertido para ${genderTerm} de ${profile.age} años que se llama ${profile.name}. Tu objetivo es tener una conversación educativa y atractiva. Responde a sus preguntas, explícale cosas de forma sencilla y mantén la conversación. Usa un lenguaje sencillo y positivo. Dirígete a ${profile.name} por su nombre de vez en cuando para que la conversación sea más personal. También puedes dibujar cosas para el niño. Para dibujar algo, debes llamar a la función 'generateImage' con una descripción clara y creativa en inglés de lo que quieres dibujar. Por ejemplo, si el niño te pide 'dibuja un perro astronauta', llama a la función con el prompt 'an astronaut dog'. Habla siempre en español.`;
+    return `Eres 'Maestro Digital', un tutor de IA amigable, paciente y divertido para ${genderTerm} de ${profile.age} años que se llama ${profile.name}. Tu objetivo es tener una conversación educativa y atractiva. Responde a sus preguntas, explícale cosas de forma sencilla y mantén la conversación. Usa un lenguaje sencillo y positivo. Dirígete a ${profile.name} por su nombre de vez en cuando para que la conversación sea más personal. También puedes dibujar cosas para el niño. Para dibujar algo, debemos llamar a la función 'generateImage' con una descripción clara y creativa en inglés de lo que quieres dibujar. Por ejemplo, si el niño te pide 'dibuja un perro astronauta', llama a la función con el prompt 'an astronaut dog'. Habla siempre en español.`;
 }
 
-let isApiAvailable = false;
+async function callLocalAi(prompt: string, systemInstruction: string, responseFormat?: 'text' | 'json'): Promise<string> {
+    if (!currentConfig.localEndpoint) throw new Error("Endpoint local no configurado");
+    
+    try {
+        const response = await fetch(`${currentConfig.localEndpoint}/v1/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: currentConfig.localModel || "local-model",
+                messages: [
+                    { role: "system", content: systemInstruction },
+                    { role: "user", content: prompt }
+                ],
+                temperature: 0.7,
+                response_format: responseFormat === 'json' ? { type: "json_object" } : undefined
+            })
+        });
+
+        if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error de IA Local (${response.status}): ${errorText}`);
+        }
+
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || "";
+    } catch (error) {
+        console.error("Error calling local AI:", error);
+        throw error;
+    }
+}
 
 export async function checkGeminiConnection(): Promise<boolean> {
-    if (!ai || !apiKey || apiKey === "undefined" || apiKey === "null") {
+    if (currentConfig.mode === 'none') {
         isApiAvailable = false;
-        console.warn("Gemini API key is missing. AI features will be disabled.");
+        return false;
+    }
+
+    if (currentConfig.mode === 'local') {
+        try {
+            // Check if local endpoint is reachable (Ollama/LM Studio usually have v1/models)
+            const response = await fetch(`${currentConfig.localEndpoint}/v1/models`).catch(() => null);
+            isApiAvailable = response ? response.ok : false;
+            return isApiAvailable;
+        } catch (e) {
+            isApiAvailable = false;
+            return false;
+        }
+    }
+
+    if (!aiInstance) {
+        isApiAvailable = false;
         return false;
     }
     
     try {
-        // Hacemos una llamada muy ligera para ver si el servicio responde.
-        await ai.models.generateContent({
+        await aiInstance.models.generateContent({
             model: 'gemini-1.5-flash',
             contents: "hola",
         });
         isApiAvailable = true;
-        console.log("Gemini API connection successful.");
     } catch (error) {
         isApiAvailable = false;
-        console.warn("Gemini API connection failed or key is invalid. Falling back to offline mode.", error);
+        console.warn("Gemini API connection failed.", error);
     }
     return isApiAvailable;
 }
 
-export async function generateExplanation(question: Question, incorrectAnswer: string, profile: StudentProfile): Promise<string> {
-    if (!isApiAvailable || !ai) {
-        return `¡Buen intento! La respuesta correcta es ${question.answer}. Sigue practicando para ser un experto en ${question.categoryId || 'matemáticas'}. 🚀`;
+export async function testAiConnection(config: AiConfig): Promise<{ success: boolean; message: string }> {
+    if (config.mode === 'none') {
+        return { success: true, message: "Modo sin IA seleccionado." };
     }
-    try {
-        const prompt = `La pregunta era: "${question.question}". ${profile.gender === 'boy' ? 'El niño' : 'La niña'} respondió "${incorrectAnswer}", pero la respuesta correcta es "${question.answer}". ¡No pasa nada por equivocarse! Explícale de forma súper positiva, divertida y sencilla por qué la respuesta es "${question.answer}". Usa una analogía o un ejemplo genial para que lo entienda. Anímale a seguir intentándolo. Empieza con algo como "¡Casi! ¡Vamos a ver este pequeño truco! 🕵️‍♂️" o "¡Buena intentona! Así es como lo ven los detectives de las mates: 🧠".`;
-        
-        const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
-            contents: prompt,
-            config: {
-                systemInstruction: getSystemInstructionQuiz(profile),
-                temperature: 0.7,
+
+    if (config.mode === 'local') {
+        if (!config.localEndpoint) {
+            return { success: false, message: "Falta el endpoint local." };
+        }
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+            
+            const response = await fetch(`${config.localEndpoint}/v1/models`, { 
+                signal: controller.signal 
+            }).catch(() => null);
+            
+            clearTimeout(timeoutId);
+            
+            if (response && response.ok) {
+                return { success: true, message: "¡Conexión local exitosa!" };
+            } else {
+                return { success: false, message: `No se pudo conectar al endpoint (${response ? response.status : 'Servidor no encontrado'}). Verifica que el servidor de IA local esté ejecutándose y permita peticiones CORS.` };
             }
-        });
+        } catch (e) {
+            return { success: false, message: "Error al intentar conectar. Asegúrate de que el endpoint sea correcto y el servidor esté activo." };
+        }
+    }
+
+    if (config.mode === 'online') {
+        if (!config.apiKey) {
+            return { success: false, message: "Falta la clave API." };
+        }
+        try {
+            const testAi = new GoogleGenAI({ apiKey: config.apiKey });
+            await testAi.models.generateContent({
+                model: 'gemini-1.5-flash',
+                contents: "test",
+            });
+            return { success: true, message: "¡Conexión con Gemini exitosa!" };
+        } catch (e: any) {
+            return { success: false, message: `Error de API: ${e.message || "Clave inválida o error de red."}` };
+        }
+    }
+
+    return { success: false, message: "Modo desconocido." };
+}
+
+export async function generateExplanation(question: Question, incorrectAnswer: string, profile: StudentProfile): Promise<string> {
+    const qAnswer = 'answer' in question ? (question as any).answer : 'Completado';
+    const qTitle = 'title' in question ? question.title : (question as any).question || 'Ejercicio interactivo';
+
+    if (!isApiAvailable) {
+        return `¡Buen intento! La respuesta correcta es ${qAnswer}. Sigue practicando para ser un experto en ${question.categoryId || 'matemáticas'}. 🚀`;
+    }
+
+    const prompt = `La pregunta era: "${qTitle}". ${profile.gender === 'boy' ? 'El niño' : 'La niña'} respondió "${incorrectAnswer}", pero la respuesta correcta es "${qAnswer}". ¡No pasa nada por equivocarse! Explícale de forma súper positiva, divertida y sencilla por qué la respuesta es "${qAnswer}". Usa una analogía o un ejemplo genial para que lo entienda. Anímale a seguir intentándolo. Empieza con algo como "¡Casi! ¡Vamos a ver este pequeño truco! 🕵️‍♂️" o "¡Buena intentona! Así es como lo ven los detectives de las mates: 🧠".`;
+
+    try {
+        let explanation = "";
+        if (currentConfig.mode === 'local') {
+            explanation = await callLocalAi(prompt, getSystemInstructionQuiz(profile));
+        } else if (aiInstance) {
+            const response = await aiInstance.models.generateContent({
+                model: 'gemini-1.5-flash',
+                contents: prompt,
+                config: {
+                    systemInstruction: getSystemInstructionQuiz(profile),
+                    temperature: 0.7,
+                }
+            });
+            explanation = response.text;
+        }
         
-        const explanation = response.text;
         if (typeof explanation === 'string' && explanation.trim().length > 0) {
             return explanation;
         } else {
-            return `¡Casi lo tienes! La respuesta correcta era ${question.answer}. ¡Vamos a por la siguiente! ✨`;
+            return `¡Casi lo tienes! La respuesta correcta era ${qAnswer}. ¡Vamos a por la siguiente! ✨`;
         }
 
     } catch (error) {
         console.error("Error generating AI explanation:", error);
-        return `¡Ánimo! La respuesta correcta es ${question.answer}. Tú puedes lograrlo. 💪`;
+        return `¡Ánimo! La respuesta correcta es ${qAnswer}. Tú puedes lograrlo. 💪`;
     }
 }
 
 export async function generateHint(question: Question, profile: StudentProfile): Promise<string> {
-    if (!isApiAvailable || !ai) {
+    const qAnswer = 'answer' in question ? (question as any).answer : 'Completado';
+    const qTitle = 'title' in question ? question.title : (question as any).question || 'Ejercicio interactivo';
+
+    if (!isApiAvailable) {
         return `Piensa un poquito... fíjate bien en lo que nos pide la pregunta. ¡Tú puedes hacerlo! 💡`;
     }
+
+    const prompt = `La pregunta es: "${qTitle}". Dame una pista muy creativa y divertida para un ${profile.gender === 'boy' ? 'niño' : 'ña'} de ${profile.age} años. Usa una analogía o una pequeña historia para explicar el concepto. Por ejemplo, si es una multiplicación, podrías hablar de galaxias de galletas 🌌🍪. ¡Hazlo memorable y nada aburrido! Es crucial y de máxima importancia que, bajo NINGUNA circunstancia, reveles la respuesta final ("${qAnswer}") ni números que lleven directamente a ella. NO MUESTRES EL RESULTADO. ENFÓCATE EN EL MÉTODO.`;
+
     try {
-        const prompt = `La pregunta es: "${question.question}". Dame una pista muy creativa y divertida para un ${profile.gender === 'boy' ? 'niño' : 'ña'} de ${profile.age} años. Usa una analogía o una pequeña historia para explicar el concepto. Por ejemplo, si es una multiplicación, podrías hablar de galaxias de galletas 🌌🍪. ¡Hazlo memorable y nada aburrido! Es crucial y de máxima importancia que, bajo NINGUNA circunstancia, reveles la respuesta final ("${question.answer}") ni números que lleven directamente a ella. NO MUESTRES EL RESULTADO. ENFÓCATE EN EL MÉTODO.`;
+        let hint = "";
+        if (currentConfig.mode === 'local') {
+            hint = await callLocalAi(prompt, getSystemInstructionQuiz(profile));
+        } else if (aiInstance) {
+            const response = await aiInstance.models.generateContent({
+                model: 'gemini-1.5-flash',
+                contents: prompt,
+                config: {
+                    systemInstruction: getSystemInstructionQuiz(profile),
+                    temperature: 0.8,
+                }
+            });
+            hint = response.text;
+        }
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
-            contents: prompt,
-            config: {
-                systemInstruction: getSystemInstructionQuiz(profile),
-                temperature: 0.8,
-            }
-        });
-
-        const hint = response.text;
         if (typeof hint === 'string' && hint.trim().length > 0) {
             return hint;
         } else {
@@ -101,13 +233,13 @@ export async function generateHint(question: Question, profile: StudentProfile):
 
 
 export async function generateSpeech(text: string): Promise<string> {
-    if (!isApiAvailable || !ai) {
+    if (!isApiAvailable || !aiInstance) {
         // Simple fallback or indication that TTS is offline
         throw new Error("El servicio de voz no está disponible sin conexión.");
     }
     try {
         const promptText = `Lee el siguiente texto en español: "${text}"`;
-        const response = await ai.models.generateContent({
+        const response = await aiInstance.models.generateContent({
             model: "gemini-1.5-flash-preview-tts",
             contents: [{ parts: [{ text: promptText }] }],
             config: {
@@ -139,11 +271,11 @@ export function connectToLive(
     onClose: (close: CloseEvent) => void,
     tools?: { functionDeclarations: FunctionDeclaration[] }[]
 ) {
-     if (!isApiAvailable || !ai) {
+     if (!isApiAvailable || !aiInstance) {
         return Promise.reject(new Error("La conversación en vivo requiere una conexión activa a la IA."));
     }
     
-    return ai.live.connect({
+    return aiInstance.live.connect({
         model: 'gemini-2.0-flash-exp',
         callbacks: {
             onopen: () => console.log('Live session opened.'),
@@ -165,11 +297,11 @@ export function connectToLive(
 }
 
 export async function generateImageFromText(prompt: string): Promise<string> {
-    if (!isApiAvailable || !ai) {
+    if (!isApiAvailable || !aiInstance) {
         throw new Error("La generación de imágenes requiere una conexión activa a la IA.");
     }
     try {
-        const response = await ai.models.generateContent({
+        const response = await aiInstance.models.generateContent({
             model: 'gemini-1.5-flash',
             contents: {
                 parts: [{ text: prompt }],
@@ -213,7 +345,7 @@ export async function generateImageFromText(prompt: string): Promise<string> {
 
 
 export async function generateAvatarFromText(description: string, profile: { name: string; age: number; gender: 'boy' | 'girl' | null }): Promise<string> {
-    if (!isApiAvailable || !ai) {
+    if (!isApiAvailable || !aiInstance) {
         throw new Error("La creación personalizada de avatares requiere conexión a la IA.");
     }
     try {
@@ -221,7 +353,7 @@ export async function generateAvatarFromText(description: string, profile: { nam
         const nameTagInstruction = profile.name.trim() ? `Añade una pequeña etiqueta con el nombre '${profile.name.trim()}' bajo su hombro izquierdo.` : '';
         const fullPrompt = `Crea un avatar de dibujos animados de ${genderTerm} de ${profile.age} años que es ${description}. Estilo alegre y amigable para un niño, fondo simple de un solo color. ${nameTagInstruction}`;
 
-        const response = await ai.models.generateImages({
+        const response = await aiInstance.models.generateImages({
             model: 'imagen-3.0-generate-001',
             prompt: fullPrompt,
             config: {
@@ -251,7 +383,7 @@ export async function generateAvatarFromText(description: string, profile: { nam
 }
 
 export async function generateAvatarFromPhoto(base64Photo: string, mimeType: string, profile: { name: string; age: number; gender: 'boy' | 'girl' | null }): Promise<string> {
-    if (!isApiAvailable || !ai) {
+    if (!isApiAvailable || !aiInstance) {
         throw new Error("La edición de fotos por IA no está disponible.");
     }
     try {
@@ -263,7 +395,7 @@ export async function generateAvatarFromPhoto(base64Photo: string, mimeType: str
         const genderTerm = profile.gender === 'boy' ? 'un niño' : 'una niña';
         const nameTagInstruction = profile.name.trim() ? `Añade una pequeña etiqueta con el nombre '${profile.name.trim()}' bajo su hombro izquierdo.` : '';
 
-        const response = await ai.models.generateContent({
+        const response = await aiInstance.models.generateContent({
             model: 'gemini-1.5-flash',
             contents: {
                 parts: [
@@ -329,22 +461,26 @@ export async function generateAvatarFromPhoto(base64Photo: string, mimeType: str
 }
 
 export async function processUserFeedback(feedback: string): Promise<string> {
-    if (!isApiAvailable || !ai) {
+    if (!isApiAvailable) {
         return "¡Muchas gracias por tus comentarios! Los guardaremos para mejorar la app. 📝✨";
     }
     try {
         const prompt = `Un usuario ha enviado el siguiente comentario o sugerencia sobre la aplicación educativa "Maestro Digital": "${feedback}". Analiza el comentario y genera una respuesta de agradecimiento corta, amigable y alentadora en español. Agradécele por su tiempo y por ayudar a mejorar la aplicación. Mantén el tono del "Maestro Digital": positivo, cercano y con algún emoji.`;
         
-        const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
-            contents: prompt,
-            config: {
-                systemInstruction: "Eres 'Maestro Digital', un amigable tutor de IA. Tu tarea es responder a los comentarios de los usuarios de forma positiva y agradecida.",
-                temperature: 0.5,
-            }
-        });
-        
-        const thankYouMessage = response.text;
+        let thankYouMessage = "";
+        if (currentConfig.mode === 'local') {
+            thankYouMessage = await callLocalAi(prompt, "Eres 'Maestro Digital', un amigable tutor de IA. Tu tarea es responder a los comentarios de los usuarios de forma positiva y agradecida.");
+        } else if (aiInstance) {
+            const response = await aiInstance.models.generateContent({
+                model: 'gemini-1.5-flash',
+                contents: prompt,
+                config: {
+                    systemInstruction: "Eres 'Maestro Digital', un amigable tutor de IA. Tu tarea es responder a los comentarios de los usuarios de forma positiva y agradecida.",
+                    temperature: 0.5,
+                }
+            });
+            thankYouMessage = response.text;
+        }
         if (typeof thankYouMessage === 'string' && thankYouMessage.trim().length > 0) {
             return thankYouMessage;
         } else {
@@ -400,7 +536,7 @@ function summarizePerformance(gameState: GameState, categoryIdFilter?: string[])
 }
 
 export async function generatePersonalizedSuggestion(gameState: GameState, profile: StudentProfile, categoryIdFilter?: string[]): Promise<string> {
-    if (!isApiAvailable || !ai) {
+    if (!isApiAvailable) {
         return `¡Hola, ${profile.name}! Sigue así, ¡estás aprendiendo muchísimas cosas nuevas hoy! ✨ Sigue practicando en tus categorías favoritas para ser un maestro.`;
     }
 
@@ -419,16 +555,21 @@ export async function generatePersonalizedSuggestion(gameState: GameState, profi
     `;
 
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
-            contents: prompt,
-            config: {
-                systemInstruction: getSystemInstructionQuiz(profile),
-                temperature: 0.8,
-            }
-        });
+        let suggestion = "";
+        if (currentConfig.mode === 'local') {
+            suggestion = await callLocalAi(prompt, getSystemInstructionQuiz(profile));
+        } else if (aiInstance) {
+            const response = await aiInstance.models.generateContent({
+                model: 'gemini-1.5-flash',
+                contents: prompt,
+                config: {
+                    systemInstruction: getSystemInstructionQuiz(profile),
+                    temperature: 0.8,
+                }
+            });
 
-        const suggestion = response.text;
+            suggestion = response.text;
+        }
         if (typeof suggestion === 'string' && suggestion.trim().length > 0) {
             return suggestion;
         } else {
@@ -447,7 +588,7 @@ export async function generateNumberLineExercise(
     difficulty: 'fácil' | 'medio' | 'difícil', 
     profile: StudentProfile
 ): Promise<{ value: number; label: string; }[]> {
-    if (!isApiAvailable || !ai) {
+    if (!isApiAvailable) {
         // Simple procedural fallback for number line if AI is down
         const fallbackItems = [];
         for (let i = 0; i < count; i++) {
@@ -466,45 +607,49 @@ export async function generateNumberLineExercise(
     const prompt = `Genera un conjunto de ${count} números únicos para un ejercicio de recta numérica para un niño de ${profile.age} años. Los números deben estar estrictamente entre ${min} y ${max}. Incluye una mezcla de fracciones y decimales. La dificultad debe ser ${difficulty}: ${difficultyPrompt[difficulty]}.`;
 
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
-            contents: prompt,
-            config: {
-                systemInstruction: `Eres un generador de contenido educativo. Respondes únicamente con el JSON solicitado, sin texto adicional. Asegúrate de que los valores numéricos ('value') se correspondan exactamente con su etiqueta en formato de cadena ('label'). Por ejemplo, si la etiqueta es "3/4", el valor debe ser 0.75.`,
-                temperature: 0.8,
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        items: {
-                            type: Type.ARRAY,
-                            description: "Una lista de objetos, cada uno representando un número para la recta numérica.",
+        let resultData: any = null;
+        if (currentConfig.mode === 'local') {
+            const localResponse = await callLocalAi(prompt, `Eres un generador de contenido educativo. Respondes únicamente con el JSON solicitado, sin texto adicional. Asegúrate de que los valores numéricos ('value') se correspondan exactamente con su etiqueta en formato de cadena ('label'). Por ejemplo, si la etiqueta es "3/4", el valor debe ser 0.75. Ejemplo JSON: {"items": [{"label": "1/2", "value": 0.5}]}`, 'json');
+            resultData = JSON.parse(localResponse);
+        } else if (aiInstance) {
+            const response = await aiInstance.models.generateContent({
+                model: 'gemini-1.5-flash',
+                contents: prompt,
+                config: {
+                    systemInstruction: `Eres un generador de contenido educativo. Respondes únicamente con el JSON solicitado, sin texto adicional. Asegúrate de que los valores numéricos ('value') se correspondan exactamente con su etiqueta en formato de cadena ('label'). Por ejemplo, si la etiqueta es "3/4", el valor debe ser 0.75.`,
+                    temperature: 0.8,
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: Type.OBJECT,
+                        properties: {
                             items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    label: {
-                                        type: Type.STRING,
-                                        description: "La etiqueta del número como se debe mostrar (ej. '1/2', '0.75')."
+                                type: Type.ARRAY,
+                                description: "Una lista de objetos, cada uno representando un número para la recta numérica.",
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        label: {
+                                            type: Type.STRING,
+                                            description: "La etiqueta del número como se debe mostrar (ej. '1/2', '0.75')."
+                                        },
+                                        value: {
+                                            type: Type.NUMBER,
+                                            description: "El valor numérico exacto de la etiqueta para su posicionamiento."
+                                        }
                                     },
-                                    value: {
-                                        type: Type.NUMBER,
-                                        description: "El valor numérico exacto de la etiqueta para su posicionamiento."
-                                    }
-                                },
-                                required: ["label", "value"]
+                                    required: ["label", "value"]
+                                }
                             }
-                        }
-                    },
-                    required: ["items"]
+                        },
+                        required: ["items"]
+                    }
                 }
-            }
-        });
-
-        const jsonText = response.text.trim();
-        const result = JSON.parse(jsonText);
+            });
+            resultData = JSON.parse(response.text.trim());
+        }
         
-        if (result.items && Array.isArray(result.items)) {
-            return result.items;
+        if (resultData && resultData.items && Array.isArray(resultData.items)) {
+            return resultData.items;
         } else {
             throw new Error("La respuesta de la IA no tiene el formato esperado.");
         }

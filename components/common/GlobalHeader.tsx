@@ -17,9 +17,10 @@ interface GlobalHeaderProps {
     isDebugMode?: boolean;
     theme: 'light' | 'dark';
     onToggleTheme: () => void;
+    onOpenAiConfig: () => void;
 }
 
-const ConnectionIndicator: React.FC<{ status: ConnectionStatus }> = ({ status }) => {
+const ConnectionIndicator: React.FC<{ status: ConnectionStatus, onOpenAiConfig: () => void }> = ({ status, onOpenAiConfig }) => {
     const statusInfo = {
         checking: { color: 'bg-yellow-400', text: 'IA...' },
         online: { color: 'bg-green-500', text: 'Online' },
@@ -28,10 +29,15 @@ const ConnectionIndicator: React.FC<{ status: ConnectionStatus }> = ({ status })
     const current = statusInfo[status];
 
     return (
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full" title={status === 'checking' ? 'Comprobando conexión con la IA...' : status === 'online' ? 'La IA está generando pistas y explicaciones' : 'Usando pistas y explicaciones predefinidas'}>
+        <button 
+            onClick={(e) => { e.stopPropagation(); onOpenAiConfig(); }}
+            className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors" 
+            title="Configurar IA (Click para cambiar)"
+        >
             <span className={`w-2.5 h-2.5 rounded-full ${current.color}`}></span>
             <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{current.text}</span>
-        </div>
+            <span className="text-[10px] text-slate-400">⚙️</span>
+        </button>
     );
 };
 
@@ -164,7 +170,7 @@ const AvatarDisplay: React.FC<{ profile: StudentProfile | null | undefined }> = 
 };
 
 
-export const GlobalHeader: React.FC<GlobalHeaderProps> = ({ onBack, title, connectionStatus, isAiEnabled, onToggleAi, voiceMode, onVoiceModeChange, studentProfile, onSwitchUser, onOpenEditProfile, isDebugMode, theme, onToggleTheme }) => {
+export const GlobalHeader: React.FC<GlobalHeaderProps> = ({ onBack, title, connectionStatus, isAiEnabled, onToggleAi, voiceMode, onVoiceModeChange, studentProfile, onSwitchUser, onOpenEditProfile, isDebugMode, theme, onToggleTheme, onOpenAiConfig }) => {
     const [isSettingsVisible, setIsSettingsVisible] = useState(false);
     const settingsRef = useRef<HTMLDivElement>(null);
     const hideTimeoutRef = useRef<number | null>(null);
@@ -269,7 +275,7 @@ export const GlobalHeader: React.FC<GlobalHeaderProps> = ({ onBack, title, conne
                         className={`absolute z-20 flex items-center gap-2 p-2 rounded-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-lg border border-slate-200/50 dark:border-slate-700 transition-all duration-300 top-full right-0 mt-2 origin-top-right md:top-1/2 md:-translate-y-1/2 md:right-full md:mr-2 md:mt-0 md:origin-right ${isSettingsVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
                     >
                         <AiToggleSwitch isEnabled={isAiEnabled} onToggle={onToggleAi} isOnline={connectionStatus === 'online'} />
-                        <ConnectionIndicator status={connectionStatus} />
+                        <ConnectionIndicator status={connectionStatus} onOpenAiConfig={onOpenAiConfig} />
                         <VoiceControl voiceMode={voiceMode} onVoiceModeChange={onVoiceModeChange} isOnline={connectionStatus === 'online'} />
                     </div>
                 </div>

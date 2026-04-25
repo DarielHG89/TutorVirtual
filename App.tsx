@@ -33,6 +33,7 @@ import { MascotProvider } from './context/MascotContext'; // Import Provider
 import { categoryNames } from './utils/constants';
 import { shuffleArray } from './utils/array';
 import { ContentManagerScreen } from './components/ContentManagerScreen';
+import { AnimatePresence } from 'framer-motion';
 
 const USER_LIST_KEY = 'maestroDigitalUserList';
 const LAST_SCREEN_KEY_PREFIX = 'maestroDigitalLastScreen_';
@@ -48,6 +49,9 @@ function usePrevious<T>(value: T): T | undefined {
 }
 
 
+import { aiConfigManager } from './utils/aiConfigManager';
+import { AiConfigModal } from './components/AiConfigModal';
+
 export default function App() {
     const mainContentRef = useRef<HTMLElement>(null);
     const scrollPositionsRef = useRef<Record<string, number>>({});
@@ -62,6 +66,7 @@ export default function App() {
     const [dashboardUser, setDashboardUser] = useState<StudentProfile | null>(null);
     const [avatarSelectorProps, setAvatarSelectorProps] = useState<Omit<AvatarSelectorModalProps, 'isOpen'> | null>(null);
     const [isOnboardingVisible, setIsOnboardingVisible] = useState(false);
+    const [isAiConfigModalOpen, setIsAiConfigModalOpen] = useState(false);
     
     const [aiSuggestion, setAiSuggestion] = useState<{ text: string; isLoading: boolean; error: string | null }>({ text: '', isLoading: false, error: null });
 
@@ -168,6 +173,11 @@ export default function App() {
         checkGeminiConnection().then(isOnline => {
             setConnectionStatus(isOnline ? 'online' : 'offline');
         });
+
+        // Startup AI config check
+        if (!aiConfigManager.hasConfig()) {
+            setIsAiConfigModalOpen(true);
+        }
         
         try {
             const savedDebug = localStorage.getItem(DEBUG_MODE_KEY);
@@ -786,7 +796,7 @@ export default function App() {
             case 'name-entry':
                 return { component: <NameEntry onProfileSubmit={handleCreateProfile} onBack={handleSwitchUser} showBackButton={allUsers.length > 0} theme={theme} onToggleTheme={toggleTheme} setAvatarSelectorProps={setAvatarSelectorProps} />, showHeader: false, allowScroll: true };
             case 'main-menu':
-                 return { component: <MainMenu studentProfile={currentUser} gameState={gameState} onSelectCategory={handleSelectCategory} onStartWeeklyExam={handleStartWeeklyExam} onStartRefreshExam={handleStartRefreshExam} onStartQuickChallenge={handleStartQuickChallenge} onStartLiveConversation={handleStartLiveConversation} onStartFreePractice={handleStartFreePractice} onStartStudyArea={handleStartStudyArea} onGoToParentDashboard={handleGoToParentDashboard} onViewHistory={handleViewPracticeHistory} connectionStatus={connectionStatus} isAiEnabled={isAiEnabled} unlockedPracticeCategories={unlockedPracticeCategories} newContentNotifications={newContentNotifications} areExamsEnabled={areExamsEnabled} aiSuggestion={aiSuggestion} onGenerateSuggestion={handleGenerateSuggestion} onGoToDashboard={handleGoToDashboard} activeSubjectId={activeSubjectId} onSubjectChange={(sid) => dispatch({ type: 'SET_ACTIVE_SUBJECT', payload: sid })} />, showHeader: true };
+                 return { component: <MainMenu studentProfile={currentUser} gameState={gameState} onSelectCategory={handleSelectCategory} onStartWeeklyExam={handleStartWeeklyExam} onStartRefreshExam={handleStartRefreshExam} onStartQuickChallenge={handleStartQuickChallenge} onStartLiveConversation={handleStartLiveConversation} onStartFreePractice={handleStartFreePractice} onStartStudyArea={handleStartStudyArea} onGoToParentDashboard={handleGoToParentDashboard} onViewHistory={handleViewPracticeHistory} connectionStatus={connectionStatus} isAiEnabled={isAiEnabled} unlockedPracticeCategories={unlockedPracticeCategories} newContentNotifications={newContentNotifications} areExamsEnabled={areExamsEnabled} aiSuggestion={aiSuggestion} onGenerateSuggestion={handleGenerateSuggestion} onGoToDashboard={handleGoToDashboard} onOpenAiConfig={() => setIsAiConfigModalOpen(true)} activeSubjectId={activeSubjectId} onSubjectChange={(sid) => dispatch({ type: 'SET_ACTIVE_SUBJECT', payload: sid })} />, showHeader: true };
             case 'free-practice-menu':
                 return { component: <FreePracticeMenu onSelectCategory={handleSelectCategoryForFreePractice} subjectId={activeSubjectId} studentProfile={currentUser} />, title: 'Práctica Libre', onBack: handleBackToMenu, showHeader: true };
             case 'study-area':
@@ -842,6 +852,7 @@ export default function App() {
                             studentProfile={currentUser}
                             onSwitchUser={handleSwitchUser}
                             onOpenEditProfile={() => dispatch({ type: 'OPEN_EDIT_PROFILE_MODAL' })}
+                            onOpenAiConfig={() => setIsAiConfigModalOpen(true)}
                             isDebugMode={isDebugMode}
                             theme={theme}
                             onToggleTheme={toggleTheme}
@@ -889,6 +900,11 @@ export default function App() {
             {isOnboardingVisible && currentUser && (
                 <Onboarding user={currentUser} onFinish={handleFinishOnboarding} />
             )}
+            <AnimatePresence>
+                {isAiConfigModalOpen && (
+                    <AiConfigModal onClose={() => setIsAiConfigModalOpen(false)} />
+                )}
+            </AnimatePresence>
         </MascotProvider>
         </SpeechProvider>
     );

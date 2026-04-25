@@ -26,6 +26,7 @@ interface MainMenuProps {
     aiSuggestion: { text: string; isLoading: boolean; error: string | null };
     onGenerateSuggestion: () => void;
     onGoToDashboard: () => void;
+    onOpenAiConfig: () => void;
     activeSubjectId?: string;
     onSubjectChange: (subjectId: string) => void;
 }
@@ -40,7 +41,7 @@ const categoryIcons: Record<CategoryId, string> = {
     reloj: '⏰'
 };
 
-export const MainMenu: React.FC<MainMenuProps> = ({ studentProfile, gameState, onSelectCategory, onStartWeeklyExam, onStartRefreshExam, onStartQuickChallenge, onStartLiveConversation, onStartFreePractice, onStartStudyArea, onGoToParentDashboard, onViewHistory, connectionStatus, isAiEnabled, unlockedPracticeCategories, newContentNotifications, areExamsEnabled, aiSuggestion, onGenerateSuggestion, onGoToDashboard, activeSubjectId, onSubjectChange }) => {
+export const MainMenu: React.FC<MainMenuProps> = ({ studentProfile, gameState, onSelectCategory, onStartWeeklyExam, onStartRefreshExam, onStartQuickChallenge, onStartLiveConversation, onStartFreePractice, onStartStudyArea, onGoToParentDashboard, onViewHistory, connectionStatus, isAiEnabled, unlockedPracticeCategories, newContentNotifications, areExamsEnabled, aiSuggestion, onGenerateSuggestion, onGoToDashboard, onOpenAiConfig, activeSubjectId, onSubjectChange }) => {
     
     const taxonomy = contentManager.getTaxonomy();
     
@@ -331,9 +332,12 @@ export const MainMenu: React.FC<MainMenuProps> = ({ studentProfile, gameState, o
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Los modos de examen se activarán cuando hayas practicado más contenido.</p>
             )}
 
-            <div className="mt-8 border-t border-slate-300 dark:border-slate-600 pt-4 text-center">
+            <div className="mt-8 border-t border-slate-300 dark:border-slate-600 pt-4 text-center flex flex-col sm:flex-row justify-center gap-4 sm:gap-8">
                 <button onClick={() => { playClickSound(); onGoToParentDashboard(); }} className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 font-semibold transition-colors">
                     🔑 Modo Padre / Tutor
+                </button>
+                <button onClick={() => { playClickSound(); onOpenAiConfig(); }} className="text-sm text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold transition-colors">
+                    ⚙️ Configurar IA
                 </button>
             </div>
         </div>
