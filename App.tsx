@@ -143,6 +143,11 @@ export default function App() {
         setModalState({ isOpen: false, title: '', message: '' });
     }, []);
 
+    const currentUserRef = useRef<StudentProfile | null>(currentUser);
+    useEffect(() => {
+        currentUserRef.current = currentUser;
+    }, [currentUser]);
+
     useEffect(() => {
         const savedUsersRaw = localStorage.getItem(USER_LIST_KEY);
         if (savedUsersRaw) {
@@ -169,7 +174,9 @@ export default function App() {
         } else {
             dispatch({ type: 'SET_SCREEN', payload: 'name-entry' });
         }
+    }, [dispatch]);
 
+    useEffect(() => {
         checkGeminiConnection().then(isOnline => {
             setConnectionStatus(isOnline ? 'online' : 'offline');
         });
@@ -182,8 +189,9 @@ export default function App() {
                 const config = aiConfigManager.getConfig();
                 if (isOnline && config.mode !== 'none') {
                     setIsAiEnabled(true);
-                    if (currentUser) {
-                         localStorage.setItem(`maestroDigitalAiEnabled_${currentUser.id}`, JSON.stringify(true));
+                    const currentU = currentUserRef.current;
+                    if (currentU) {
+                         localStorage.setItem(`maestroDigitalAiEnabled_${currentU.id}`, JSON.stringify(true));
                     }
                 }
             });
@@ -206,7 +214,7 @@ export default function App() {
         return () => {
             window.removeEventListener('ai-config-updated', handleAiConfigUpdated);
         };
-    }, [dispatch, currentUser]);
+    }, []);
     
     useEffect(() => {
         localStorage.setItem(DEBUG_MODE_KEY, JSON.stringify(isDebugMode));
