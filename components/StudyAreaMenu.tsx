@@ -1,118 +1,68 @@
 import React, { useMemo } from 'react';
 import { Card } from './common/Card';
-import type { PeriodPlan, GameState, Submodule } from '../types';
+import type { PeriodPlan, GameState, Submodule, StudentProfile } from '../types';
 import { playClickSound } from '../utils/sounds';
+import { contentManager } from '../utils/contentManager';
+import { categoryNames } from '../utils/constants';
 
 interface StudyAreaMenuProps {
     onSelectSubmodule: (submoduleId: string) => void;
     gameState: GameState;
     openPeriods: Record<number, boolean>;
     onTogglePeriod: (periodNumber: number) => void;
+    subjectId?: string;
+    studentProfile?: StudentProfile | null;
 }
-
-const studyPlan: PeriodPlan[] = [
-    {
-        period: 1,
-        title: 'Periodo 1 (60 horas-clase)',
-        modules: [
-            { 
-                id: 'numeros_1', title: 'Números hasta 10 000', icon: '🔢', 
-                submodules: [
-                    { id: 'numeros_1_1', title: 'Consolidación hasta 100' },
-                    { id: 'numeros_1_2', title: 'Números hasta 10 000' },
-                    { id: 'numeros_1_3', title: 'Orden y comparación' }
-                ] 
-            },
-            { 
-                id: 'adicion_1', title: 'Adición y Sustracción', icon: '➕', 
-                submodules: [
-                    { id: 'adicion_2_2', title: 'Procedimiento escrito de la adición' }
-                ] 
-            },
-            { 
-                id: 'geometria_1', title: 'Geometría', icon: '📐', 
-                submodules: [
-                    { id: 'geometria_p1', title: 'Rectas paralelas y perpendiculares' }
-                ] 
-            },
-        ]
-    },
-    {
-        period: 2,
-        title: 'Periodo 2 (50 horas-clase)',
-        modules: [
-             { 
-                id: 'sustraccion_2', title: 'Adición y Sustracción', icon: '➖', 
-                submodules: [
-                    { id: 'sustraccion_2_3', title: 'Procedimiento escrito de la sustracción' }
-                ] 
-            },
-            { 
-                id: 'multiplicacion_2', title: 'Multiplicación y División', icon: '✖️', 
-                submodules: [
-                    { id: 'multiplicacion_3_2', title: 'Procedimiento escrito de la multiplicación' }
-                ] 
-            },
-            { 
-                id: 'geometria_2', title: 'Geometría', icon: '🧊', 
-                submodules: [
-                    { id: 'geometria_p2_1', title: 'Rectángulo y cuadrado' },
-                    { id: 'geometria_p2_2', title: 'Prisma (ortoedro y cubo)' }
-                ] 
-            },
-        ]
-    },
-    {
-        period: 3,
-        title: 'Periodo 3 (55 horas-clase)',
-        modules: [
-            { 
-                id: 'division_3', title: 'Multiplicación y División', icon: '➗', 
-                submodules: [
-                    { id: 'division_3_3', title: 'Procedimiento escrito de la división' },
-                    { id: 'division_3_4', title: 'Ejercitación y problemas' },
-                    { id: 'operaciones_combinadas', title: 'Operaciones Combinadas' }
-                ] 
-            },
-            {
-                id: 'fracciones_3', title: 'Fracciones', icon: '🍕',
-                submodules: [
-                    { id: 'fracciones_intro', title: 'Introducción a las fracciones'}
-                ]
-            },
-            { 
-                id: 'geometria_3', title: 'Geometría', icon: '🔵', 
-                submodules: [
-                    { id: 'geometria_p3', title: 'Circunferencia, círculo y cilindro' }
-                ] 
-            },
-            {
-                id: 'medidas_3', title: 'Medidas', icon: '📏',
-                submodules: [
-                    { id: 'medidas_longitud_1', title: 'Midiendo el Mundo: Longitud' },
-                    { id: 'medidas_masa_1', title: '¿Cuánto Pesa?: Masa' },
-                    { id: 'medidas_capacidad_1', title: '¿Cuánto Cabe?: Capacidad' },
-                    { id: 'medidas_moneda_1', title: 'Nuestro Dinero: Peso Cubano' }
-                ]
-            },
-            {
-                id: 'reloj_3', title: 'El Reloj', icon: '⏰',
-                submodules: [
-                    { id: 'reloj_horas_1', title: 'El Reloj: Horas y Fracciones' },
-                    { id: 'reloj_minutos_1', title: 'El Reloj: Contando Minutos' },
-                    { id: 'reloj_problemas_1', title: 'El Reloj: Problemas de Tiempo' }
-                ]
-            }
-        ]
-    }
-];
 
 const MIN_SCORE_TO_UNLOCK = 8;
 const PERFECT_SCORE = 10;
 
-export const StudyAreaMenu: React.FC<StudyAreaMenuProps> = ({ onSelectSubmodule, gameState, openPeriods, onTogglePeriod }) => {
+export const StudyAreaMenu: React.FC<StudyAreaMenuProps> = ({ onSelectSubmodule, gameState, openPeriods, onTogglePeriod, subjectId, studentProfile }) => {
 
-    const { processedStudyPlan, currentSubmoduleId } = useMemo(() => {
+    const { processedStudyPlan, currentSubmoduleId, subjectName, gradeName } = useMemo(() => {
+        const taxonomy = contentManager.getTaxonomy();
+        
+        let activeSubject = subjectId;
+        if (!activeSubject) {
+            const userGrade = studentProfile?.gradeId || taxonomy.grades[0]?.id;
+            activeSubject = taxonomy.subjects.find(s => s.gradeId === userGrade)?.id || taxonomy.subjects[0]?.id;
+        }
+
+        const subjectCategories = taxonomy.categories.filter(c => c.subjectId === activeSubject);
+        const subjectCategoryIds = new Set(subjectCategories.map(c => c.id));
+        
+        const subjObj = taxonomy.subjects.find(s => s.id === activeSubject);
+        const subjectNameStr = subjObj?.name || 'Asignatura';
+        const gradeNameStr = taxonomy.grades.find(g => g.id === subjObj?.gradeId)?.name || 'Grado';
+
+        const allLessons = contentManager.getLessons().filter(l => subjectCategoryIds.has(l.categoryId) || l.categoryId.startsWith(activeSubject || ''));
+        
+        const periodsMap = new Map<number, { period: number; title: string; modules: Map<string, any> }>();
+        
+        allLessons.forEach(lesson => {
+            const p = lesson.period || 1;
+            if (!periodsMap.has(p)) {
+                periodsMap.set(p, { period: p, title: `Unidad ${p}`, modules: new Map() });
+            }
+            const periodData = periodsMap.get(p)!;
+            
+            if (!periodData.modules.has(lesson.categoryId)) {
+                periodData.modules.set(lesson.categoryId, {
+                    id: lesson.categoryId,
+                    title: categoryNames[lesson.categoryId] || lesson.categoryId,
+                    icon: '📚', // Default icon, could use categoryIcons if we exported them
+                    submodules: []
+                });
+            }
+            periodData.modules.get(lesson.categoryId)!.submodules.push(lesson);
+        });
+
+        const studyPlan: PeriodPlan[] = Array.from(periodsMap.values()).sort((a,b) => a.period - b.period).map(p => ({
+            period: p.period,
+            title: p.title,
+            modules: Array.from(p.modules.values())
+        }));
+
         const allSubmodulesFlat: Submodule[] = studyPlan.flatMap(p => p.modules.flatMap(m => m.submodules));
         let previousSubmoduleId: string | null = null;
         const processedSubmodules = new Map<string, Submodule>();
@@ -159,8 +109,8 @@ export const StudyAreaMenu: React.FC<StudyAreaMenuProps> = ({ onSelectSubmodule,
 
         const finalPlan = studyPlan.map(period => {
             const allSubmodulesInPeriod = period.modules.flatMap(m => m.submodules);
-            const isPeriodCompleted = allSubmodulesInPeriod.every(sm => processedSubmodules.get(sm.id)?.isCompleted);
-            const isPeriodMastered = allSubmodulesInPeriod.every(sm => processedSubmodules.get(sm.id)?.isMastered);
+            const isPeriodCompleted = allSubmodulesInPeriod.length > 0 && allSubmodulesInPeriod.every(sm => processedSubmodules.get(sm.id)?.isCompleted);
+            const isPeriodMastered = allSubmodulesInPeriod.length > 0 && allSubmodulesInPeriod.every(sm => processedSubmodules.get(sm.id)?.isMastered);
 
             return {
                 ...period,
@@ -173,8 +123,8 @@ export const StudyAreaMenu: React.FC<StudyAreaMenuProps> = ({ onSelectSubmodule,
             };
         });
 
-        return { processedStudyPlan: finalPlan, currentSubmoduleId };
-    }, [gameState]);
+        return { processedStudyPlan: finalPlan, currentSubmoduleId, subjectName: subjectNameStr, gradeName: gradeNameStr };
+    }, [gameState, subjectId]);
 
     const currentPeriodNumber = useMemo(() => {
         const firstUncompleted = processedStudyPlan.find(p => !p.isCompleted);
@@ -183,8 +133,12 @@ export const StudyAreaMenu: React.FC<StudyAreaMenuProps> = ({ onSelectSubmodule,
 
     return (
         <div className="animate-fade-in">
-            <h1 className="text-4xl font-black text-slate-800 dark:text-slate-200 text-center mb-2">Área de Estudio: Matemática 3er Grado</h1>
-            <p className="text-slate-600 dark:text-slate-300 mb-8 text-center">Sigue el programa oficial cubano. ¡Supera cada lección para desbloquear la siguiente!</p>
+            <h1 className="text-4xl font-black text-slate-800 dark:text-slate-200 text-center mb-2">Área de Estudio: {subjectName} ({gradeName})</h1>
+            <p className="text-slate-600 dark:text-slate-300 mb-8 text-center">Sigue el programa oficial. ¡Supera cada lección para desbloquear la siguiente!</p>
+
+            {processedStudyPlan.length === 0 && (
+                 <p className="text-slate-500 dark:text-slate-400 mb-8 border-2 border-dashed border-slate-300 dark:border-slate-700 p-8 rounded-xl font-bold text-center">No hay lecciones configuradas para esta asignatura todavía.</p>
+            )}
 
             {processedStudyPlan.map((period: any) => {
                 const isCurrent = period.period === currentPeriodNumber;
@@ -255,6 +209,11 @@ export const StudyAreaMenu: React.FC<StudyAreaMenuProps> = ({ onSelectSubmodule,
                                                             <span className="font-semibold pr-2">{submodule.title}</span>
                                                             {submodule.isLocked && (
                                                                 <span className="text-xl" role="img" aria-label="Bloqueado">🔒</span>
+                                                            )}
+                                                            {submodule.isCompleted && !submodule.isLocked && (
+                                                                <span className="text-xs font-bold bg-white/60 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-full whitespace-nowrap hidden sm:inline-block">
+                                                                    🔄 Repasar
+                                                                </span>
                                                             )}
                                                         </div>
                                                         <div className="flex justify-between items-end w-full mt-auto">

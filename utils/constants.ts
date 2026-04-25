@@ -1,11 +1,9 @@
 import type { CategoryId } from '../types';
+import { contentManager } from './contentManager';
 
-export const categoryNames: Record<CategoryId, string> = {
-    numeros: 'Números',
-    suma_resta: 'Suma y Resta',
-    multi_divi: 'Multiplicación y División',
-    problemas: 'Problemas',
-    geometria: 'Geometría',
-    medidas: 'Medidas',
-    reloj: 'El Reloj'
-};
+export const categoryNames: Record<CategoryId, string> = new Proxy({}, {
+    get: (target, prop) => {
+        const _map = contentManager.getCategoryNamesMap();
+        return _map[prop as string] || prop;
+    }
+}) as Record<CategoryId, string>;

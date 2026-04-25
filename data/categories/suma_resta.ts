@@ -1,157 +1,127 @@
 import type { Question } from '../../types';
 
-// IDs de lecciones para claridad
-const ADICION_2_2 = 'adicion_2_2';
-const SUSTRACCION_2_3 = 'sustraccion_2_3';
+// IDs de lecciones
+const ADICION = 'adicion_2_2';
+const SUSTRACCION = 'sustraccion_2_3';
+
+// Helper para crear representaciones visuales de aritmética
+const createMathSVG = (type: 'add' | 'sub', a: number, b: number): string => {
+    let content = '';
+    if (type === 'add') {
+        // Círculos para el primer número
+        for (let i = 0; i < a; i++) {
+            const x = (i % 5) * 8 + 5;
+            const y = Math.floor(i / 5) * 8 + 10;
+            content += `<circle cx="${x}" cy="${y}" r="3" fill="#4285F4" />`;
+        }
+        content += `<text x="45" y="30" font-size="12" font-weight="bold">+</text>`;
+        // Círculos para el segundo número
+        for (let i = 0; i < b; i++) {
+            const x = (i % 5) * 8 + 55;
+            const y = Math.floor(i / 5) * 8 + 10;
+            content += `<circle cx="${x}" cy="${y}" r="3" fill="#34A853" />`;
+        }
+    } else {
+        // Círculos totales
+        for (let i = 0; i < a; i++) {
+            const x = (i % 10) * 8 + 10;
+            const y = Math.floor(i / 10) * 8 + 20;
+            if (i < a - b) {
+                content += `<circle cx="${x}" cy="${y}" r="3" fill="#EA4335" />`;
+            } else {
+                // Tachados
+                content += `<circle cx="${x}" cy="${y}" r="3" fill="#CCCCCC" />`;
+                content += `<line x1="${x-2}" y1="${y-2}" x2="${x+2}" y2="${y+2}" stroke="black" stroke-width="1" />`;
+            }
+        }
+    }
+    return `data:image/svg+xml;base64,${btoa(`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${content}</svg>`)}`;
+};
 
 export const sumaRestaQuestions: Record<number, Question[]> = {
     1: [
-        // === Lección: Adición simple (ADICION_2_2) - 40 preguntas ===
-        { type: 'input', question: '20 + 30 = ?', answer: '50', hints: ['2 decenas + 3 decenas.', 'Son 5 decenas.', 'Cincuenta.', '50.', 'Dos más tres son cinco, y le añades un cero.'], explanation: 'Sumar 20 y 30 es como sumar 2 y 3 y luego añadir un cero. ¡El resultado es 50!', lessonId: ADICION_2_2 },
-        { type: 'input', question: '50 + 9 = ?', answer: '59', hints: ['Cincuenta más nueve.', 'No hay que llevarse ninguna.', 'El 5 de las decenas se queda igual.', 'Las 9 unidades se suman al 0.', 'Cincuenta y nueve.'], explanation: 'Simplemente añadimos las 9 unidades a las 5 decenas, formando el 59.', lessonId: ADICION_2_2 },
-        { type: 'input', question: 'En un árbol hay 8 pájaros y llegan 7 más. ¿Cuántos hay ahora? 🐦', answer: '15', hints: ['Si "llegan más", hay que sumar.', '8 + 7 = ?', 'Un truco: 8+2=10, y te quedan 5 por sumar.', '10 + 5 = 15.', 'La respuesta es más de 10.'], explanation: 'Para saber el total, sumamos los pájaros que había y los que llegaron: 8 + 7 = 15 pájaros.', lessonId: ADICION_2_2 },
-        { type: 'input', question: '11 + 11 = ?', answer: '22', hints: ['Es el doble de 11.', 'Suma las unidades: 1 + 1 = 2.', 'Suma las decenas: 1 + 1 = 2.', 'Veintidós.', 'El resultado tiene dos cifras iguales.'], explanation: 'El doble de 11 es 22.', lessonId: ADICION_2_2 },
-        { type: 'input', question: '40 + 15 = ?', answer: '55', hints: ['Suma las decenas: 40 + 10 = 50.', 'Ahora suma las unidades: 5.', '50 + 5 = 55.', 'Cincuenta y cinco.', 'También puedes hacer 40 + 5 + 10.'], explanation: 'Podemos sumar por partes: 40+10=50, y luego añadir 5 para un total de 55.', lessonId: ADICION_2_2 },
-        { type: 'mcq', question: '18 + 2 = ?', options: ['16', '20', '19'], answer: '20', hints: ['Es una suma que completa una decena.', '18, 19, 20...', 'Veinte.', 'Es un número redondo.', '18 necesita 2 para ser 20.'], explanation: '18 más 2 nos lleva al siguiente número redondo, que es 20.', lessonId: ADICION_2_2 },
-        { type: 'input', question: '33 + 22 = ?', answer: '55', hints: ['30 + 20 = 50.', '3 + 2 = 5.', '50 + 5 = 55.', 'Cincuenta y cinco.', 'Suma unidades con unidades y decenas con decenas.'], explanation: 'Sumando decenas (30+20=50) y unidades (3+2=5) por separado, obtenemos 55.', lessonId: ADICION_2_2 },
-        { type: 'input', question: '25 + 25 = ?', answer: '50', hints: ['Es el doble de 25.', 'Piensa en dos monedas de 25 centavos.', 'Dos monedas de 25 hacen 50.', 'Cincuenta.', 'Termina en 0.'], explanation: 'La suma de 25 y 25 es 50.', lessonId: ADICION_2_2 },
-        { type: 'input', question: '¿Cuánto es 60 + 11?', answer: '71', hints: ['60 + 10 = 70.', 'Ahora suma el 1 que falta.', '70 + 1 = 71.', 'Setenta y uno.', 'No es 61.'], explanation: 'Sumamos 60 + 10 = 70, y luego añadimos el 1 para un total de 71.', lessonId: ADICION_2_2 },
-        { type: 'input', question: 'Tengo 30 postalitas y mi amigo me da 30 más. ¿Cuántas tengo?', answer: '60', hints: ['Es el doble de 30.', '30 + 30 = ?', '3 decenas más 3 decenas.', 'Sesenta.', 'Es un número redondo.'], explanation: 'Sumamos las postalitas: 30 + 30 = 60.', lessonId: ADICION_2_2 },
-        { type: 'mcq', question: '¿Por dónde se empieza a sumar en una suma escrita?', options: ['Por la izquierda (centenas)', 'Por la derecha (unidades)', 'Por el medio'], answer: 'Por la derecha (unidades)', hints:['Se empieza por las cifras de menor valor.', 'Se empieza por la columna de la derecha.', 'Primero se suman las unidades.', 'Luego las decenas.', 'Es la regla más importante de la suma.'], explanation: 'En la suma escrita, siempre empezamos por la columna de la derecha, la de las unidades.', lessonId: ADICION_2_2},
-        { type: 'input', question: '42 + 7 = ?', answer: '49', hints: ['En esta suma, el jefe de las decenas (el 4) se queda tranquilo. 😎', 'Solo tienes que sumar a sus amigos, las unidades.', '¿Cuánto es 2 + 7? 🤔', 'El resultado es un número que empieza por 4.', 'El resultado es 40 y algo...'], explanation: 'Aquí solo sumamos las unidades: 2 + 7 = 9. Las decenas se quedan igual. El resultado es 49. ✅', lessonId: ADICION_2_2 },
-        { type: 'input', question: 'Suma en columna: 12 + 25 = ?', answer: '37', hints:['Unidades: 2 + 5 = 7.', 'Decenas: 1 + 2 = 3.', 'Junta los resultados.', 'Treinta y siete.', 'No hay que llevarse ninguna.'], explanation: 'Sumamos las unidades (2+5=7) y las decenas (1+2=3). El resultado es 37.', lessonId: ADICION_2_2},
-        { type: 'input', question: 'Calcula: 123 + 234 = ?', answer: '357', hints:['Unidades: 3 + 4 = 7.', 'Decenas: 2 + 3 = 5.', 'Centenas: 1 + 2 = 3.', 'Junta los resultados en orden.', '357.'], explanation: 'Sumando cada columna por separado (unidades, decenas y centenas) obtenemos 357.', lessonId: ADICION_2_2},
-        { type: 'mcq', question: '45 + 13 = ?', options: ['58', '52', '48'], answer: '58', hints:['Unidades: 5 + 3 = 8.', 'Decenas: 4 + 1 = 5.', 'El número termina en 8.', 'El número empieza con 5.', 'Cincuenta y ocho.'], explanation: 'Sumamos unidades (5+3=8) y decenas (4+1=5), lo que da 58.', lessonId: ADICION_2_2},
-        { type: 'input', question: '111 + 222 = ?', answer: '333', hints:['1 + 2 = 3.', '10 + 20 = 30.', '100 + 200 = 300.', 'Suma las unidades, luego las decenas, luego las centenas.', '333.'], explanation: 'Sumando cada columna (1+2=3), el resultado es 333.', lessonId: ADICION_2_2},
-        { type: 'input', question: 'Calcula: 502 + 105 = ?', answer: '607', hints:['Unidades: 2 + 5 = 7.', 'Decenas: 0 + 0 = 0.', 'Centenas: 5 + 1 = 6.', 'Seiscientos siete.', '607.'], explanation: 'Sumamos por columnas: 2+5=7, 0+0=0, 5+1=6. El total es 607.', lessonId: ADICION_2_2},
-        { type: 'mcq', question: '1000 + 2000 = ?', options: ['300', '30000', '3000'], answer: '3000', hints:['1 mil + 2 mil = ?', 'Son 3 mil.', 'Un 3 con tres ceros.', 'Tres mil.', '3000.'], explanation: 'Sumar miles es fácil: 1 + 2 = 3, así que el resultado es 3000.', lessonId: ADICION_2_2},
-        { type: 'input', question: 'En un colegio hay 250 niños y 300 niñas. ¿Cuántos estudiantes hay?', answer: '550', hints:['Hay que juntar a todos los estudiantes.', 'Juntar es sumar.', '250 + 300 = ?', '200 + 300 = 500. Y ahora suma los 50.', '550.'], explanation: 'Para saber el total, sumamos el número de niños y niñas: 250 + 300 = 550 estudiantes.', lessonId: ADICION_2_2},
-        { type: 'input', question: '25 + 71 = ?', answer: '96', hints:['20 + 70 = 90.', '5 + 1 = 6.', '90 + 6 = ?', 'Noventa y seis.', '96.'], explanation: 'Sumamos las decenas (20+70=90) y las unidades (5+1=6). El total es 90+6=96.', lessonId: ADICION_2_2},
-        // FIX: Explicitly type the returned object as Question to prevent type widening.
-        ...Array.from({ length: 20 }).map((_, i): Question => ({
-            type: 'input',
-            question: `${10 + i} + ${20 + i} = ?`,
-            answer: (30 + 2 * i).toString(),
-            hints: [`Suma las unidades primero.`, `Luego suma las decenas.`, `No hay que llevarse ninguna en esta suma.`, `Alinea los números en tu mente.`, `Empieza siempre por la columna de la derecha.`],
-            explanation: `${10 + i} + ${20 + i} = ${30 + 2 * i}.`,
-            lessonId: ADICION_2_2
-        })),
-
-        // === Lección: Resta simple (SUSTRACCION_2_3) - 40 preguntas ===
-        { type: 'mcq', question: '30 - 10 = ?', options: ['10', '20', '40'], answer: '20', hints: ['Quitar 10 es como dar un paso de gigante hacia atrás. 🚶‍♂️', 'Imagina que tienes 3 barritas de chocolate 🍫. Si te comes una, ¿cuántas te quedan?', '3 decenas menos 1 decena...', 'Resta los números de la izquierda: 3 - 1.', 'El resultado es 2, y como son decenas, es 20.'], explanation: 'Restar 10 es como quitar una decena. 3 decenas menos 1 decena son 2 decenas, ¡es decir, 20! 👍', lessonId: SUSTRACCION_2_3 },
-        { type: 'input', question: 'Si tienes 10 galletas y te comes 3, ¿cuántas quedan?', answer: '7', hints: ['La palabra "comes" significa que esas galletas desaparecen. ¡Es una resta! 😋', 'Tienes que hacer la operación 10 - 3.', 'Usa tus dedos. Levanta 10 🖐️🖐️ y baja 3.', 'Cuenta hacia atrás desde 10: 9, 8, ... ⏳', '10 menos 3 es 7.'], explanation: 'Cuando algo se va, restamos. La operación es: 10 - 3 = 7 galletas deliciosas. 🍪', lessonId: SUSTRACCION_2_3 },
-        { type: 'mcq', question: '50 - 5 = ?', options: ['40', '45', '55'], answer: '45', hints: ['¡Cuenta hacia atrás como en un cohete! 🚀', '50... 49, 48...', 'Quitar 5 es como dar 5 pasitos para atrás desde 50. 🐾', 'Si a 50 le quitas 10 serían 40, pero solo le quitas 5...', 'La respuesta está justo en medio de 40 y 50.'], explanation: 'Quitar 5 a 50 nos deja en 45. ¡Un pequeño salto hacia atrás! 🤸‍♀️', lessonId: SUSTRACCION_2_3 },
-        { type: 'mcq', question: 'Si tienes 12 lápices y pierdes 5, ¿cuántos te quedan?', options: ['7', '8', '17'], answer: '7', hints: ['¡Oh, no! Perder lápices ✏️ significa que tienes menos que antes.', 'Eso es una señal para restar. ➖', 'Tienes que calcular 12 - 5.', 'Un truco: 12 - 2 son 10. Y te quedan 3 más por quitar.', 'La respuesta es más pequeña que 10.'], explanation: 'Si pierdes algo, tienes que restar para ver lo que te queda: 12 - 5 = 7. ¡Aún tienes suficientes para dibujar! 🎨', lessonId: SUSTRACCION_2_3 },
-        { type: 'mcq', question: '48 - 7 = ?', options: ['41', '55', '31'], answer: '41', hints: ['Solo tienes que restar las unidades.', 'El 4 de las decenas no cambia.', '¿Cuánto es 8 - 7?', 'Es 1.', 'La respuesta es cuarenta y uno.'], explanation: 'Simplemente restamos las unidades (8-7=1), manteniendo las decenas igual. El resultado es 41.', lessonId: SUSTRACCION_2_3 },
-        { type: 'input', question: '100 - 1 = ?', answer: '99', hints: ['Es el número que va justo antes de 100.', 'Es el número más grande con dos cifras.', 'Es noventa y nueve.', 'Un número formado por dos nueves.', '99.'], explanation: 'Restar 1 a 100 nos da el número anterior, que es 99.', lessonId: SUSTRACCION_2_3},
-        { type: 'mcq', question: 'Si tienes 15 pegatinas y regalas 5, ¿cuántas te quedan?', options: ['10', '20', '5'], answer: '10', hints: ['Regalar es una forma de restar.', '15 - 5 = ?', 'Quita 5 del 15.', 'Diez.', 'Es una decena.'], explanation: 'Si regalas algo, tienes menos. Restamos 15 - 5 = 10 pegatinas.', lessonId: SUSTRACCION_2_3 },
-        { type: 'mcq', question: '60 - 20 = ?', options: ['40', '80', '30'], answer: '40', hints: ['6 decenas menos 2 decenas.', '6 - 2 = 4.', 'Son 4 decenas.', 'Cuarenta.', 'Es como 6-2 y le añades el cero.'], explanation: 'Restar decenas es fácil: 6 - 2 = 4, así que el resultado es 40.', lessonId: SUSTRACCION_2_3 },
-        { type: 'mcq', question: '35 - 5 = ?', options: ['30', '40', '25'], answer: '30', hints: ['Solo tienes que quitar las unidades.', 'El 3 de las decenas no cambia.', '5 - 5 = 0.', 'Treinta.', 'Te queda un número redondo.'], explanation: 'Al restar 5 a 35, las unidades se cancelan y nos quedan 30.', lessonId: SUSTRACCION_2_3 },
-        { type: 'mcq', question: 'Tengo 20 postalitas. Si pierdo la mitad, ¿cuántas me quedan?', options: ['10', '15', '5'], answer: '10', hints: ['"La mitad" significa dividir entre 2, o quitar la mitad.', 'La mitad de 20 es...', 'Diez.', '10.', 'Te queda la otra mitad.'], explanation: 'Si pierdes la mitad de 20, te queda la otra mitad, que son 10 postalitas.', lessonId: SUSTRACCION_2_3 },
-        { type: 'mcq', question: '80 - 1 = ?', options: ['70', '81', '79'], answer: '79', hints: ['Es el número que va justo antes de 80.', 'Setenta y nueve.', '79.', 'No es 70.', 'Uno menos que ochenta.'], explanation: 'Restar 1 nos da el número anterior. El anterior a 80 es 79.', lessonId: SUSTRACCION_2_3 },
-        { type: 'input', question: '¿Cuánto le falta al 90 para llegar a 100?', answer: '10', hints: ['100 - 90 = ?', '9 decenas para llegar a 10 decenas.', 'Falta una decena.', 'Diez.', 'Es el siguiente número de la serie 90, ___, 100.'], explanation: 'La diferencia entre 100 y 90 es 10.', lessonId: SUSTRACCION_2_3 },
-        { type: 'mcq', question: 'De una tarta de 8 porciones, nos comemos 3. ¿Cuántas quedan? 🍰', options: ['5', '11', '6'], answer: '5', hints: ['Si "nos comemos", es una resta.', '8 - 3 = ?', 'Usa los dedos.', 'Cinco.', 'Quedan más de la mitad.'], explanation: 'Restamos las porciones comidas del total: 8 - 3 = 5 porciones.', lessonId: SUSTRACCION_2_3 },
-        { type: 'mcq', question: '75 - 25 = ?', options: ['50', '100', '40'], answer: '50', hints: ['Piensa en dinero. Si tienes 75 pesos y gastas 25...', '70 - 20 = 50.', '5 - 5 = 0.', 'Cincuenta.', 'La respuesta es un número redondo.'], explanation: '75 menos 25 es 50.', lessonId: SUSTRACCION_2_3 },
-        { type: 'mcq', question: 'En una guagua 🚌 hay 12 personas y se bajan 6. ¿Cuántas quedan?', options: ['18', '6', '8'], answer: '6', hints: ['Si "se bajan", es una resta.', '12 - 6 = ?', 'Es la mitad de 12.', 'Seis.', 'Queda la misma cantidad que se bajó.'], explanation: 'Restamos los pasajeros que se bajaron: 12 - 6 = 6 personas.', lessonId: SUSTRACCION_2_3 },
-        { type: 'input', question: 'Resta en columna: 45 - 23 = ?', answer: '22', hints:['Unidades: 5 - 3 = 2.', 'Decenas: 4 - 2 = 2.', 'Junta los resultados.', 'Veintidós.', 'No hay que pedir prestado.'], explanation: 'Restamos las unidades (5-3=2) y las decenas (4-2=2). El resultado es 22.', lessonId: SUSTRACCION_2_3},
-        { type: 'input', question: 'Calcula: 389 - 123 = ?', answer: '266', hints:['Unidades: 9 - 3 = 6.', 'Decenas: 8 - 2 = 6.', 'Centenas: 3 - 1 = 2.', 'El resultado es 266.', 'Doscientos sesenta y seis.'], explanation: 'Restando cada columna por separado obtenemos 266.', lessonId: SUSTRACCION_2_3},
-        { type: 'mcq', question: '56 - 31 = ?', options: ['25', '35', '20'], answer: '25', hints:['6 - 1 = 5.', '5 - 3 = 2.', 'El número termina en 5.', 'El número empieza con 2.', 'Veinticinco.'], explanation: 'Restamos unidades (6-1=5) y decenas (5-3=2), lo que da 25.', lessonId: SUSTRACCION_2_3},
-        { type: 'input', question: '88 - 77 = ?', answer: '11', hints:['Unidades: 8 - 7 = 1.', 'Decenas: 8 - 7 = 1.', 'El resultado tiene dos unos.', 'Once.', 'Es una resta fácil.'], explanation: 'Al restar las unidades (8-7=1) y las decenas (8-7=1), el resultado es 11.', lessonId: SUSTRACCION_2_3},
-        { type: 'input', question: 'De 99, quita 45.', answer: '54', hints:['9 - 5 = 4.', '9 - 4 = 5.', 'El resultado es 54.', 'Cincuenta y cuatro.', 'Resta unidades con unidades y decenas con decenas.'], explanation: 'Restando unidades (9-5=4) y decenas (9-4=5), obtenemos 54.', lessonId: SUSTRACCION_2_3},
-        // FIX: Explicitly type the returned object as Question to prevent type widening.
-        ...Array.from({ length: 20 }).map((_, i): Question => ({
-            type: 'input',
-            question: `${99 - i} - ${11 + i} = ?`,
-            answer: (88 - 2 * i).toString(),
-            hints: [`Resta las unidades primero.`, `Luego resta las decenas.`, `Alinea los números en tu mente.`, `No te olvides de pedir prestado si es necesario.`, `Empieza siempre por la columna de la derecha.`],
-            explanation: `${99 - i} - ${11 + i} = ${88 - 2 * i}.`,
-            lessonId: SUSTRACCION_2_3
-        }))
+        // === NIVEL 1: 80 preguntas (40 Adición, 40 Sustracción) ===
+        ...Array.from({ length: 40 }).map((_, i): Question => {
+            const a = 5 + i;
+            const b = 2 + (i % 5);
+            return {
+                type: 'input',
+                question: `Si en la bodega compraste ${a} panes y luego ${b} más, ¿cuántos panes tienes en total? 🥖🥖`,
+                imageUrl: createMathSVG('add', a, b),
+                answer: (a + b).toString(),
+                hints: [`Tienes que juntar los panes.`, `Suma ${a} más ${b}.`, `Cuenta los círculos azules y verdes en la imagen.`, `El resultado es más de ${a}.`, `Llegas al número ${(a+b).toString()}.`],
+                explanation: `¡Muy bien! 🎯 Si juntas ${a} panes con otros ${b}, al final tienes **${a + b}** panes para el desayuno. ¡Riquísimo! ☕🥖✨`,
+                lessonId: ADICION
+            };
+        }),
+        ...Array.from({ length: 40 }).map((_, i): Question => {
+            const a = 10 + i;
+            const b = 1 + (i % 8);
+            return {
+                type: 'input',
+                question: `Tenías ${a} mangos 🥭 y regalaste ${b} a tu vecino. ¿Cuántos mangos te quedan ahora?`,
+                imageUrl: createMathSVG('sub', a, b),
+                answer: (a - b).toString(),
+                hints: [`Regalar significa que ahora tienes menos. Es una resta.`, `A ${a} quítale ${b}.`, `Mira la imagen: cuenta solo los círculos rojos (los grises son los que regalaste).`, `¿Cuánto es ${a} - ${b}?`, `Te quedan ${a - b}.`],
+                explanation: `¡Correcto! ✅ Al compartir tus mangos, ahora te quedan **${a - b}**. ¡Eres muy generoso! 🥭🌟`,
+                lessonId: SUSTRACCION
+            };
+        })
     ],
     2: [
-        // === Lección: Adición con llevada (ADICION_2_2) - 30 preguntas ===
-        { type: 'input', question: '89 + 11 = ?', answer: '100', hints: ['¡Estos números son mejores amigos! 🤝', 'Fíjate en las unidades: 9 + 1 = 10.', 'El 89 necesita justo 11 para convertirse en el gran jefe 100. 👑', 'Es como tener 89 pesos y encontrar 11 más. 💰', 'El resultado es un número muy redondo y famoso.'], explanation: 'Esta es una suma que completa una centena. ¡89 y 11 juntos forman un 100 perfecto! 💯', lessonId: ADICION_2_2 },
-        { type: 'input', question: 'Calcula 345 + 155', answer: '500', hints: ['Suma por columnas, empezando por la derecha. ➡️', '¡Mira las unidades! 5 + 5 son 10. Pones el 0 y te llevas 1. 🎈', 'Ahora las decenas: 4 + 5, y no olvides la que te llevas.', '4+5+1 también son 10. Pones el 0 y te llevas 1. 🎈', 'Y las centenas: 3 + 1, más la que te llevabas. ¡Ya lo tienes! 🎉'], explanation: 'Sumando las unidades (5+5=10), decenas (40+50+10=100) y centenas (300+100+100=500), obtenemos el gran 500. 🎯', lessonId: ADICION_2_2 },
-        { type: 'input', question: '67 + 25 = ?', answer: '92', hints: ['Suma primero a los grandotes (las decenas 60+20). 💪', '60 + 20 son 80. ¡Ya casi está!', 'Luego a los peques (las unidades 7+5). 🤏', '7 + 5 son 12.', 'Al final, ¡junta los dos resultados! 80 + 12 = ... 🤝'], explanation: 'Puedes sumar por partes: 60+20=80 y 7+5=12. Luego, 80+12=92. ¡Trabajo en equipo! 🧑‍🤝‍🧑', lessonId: ADICION_2_2 },
-        { type: 'input', question: 'Calcula 99 + 101', answer: '200', hints: ['Aquí hay un truco. 99 es casi 100.', 'Quítale 1 al 101 y dáselo al 99.', 'Ahora tienes que sumar 100 + 100.', '¡Es mucho más fácil!', 'El resultado es doscientos.'], explanation: 'Puedes mover 1 del 101 al 99. La suma se convierte en 100 + 100, que es 200. ¡Un truco de equilibrio!', lessonId: ADICION_2_2 },
-        { type: 'input', question: '150 + 75 = ?', answer: '225', hints:['Suma 150 + 50. Son 200.', 'Ahora suma los 25 que quedan.', '200 + 25 = ?', 'Doscientos veinticinco.', 'También puedes hacer 150+70+5.'], explanation: 'Puedes sumar por partes: 150 + 50 = 200, y luego 200 + 25 = 225.', lessonId: ADICION_2_2},
-        { type: 'input', question: 'Suma llevando: 28 + 15 = ?', answer: '43', hints:['Unidades: 8 + 5 = 13.', 'Pones el 3 y te llevas 1 a las decenas.', 'Decenas: 2 + 1 + 1 (la que te llevas) = 4.', 'El resultado es 43.', 'Cuarenta y tres.'], explanation: 'Sumamos las unidades 8+5=13. Escribimos el 3 y llevamos 1 a las decenas. Luego sumamos las decenas 2+1+1=4. El resultado es 43.', lessonId: ADICION_2_2},
-        { type: 'input', question: 'Calcula: 145 + 237 = ?', answer: '382', hints:['Unidades: 5 + 7 = 12. Pones el 2 y te llevas 1.', 'Decenas: 4 + 3 + 1 (la que te llevas) = 8.', 'Centenas: 1 + 2 = 3.', 'Junta los resultados: 3, 8, 2.', '382.'], explanation: 'Unidades: 5+7=12 (ponemos 2, llevamos 1). Decenas: 4+3+1=8. Centenas: 1+2=3. El total es 382.', lessonId: ADICION_2_2},
-        { type: 'mcq', question: 'Si al sumar las unidades obtienes 14, ¿qué haces?', options: ['Escribo 14', 'Escribo 1 y me llevo 4', 'Escribo 4 y me llevo 1'], answer: 'Escribo 4 y me llevo 1', hints:['El 14 tiene 1 decena y 4 unidades.', 'Las unidades se quedan en su columna.', 'La decena "sube" a la siguiente columna para sumarse allí.', 'Dejas el número de la derecha.', 'Te llevas el número de la izquierda.'], explanation: 'Cuando una columna suma 14, escribimos la unidad (4) y "llevamos" la decena (1) a la siguiente columna de la izquierda.', lessonId: ADICION_2_2},
-        { type: 'input', question: '567 + 123 = ?', answer: '690', hints:['Unidades: 7 + 3 = 10. Pones el 0 y te llevas 1.', 'Decenas: 6 + 2 + 1 (la que te llevas) = 9.', 'Centenas: 5 + 1 = 6.', 'El resultado es 690.', 'Seiscientos noventa.'], explanation: 'Unidades: 7+3=10 (ponemos 0, llevamos 1). Decenas: 6+2+1=9. Centenas: 5+1=6. El total es 690.', lessonId: ADICION_2_2},
-        { type: 'mcq', question: '34 + 48 = ?', options: ['72', '82', '712'], answer: '82', hints:['Unidades: 4 + 8 = 12. Pones el 2 y te llevas 1.', 'Decenas: 3 + 4 + 1 (la que te llevas) = 8.', 'El resultado es 82.', 'Ochenta y dos.', 'No es 72.'], explanation: 'Unidades: 4+8=12 (ponemos 2, llevamos 1). Decenas: 3+4+1=8. El resultado es 82.', lessonId: ADICION_2_2},
-        // FIX: Explicitly type the returned object as Question to prevent type widening.
-        ...Array.from({ length: 20 }).map((_, i): Question => ({
-            type: 'input',
-            question: `${18 + i} + ${27 + i} = ?`,
-            answer: (45 + 2 * i).toString(),
-            hints: [`Suma las unidades: ${(8 + i) % 10} + ${(7 + i) % 10}. Llevarás una.`, `Suma las decenas y la que llevas.`, `Empieza por la columna de la derecha.`, `El resultado de la suma de unidades te dará la pista de si llevas o no.`, `El resultado final debe ser mayor que 45.`],
-            explanation: `Unidades: ${(8+i)} + ${(7+i)} = ${15 + 2*i}. Pones ${((15 + 2*i) % 10)} y llevas ${Math.floor((15+2*i)/10)}. Decenas: 1 + 2 + ${Math.floor((15+2*i)/10)} = ${3+Math.floor((15+2*i)/10)}. El resultado es ${45+2*i}.`,
-            lessonId: ADICION_2_2
-        })),
-
-        // === Lección: Resta pidiendo prestado (SUSTRACCION_2_3) - 30 preguntas ===
-        { type: 'input', question: 'Resta pidiendo prestado: 42 - 17 = ?', answer: '25', hints:['No podemos hacer 2 - 7.', 'El 4 le presta 1 al 2. El 4 se queda en 3 y el 2 en 12.', 'Unidades: 12 - 7 = 5.', 'Decenas: 3 - 1 = 2.', 'El resultado es 25.'], explanation: 'Como no podemos restar 7 a 2, el 4 le presta una decena. Se convierte en 12 - 7 = 5. Luego restamos las decenas que quedan: 3 - 1 = 2. ¡El resultado es 25!', lessonId: SUSTRACCION_2_3},
-        { type: 'input', question: 'Calcula: 153 - 28 = ?', answer: '125', hints:['No podemos hacer 3 - 8. El 5 le presta 1 al 3.', 'El 5 se convierte en 4, y el 3 en 13.', 'Unidades: 13 - 8 = 5.', 'Decenas: 4 - 2 = 2.', 'La centena se queda igual. 125.'], explanation: 'Pedimos prestado para las unidades (13-8=5). Luego restamos las decenas (4-2=2). La centena no cambia. El resultado es 125.', lessonId: SUSTRACCION_2_3},
-        { type: 'mcq', question: '60 - 25 = ?', options: ['45', '35', '40'], answer: '35', hints:['No podemos hacer 0 - 5. El 6 le presta 1 al 0.', 'El 6 se convierte en 5, y el 0 en 10.', 'Unidades: 10 - 5 = 5.', 'Decenas: 5 - 2 = 3.', 'El resultado es 35.'], explanation: 'El 6 le presta una decena al 0. La operación se convierte en 10-5=5 para las unidades y 5-2=3 para las decenas. Total: 35.', lessonId: SUSTRACCION_2_3},
-        { type: 'input', question: 'Un libro tiene 100 páginas y he leído 45. ¿Cuántas me faltan?', answer: '55', hints:['Es una resta: 100 - 45.', 'Piensa en dinero: si tienes 100 pesos y gastas 45...', '100 - 40 = 60. Ahora quita 5 más.', '60 - 5 = 55.', 'Faltan 55 páginas.'], explanation: 'Para saber las páginas que faltan, restamos: 100 - 45 = 55 páginas.', lessonId: SUSTRACCION_2_3},
-        { type: 'mcq', question: '521 - 109 = ?', options: ['412', '422', '312'], answer: '412', hints:['Unidades: no podemos hacer 1 - 9. El 2 presta 1.', '11 - 9 = 2.', 'Decenas: el 2 se convirtió en 1. 1 - 0 = 1.', 'Centenas: 5 - 1 = 4.', '412.'], explanation: 'Pedimos prestado para las unidades (11-9=2). Luego restamos las decenas (1-0=1) y las centenas (5-1=4). El total es 412.', lessonId: SUSTRACCION_2_3},
-        { type: 'input', question: 'Tenía 81 CUP y gasté 33 en la bodega. ¿Cuánto me queda?', answer: '48', hints:['81 - 33 = ?', 'Unidades: 1 - 3 no se puede. El 8 presta 1.', '11 - 3 = 8.', 'Decenas: el 8 se quedó en 7. 7 - 3 = 4.', '48.'], explanation: 'Tras pedir prestado, restamos 11-3=8 (unidades) y 7-3=4 (decenas). Quedan 48 pesos.', lessonId: SUSTRACCION_2_3},
-        { type: 'input', question: 'Calcula: 200 - 50 = ?', answer: '150', hints:['Si a 20 decenas le quitas 5 decenas...', '20 - 5 = 15.', 'Te quedan 15 decenas.', '15 decenas son 150.', 'Ciento cincuenta.'], explanation: '200 es como 20 decenas. Si le quitamos 5 decenas, nos quedan 15 decenas, que es 150.', lessonId: SUSTRACCION_2_3},
-        { type: 'mcq', question: '75 - 18 = ?', options: ['57', '67', '63'], answer: '57', hints:['Unidades: 5 - 8 no se puede. El 7 presta 1.', '15 - 8 = 7.', 'Decenas: el 7 se quedó en 6. 6 - 1 = 5.', 'El resultado es 57.', 'Cincuenta y siete.'], explanation: 'Pidiendo prestado, hacemos 15-8=7 y 6-1=5. El resultado es 57.', lessonId: SUSTRACCION_2_3},
-        { type: 'input', question: 'De una soga de 300 cm, corto un trozo de 25 cm. ¿Cuánto queda?', answer: '275', hints:['300 - 25 = ?', 'Piensa en 300 - 20 = 280.', 'Ahora resta 5 más.', '280 - 5 = 275.', '275.'], explanation: 'Podemos restar en dos pasos: 300 - 20 = 280, y luego 280 - 5 = 275 cm.', lessonId: SUSTRACCION_2_3},
-        { type: 'input', question: '90 - 45 = ?', answer: '45', hints:['¿Cuál es la mitad de 90?', 'Si a 90 le quitas 40, te quedan 50.', 'Ahora quita 5 más.', '50 - 5 = 45.', '45.'], explanation: 'Restar 45 a 90 es como buscar su mitad. El resultado es 45.', lessonId: SUSTRACCION_2_3},
-        // FIX: Explicitly type the returned object as Question to prevent type widening.
-        ...Array.from({ length: 20 }).map((_, i): Question => ({
-            type: 'input',
-            question: `${51 + i} - 24 = ?`,
-            answer: (27 + i).toString(),
-            hints: [`Unidades: no puedes hacer ${(1 + i) % 10} - 4, así que pides prestado.`, `Decenas: El 5 (o el número correspondiente) se convierte en uno menos.`, `Después de pedir prestado, la resta de unidades será ${11 + (i % 10) - 4}.`, `Resta las decenas que quedaron.`, `El resultado debe ser cercano a 27.`],
-            explanation: `Pides prestado a las decenas. La resta de unidades es ${11 + (i % 10) - 4}. La de decenas es 4 - 2. El resultado es ${27 + i}.`,
-            lessonId: SUSTRACCION_2_3
-        }))
+        // === NIVEL 2: 80 preguntas (40 Adición, 40 Sustracción) ===
+        ...Array.from({ length: 40 }).map((_, i): Question => {
+            const a = 25 + i * 2;
+            const b = 15 + i;
+            return {
+                type: 'input',
+                question: `Calcula la suma de ${a} y ${b}. ¡Ojo con la llevada! 🧮🔢`,
+                imageUrl: createMathSVG('add', Math.floor(a/10), Math.floor(b/10)),
+                answer: (a + b).toString(),
+                hints: [`Suma las unidades primero: ${a%10} + ${b%10}.`, `Si te pasas de 9, ¡te llevas una para las decenas! 🎈`, `Ahora suma las decenas: ${Math.floor(a/10)} + ${Math.floor(b/10)} + la que te llevabas.`, `El resultado empieza con ${Math.floor((a+b)/10)}.`, `Es ${a + b}.`],
+                explanation: `¡Excelente cálculo! 🎯 Sumando unidades y decenas correctamente obtenemos **${a + b}**. ¡Eres una calculadora humana! 🧠✨`,
+                lessonId: ADICION
+            };
+        }),
+        ...Array.from({ length: 40 }).map((_, i): Question => {
+            const a = 50 + i * 2;
+            const b = 12 + i;
+            return {
+                type: 'input',
+                question: `A ${a} le restamos ${b}. ¿Cuál es el resultado? ➖📉`,
+                imageUrl: createMathSVG('sub', 20, 5), // Representativo
+                answer: (a - b).toString(),
+                hints: [`Resta las unidades. Si el de arriba es menor, pide prestado al vecino.`, `Resta las decenas: no olvides que si prestaste, ahora tienes una menos.`, `Hazlo paso a paso.`, `¿Cuánto es ${a} - ${b}?`, `El resultado es ${a - b}.`],
+                explanation: `¡Muy bien hecho! ✅ La diferencia entre ${a} y ${b} es **${a - b}**. ¡Las restas ya no tienen secretos para ti! 🛡️✨`,
+                lessonId: SUSTRACCION
+            };
+        })
     ],
     3: [
-        // === Lección: Adición compleja (ADICION_2_2) - 30 preguntas ===
-        { type: 'input', question: '4250 + 1850 = ?', answer: '6100', hints: ['Suma primero los miles (4000 + 1000). 🧐', '4000 + 1000 son 5000.', 'Luego, suma el resto (250 + 850).', 'Un truco: 250+850 = 1100. ✨', 'Al final, junta los dos resultados: 5000 + 1100. 🤝'], explanation: '4000+1000=5000. Luego, 250+850=1100. Por último, 5000+1100=6100. ¡Pan comido! 🍞', lessonId: ADICION_2_2 },
-        { type: 'input', question: 'Calcula 1999 + 1999', answer: '3998', hints: ['¡Otro truco de magia! 1999 es casi 2000. 🎩', 'Suma 2000 + 2000. ¡Facilísimo! Eso es 4000.', 'Pero a cada número le diste 1 de más para redondear. En total, pusiste 2 de más. 😬', 'Ahora tienes que quitar esos 2 que pusiste de más al resultado final.', '4000 - 2 = ...'], explanation: 'Es como sumar 2000+2000 (que es 4000) y luego quitar 2 porque inflamos los números. El resultado es 3998. ✨', lessonId: ADICION_2_2 },
-        { type: 'mcq', question: 'Si sumo 3 números y el resultado es 100, y dos de ellos son 25 y 45, ¿cuál es el tercero?', options: ['20', '30', '40'], answer: '30', hints: ['Primero, suma los dos números que conoces.', '25 + 45 = 70.', 'Ahora tienes que ver cuánto le falta a 70 para llegar a 100.', 'La operación es 100 - 70.', 'El número que falta es 30.'], explanation: 'Sumamos los números que conocemos (25+45=70). Luego, restamos ese total de 100 para encontrar el número misterioso (100-70=30).', lessonId: ADICION_2_2 },
-        { type: 'input', question: '3500 + 2500 = ?', answer: '6000', hints: ['3000 + 2000 = 5000.', '500 + 500 = 1000.', '5000 + 1000 = 6000.', 'Seis mil.', 'Piensa en 35 + 25 = 60, y añade los dos ceros.'], explanation: 'Sumando por partes: 3000+2000=5000 y 500+500=1000. El total es 6000.', lessonId: ADICION_2_2 },
-        { type: 'mcq', question: '1200 + 800 = ?', options: ['2000', '1000', '9200'], answer: '2000', hints: ['12 centenas más 8 centenas.', '12 + 8 = 20.', 'Son 20 centenas.', '20 centenas es 2000.', 'Dos mil.'], explanation: '1200 y 800 son complementarios para formar 2000.', lessonId: ADICION_2_2 },
-        { type: 'input', question: '875 + 125 = ?', answer: '1000', hints: ['Es una suma que completa el millar.', '75 + 25 = 100.', '800 + 100 = 900.', 'Y ahora suma los 100 de las unidades.', '900 + 100 = 1000.'], explanation: 'Es una suma complementaria que da exactamente 1000.', lessonId: ADICION_2_2 },
-        { type: 'mcq', question: '¿Qué número hay que sumarle a 650 para obtener 1000?', options: ['350', '250', '450'], answer: '350', hints: ['1000 - 650 = ?', 'De 650 a 700 van 50.', 'De 700 a 1000 van 300.', 'Suma los dos trozos: 50 + 300.', '350.'], explanation: 'La diferencia entre 1000 y 650 es 350.', lessonId: ADICION_2_2 },
-        { type: 'input', question: '9999 + 1 = ?', answer: '10000', hints: ['Es el número que sigue a 9999.', 'Es el número más pequeño de 5 cifras.', 'Diez mil.', 'Un 1 con cuatro ceros.', '10000.'], explanation: '9999 más 1 es 10000.', lessonId: ADICION_2_2 },
-        { type: 'mcq', question: '1025 + 975 = ?', options: ['2000', '1900', '2100'], answer: '2000', hints: ['1000 + 900 = 1900.', '25 + 75 = 100.', '1900 + 100 = 2000.', 'Dos mil.', 'Un truco: dale 25 del 1025 al 975. Se convierte en 1000+1000.'], explanation: 'Sumando por partes: 1000+900=1900 y 25+75=100. El total es 2000.', lessonId: ADICION_2_2 },
-        { type: 'mcq', question: '¿Cuál es la suma de 500, 250 y 250?', options: ['1000', '900', '750'], answer: '1000', hints: ['Primero suma los dos 250.', '250 + 250 = 500.', 'Ahora suma el otro 500.', '500 + 500 = 1000.', 'Mil.'], explanation: 'Sumando los tres números, obtenemos 1000.', lessonId: ADICION_2_2 },
-        // FIX: Explicitly type the returned object as Question to prevent type widening.
-        ...Array.from({ length: 20 }).map((_, i): Question => ({
-            type: 'input',
-            question: `${1000 + i * 50} + ${250 + i * 20} = ?`,
-            answer: (1250 + i * 70).toString(),
-            hints: [`Suma los miles y centenas.`, `Suma las decenas y unidades.`, `Puedes sumar por partes: 1000+250 y luego el resto.`, `El resultado será mayor que 1250.`, `No olvides llevarte una si es necesario.`],
-            explanation: `${1000 + i * 50} + ${250 + i * 20} = ${1250 + i * 70}.`,
-            lessonId: ADICION_2_2
-        })),
-
-        // === Lección: Resta compleja (SUSTRACCION_2_3) - 30 preguntas ===
-        { type: 'mcq', question: '8000 - 1250 = ?', options: ['6750', '7250', '7750'], answer: '6750', hints: ['Réstale primero la parte fácil: 8000 - 1000. 👍', '8000 - 1000 son 7000.', '¡Listo! Ahora, al resultado (7000), solo tienes que restarle 250.', 'Si a 7000 le quitas 200, son 6800. Y si le quitas 50 más... 🤔', 'La respuesta es seis mil setecientos cincuenta.'], explanation: '8000 menos 1000 es 7000. Y 7000 menos 250 es 6750. ¡Restar por pasos es más sencillo! 🪜', lessonId: SUSTRACCION_2_3 },
-        { type: 'input', question: 'Calcula 2005 - 999', answer: '1006', hints: ['¡Truco de magia! Restar 999 es difícil. 🧙‍♂️', 'Mejor, resta 1000 (que es súper fácil). 2005 - 1000 = 1005.', 'Pero te pasaste por uno. Restaste uno de más. Oops! 😬', 'Así que ahora tienes que devolverle 1 al resultado final sumándoselo.', '1005 + 1 = ... ✨'], explanation: 'Es más fácil restar 1000 (2005-1000=1005) y luego sumar 1, porque restaste uno de más. El resultado es 1006. ✅', lessonId: SUSTRACCION_2_3 },
-        { type: 'mcq', question: 'Juan tenía 500 postalitas, perdió 150 y luego ganó 100. ¿Cuántas tiene ahora?', options: ['250', '450', '550'], answer: '450', hints: ['¡Una aventura en dos actos! 🎭', 'Primero, haz la resta de las postalitas que se perdieron. 500 - 150. 😥', '500 - 150 son 350.', 'Después, a ese resultado (350), súmale la buena noticia de las que ganó. 😁', '350 + 100 = ...'], explanation: 'Primero la mala noticia: 500 - 150 = 350. Luego la buena: 350 + 100 = 450. ¡Final feliz! 🎉', lessonId: SUSTRACCION_2_3 },
-        { type: 'mcq', question: 'En un avión caben 250 personas. Si hay 180 pasajeros, ¿cuántos asientos libres quedan?', options: ['70', '60', '80'], answer: '70', hints: ['Para saber cuántos asientos "libres" hay, tienes que restar. 💺', 'Al total de asientos quítale los pasajeros que ya están sentados.', 'La operación es 250 - 180.', 'Un truco: 250 - 200 son 50. Como restaste 20 de más, devuélveselos. 50+20=...', 'La respuesta es setenta.'], explanation: 'Es una resta para encontrar los huecos: 250 - 180 = 70. ¡Hay 70 asientos con vistas! ✈️', lessonId: SUSTRACCION_2_3 },
-        { type: 'input', question: '¿Qué número falta? 5432 - ____ = 5000', answer: '432', hints: ['El 5000 no ha cambiado. ¿Qué parte del número ha desaparecido?', 'Fíjate en las centenas, decenas y unidades.', 'Has quitado las 4 centenas.', 'Has quitado las 3 decenas.', 'Has quitado las 2 unidades.'], explanation: 'Para pasar de 5432 a 5000, hay que quitarle la parte de las centenas, decenas y unidades, que es 432.', lessonId: SUSTRACCION_2_3 },
-        { type: 'input', question: '1000 - 101 = ?', answer: '899', hints:['Un truco: resta 100. 1000 - 100 = 900.', 'Pero tenías que restar 101, así que te falta quitar 1 más.', '900 - 1 = ?', 'Ochocientos noventa y nueve.', '899.'], explanation: 'Es más fácil restar 100 (da 900) y luego restar el 1 que falta. El resultado es 899.', lessonId: SUSTRACCION_2_3},
-        { type: 'mcq', question: 'Mi paga es de 100 CUP. Si me gasto 25, ¿cuánto me queda?', options: ['75', '85', '70'], answer: '75', hints: ['100 - 20 = 80.', 'Ahora a 80 quítale 5.', 'Quedan 75.', 'Setenta y cinco.', 'Piensa en 4 monedas de 25, si quitas una, te quedan 3.'], explanation: 'Restamos los pesos: 100 - 25 = 75 CUP.', lessonId: SUSTRACCION_2_3 },
-        { type: 'input', question: '¿Cuánto es 500 - 499?', answer: '1', hints: ['Son números consecutivos.', 'Están uno al lado del otro.', 'La diferencia es solo 1.', 'Uno.', 'Es una resta muy pequeña.'], explanation: 'La diferencia entre un número y su antecesor es siempre 1.', lessonId: SUSTRACCION_2_3 },
-        { type: 'input', question: 'Si a 10000 le quito 1, ¿cuánto queda?', answer: '9999', hints: ['Es el número que va justo antes.', 'Está formado por cuatro nueves.', 'Nueve mil novecientos noventa y nueve.', '9999.', 'El número más grande de 4 cifras.'], explanation: 'El número anterior a 10000 es 9999.', lessonId: SUSTRACCION_2_3 },
-        { type: 'mcq', question: 'En una carrera de 5000 metros, he corrido 1500. ¿Cuánto me falta?', options: ['3500', '4500', '3000'], answer: '3500', hints: ['5000 - 1500 = ?', '5000 - 1000 = 4000.', 'Ahora quita 500 más.', '4000 - 500 = 3500.', '3500.'], explanation: 'Restamos lo que ya hemos corrido: 5000 - 1500 = 3500 metros.', lessonId: SUSTRACCION_2_3 },
-        // FIX: Explicitly type the returned object as Question to prevent type widening.
-        ...Array.from({ length: 20 }).map((_, i): Question => ({
-            type: 'input',
-            question: `${3000 - i * 50} - ${1250 - i * 20} = ?`,
-            answer: (1750 - i * 30).toString(),
-            hints: [`Resta los miles y centenas.`, `Puede que tengas que pedir prestado.`, `Resta las decenas y unidades.`, `El resultado será menor que 1750.`, `Haz la operación en una hoja de papel si es necesario.`],
-            explanation: `${3000 - i * 50} - ${1250 - i * 20} = ${1750 - i * 30}.`,
-            lessonId: SUSTRACCION_2_3
-        }))
+        // === NIVEL 3: 80 preguntas (40 Adición, 40 Sustracción) ===
+        ...Array.from({ length: 40 }).map((_, i): Question => {
+            const a = 250 + i * 15;
+            const b = 175 + i * 10;
+            return {
+                type: 'input',
+                question: `Un viaje en guagua 🚌 de La Habana a Varadero cuesta ${a} CUP y de Varadero a Matanzas cuesta ${b} CUP. ¿Cuánto gastas en total? 💰🗺️`,
+                answer: (a + b).toString(),
+                hints: [`Suma los precios de los dos viajes.`, `Cientos con cientos, decenas con decenas...`, `¿Cuánto es ${a} + ${b}?`, `Es una suma de tres cifras.`, `El total es ${a + b}.`],
+                explanation: `¡Perfecto viajero! 🌍 Sumando los dos pasajes, el gasto total es de **${a + b}** CUP. ¡Disfruta el paisaje! 🌴🏖️`,
+                lessonId: ADICION
+            };
+        }),
+        ...Array.from({ length: 40 }).map((_, i): Question => {
+            const total = 1000 + i * 50;
+            const gasto = 450 + i * 25;
+            return {
+                type: 'input',
+                question: `Si tenías un billete de ${total} pesos y gastaste ${gasto} en el agro, ¿cuántos pesos te sobraron? 💵🌽`,
+                answer: (total - gasto).toString(),
+                hints: [`Es una resta: ${total} - ${gasto}.`, `Resta primero los cientos.`, `Ahora resta el resto.`, `Piensa en el vuelto que te darían.`, `La respuesta es ${total - gasto}.`],
+                explanation: `¡Cálculo exacto! 🎯 Te sobraron **${total - gasto}** pesos. ¡Eres muy bueno administrando el dinero! 💵🧤✨`,
+                lessonId: SUSTRACCION
+            };
+        })
     ]
 };

@@ -3,6 +3,7 @@ import { Button } from './common/Button';
 import type { StudentProfile } from '../types';
 import type { AvatarSelectorModalProps } from './AvatarSelectorModal';
 import { playClickSound } from '../utils/sounds';
+import { contentManager } from '../utils/contentManager';
 
 interface NameEntryProps {
     onProfileSubmit: (profile: Omit<StudentProfile, 'id'>) => void;
@@ -14,8 +15,10 @@ interface NameEntryProps {
 }
 
 export const NameEntry: React.FC<NameEntryProps> = ({ onProfileSubmit, showBackButton, onBack, theme, onToggleTheme, setAvatarSelectorProps }) => {
+    const taxonomy = contentManager.getTaxonomy();
     const [name, setName] = useState('');
     const [age, setAge] = useState(8);
+    const [gradeId, setGradeId] = useState(taxonomy.grades[0]?.id || '');
     const [gender, setGender] = useState<'boy' | 'girl' | null>(null);
     const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -39,7 +42,7 @@ export const NameEntry: React.FC<NameEntryProps> = ({ onProfileSubmit, showBackB
         
         const finalAvatar = selectedAvatar || (gender === 'boy' ? '👦' : '👧');
         
-        onProfileSubmit({ name: name.trim(), age, gender, avatar: finalAvatar });
+        onProfileSubmit({ name: name.trim(), age, gender, avatar: finalAvatar, gradeId });
     };
     
     const openAvatarSelector = (currentGender: 'boy' | 'girl' | null) => {
@@ -127,6 +130,19 @@ export const NameEntry: React.FC<NameEntryProps> = ({ onProfileSubmit, showBackB
                     >
                         {Array.from({ length: 8 }, (_, i) => i + 5).map(a => (
                             <option key={a} value={a}>{a} años</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="w-full">
+                    <label className="text-base font-bold text-slate-700 dark:text-slate-200 block mb-1">¿En qué grado estás?</label>
+                     <select 
+                        value={gradeId} 
+                        onChange={(e) => { playClickSound(); setGradeId(e.target.value); }}
+                        className="p-3 text-lg border-2 border-slate-300 dark:border-slate-600 rounded-lg text-center w-full bg-white dark:bg-slate-700 text-black dark:text-white"
+                    >
+                        {taxonomy.grades.map(grade => (
+                            <option key={grade.id} value={grade.id}>{grade.name}</option>
                         ))}
                     </select>
                 </div>

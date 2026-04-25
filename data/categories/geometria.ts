@@ -265,33 +265,39 @@ export const geometriaQuestions: Record<number, Question[]> = {
             const perimeter = side * 4;
             return {
                 type: 'input',
-                question: `Un cuadro de pintura cuadrado tiene un lado de ${side} cm. ¿Cuál es su perímetro?`,
-                imageUrl: createShapeSVG('square'),
+                question: `Un marco de un cuadro cuadrado tiene un lado que mide ${side} cm. ¿Cuál es su perímetro total? 🖼️✨`,
+                imageUrl: createShapeSVG('labeled-square-perimeter', { s: side }),
                 answer: perimeter.toString(),
-                hints: [`El perímetro es la suma de todos los lados.`, `Un cuadrado tiene 4 lados iguales.`, `Todos los lados miden ${side} cm.`, `La operación es ${side} x 4.`, `La respuesta es ${perimeter}.`],
-                explanation: `Para el perímetro de un cuadrado, multiplicamos el lado por 4: ${side} x 4 = ${perimeter} cm.`,
+                hints: [`El perímetro es la suma de la longitud de todos los bordes de la figura.`, `Un cuadrado tiene sus 4 lados exactamente iguales.`, `Como cada lado mide ${side} cm, debes sumar ese número 4 veces.`, `La operación rápida es multiplicar: ${side} x 4.`, `El resultado final es ${perimeter}.`],
+                explanation: `¡Magnífico! 🎨 Como es un cuadrado, todos sus lados miden lo mismo: **${side} cm**. 
+                Para hallar el perímetro, sumamos sus 4 lados: **${side} + ${side} + ${side} + ${side} = ${perimeter} cm**. 
+                ¡El borde de tu cuadro mide ${perimeter} centímetros! 📏✨`,
                 lessonId: GEOMETRIA_P2_1
             };
         }),
 
         // --- Lección: Prisma (ortoedro y cubo) (GEOMETRIA_P2_2) ---
-        { type: 'input', question: 'Si apilas 3 cubos uno encima del otro, ¿qué figura formas?', imageUrl: create3DShapeSVG('ortoedro'), answer: 'ortoedro', hints:['La figura resultante será más alta que ancha.', 'Ya no será un cubo perfecto.', 'Tendrá caras rectangulares a los lados.', 'Será como un edificio.', 'Un ortoedro (o prisma rectangular).'], explanation: 'Al apilar cubos, creas una figura más alargada, un ortoedro. ¡Estás construyendo! 🏗️', lessonId: GEOMETRIA_P2_2},
-        { type: 'mcq', question: '¿Cuántas aristas se juntan en un vértice de un cubo?', imageUrl: create3DShapeSVG('cube'), options: ['2', '3', '4'], answer: '3', hints:['Elige una esquina cualquiera de la figura.', 'Cuenta cuántos "palitos" (aristas) llegan a esa esquina.', 'Llega uno de arriba, uno de un lado y uno del frente.', 'Son 3 aristas.', 'Tres.'], explanation: 'En cada vértice de un cubo o un ortoedro se encuentran exactamente 3 aristas. ¡El punto de encuentro! 🤝', lessonId: GEOMETRIA_P2_2},
+        { type: 'input', question: 'Si apilas 3 cubos uno encima del otro, ¿qué figura formas? 🧊🧱', imageUrl: create3DShapeSVG('ortoedro'), answer: 'ortoedro', hints:['La figura resultante será más alta que ancha, como una torre.', 'Ya no será un cubo perfecto con todos sus lados iguales.', 'Tendrá caras rectangulares en los laterales.', 'Este tipo de prisma se llama...', 'Empieza con "O".'], explanation: '¡Exacto! Al apilar cubos, la figura se "estira" y sus caras dejan de ser todas cuadradas para volverse rectangulares. ¡Has creado un **ortoedro**! 🏗️🌆', lessonId: GEOMETRIA_P2_2},
+        { type: 'mcq', question: '¿Cuántas aristas se juntan en cada vértice (esquina) de un cubo? 🎲', imageUrl: create3DShapeSVG('cube'), options: ['2', '3', '4'], answer: '3', hints:['Elige una esquina cualquiera del cubo en la imagen.', 'Cuenta cuántas líneas (aristas) llegan a ese punto exacto.', 'Llega una de arriba, una de abajo/lado y otra del frente.', 'Son exactamente 3.', 'La respuesta es tres.'], explanation: '¡Muy bien observado! 🧐 En cada vértice de un cubo o un ortoedro siempre se encuentran **3 aristas**. ¡Es el punto de unión de tres dimensiones! 🧊✨', lessonId: GEOMETRIA_P2_2},
         ...Array.from({ length: 38 }).map((_, i): Question => ({
-            type: 'mcq',
-            question: `Si miras un cubo perfectamente desde arriba, ¿qué figura plana ves?`,
-            imageUrl: create3DShapeSVG('cube'),
-            options: ['Cuadrado', 'Rectángulo', 'Círculo'],
-            answer: 'Cuadrado',
-            hints: [`Imagina que tienes un dado en la mesa.`, `Ahora, ponte de pie y mira justo encima de él.`, `¿Qué forma ves?`, `Verás la cara superior del dado.`, `La cara de un cubo es un cuadrado.` ],
-            explanation: `La "vista" desde arriba de un cubo es simplemente su cara superior, que es un cuadrado perfecto. 🔲`,
-            lessonId: GEOMETRIA_P2_2
+                type: 'mcq',
+                question: `Si miras un ${i % 2 === 0 ? 'cubo' : 'ortoedro'} perfectamente desde arriba, ¿qué forma plana verías? 👁️📦`,
+                imageUrl: i % 2 === 0 ? create3DShapeSVG('cube') : create3DShapeSVG('ortoedro'),
+                options: ['Cuadrado', 'Rectángulo', 'Círculo'],
+                answer: i % 2 === 0 ? 'Cuadrado' : 'Rectángulo',
+                hints: [`Imagina que tienes el objeto en el suelo y lo miras desde el cielo.`, `Verás solamente la cara superior del objeto.`, `La cara superior de un cubo es un...`, `La cara superior de un ortoedro suele ser un...`, `Fíjate en las opciones.`],
+                explanation: `¡Correcto! 🎯 La "vista de planta" o vista desde arriba de un cubo es un **cuadrado**, mientras que la de un ortoedro es un **rectángulo**. ¡Todo depende de la forma de sus caras! 📐✨`,
+                lessonId: GEOMETRIA_P2_2
         })),
 
         // --- Lección: Circunferencia, círculo y cilindro (GEOMETRIA_P3) ---
-        { type: 'input', question: 'El diámetro de un círculo es 20 cm. ¿Cuánto mide su radio?', imageUrl: createCircleSVG('diameter', 20), answer: '10', hints:['El radio es la mitad del diámetro.', 'Tienes que dividir el diámetro entre 2.', '20 ÷ 2 = ?', 'Diez.', '10.'], explanation: 'El radio es la mitad del diámetro, así que 20 ÷ 2 = 10 cm. ¡Fácil! 👍', lessonId: GEOMETRIA_P3},
-        { type: 'input', question: 'El radio de un círculo es 8 cm. ¿Cuánto mide su diámetro?', imageUrl: createCircleSVG('radius', 8), answer: '16', hints:['El diámetro es el doble del radio.', 'Tienes que multiplicar el radio por 2.', '8 x 2 = ?', 'Dieciséis.', '16.'], explanation: 'El diámetro es el doble del radio, así que 8 x 2 = 16 cm. ¡El hermano mayor! 😄', lessonId: GEOMETRIA_P3},
-        { type: 'mcq', question: 'Si cortas un cilindro por la mitad (de arriba a abajo), ¿qué figura ves en el corte?', imageUrl: create3DShapeSVG('cylinder'), options: ['Círculo', 'Cuadrado', 'Rectángulo'], answer: 'Rectángulo', hints:['Imagina una lata de refresco.', 'Si la partes por la mitad verticalmente...', 'La forma que ves en el interior del corte...', 'Tiene 4 lados y 4 esquinas rectas.', 'Es un rectángulo.'], explanation: 'El corte transversal de un cilindro es un rectángulo. ¡Una sorpresa geométrica! 😯', lessonId: GEOMETRIA_P3},
+        { type: 'input', question: 'El diámetro de un círculo es de 20 cm. ¿Cuánto mide su radio? 📏🔴', imageUrl: createCircleSVG('diameter', 20), answer: '10', hints:['El radio es el segmento que va desde el centro hasta el borde.', 'El diámetro cruza todo el círculo, pasando por el centro.', 'Por eso, el radio mide exactamente la mitad que el diámetro.', 'Divide 20 entre 2.', 'La respuesta es 10.'], explanation: `¡Perfecto! 🌟 El radio es siempre la mitad del diámetro. 
+        Si el diámetro es 20 cm, entonces: **20 ÷ 2 = 10 cm**. 
+        ¡El radio mide 10 centímetros! 📏✨`, lessonId: GEOMETRIA_P3},
+        { type: 'input', question: 'El radio de un círculo es de 8 cm. ¿Cuánto mide su diámetro? 🔴📏', imageUrl: createCircleSVG('radius', 8), answer: '16', hints:['El diámetro es la línea que atraviesa el círculo por el centro.', 'Es equivalente a poner dos radios juntos en línea.', 'Por eso, el diámetro es el doble del radio.', 'Multiplica 8 por 2.', 'La respuesta es 16.'], explanation: `¡Así se hace! 🚀 El diámetro es el doble del radio. 
+        Si el radio es 8 cm, entonces: **8 x 2 = 16 cm**. 
+        ¡El diámetro mide 16 centímetros! 🔴📏✨`, lessonId: GEOMETRIA_P3},
+        { type: 'mcq', question: 'Si haces un corte a una lata de refresco (cilindro) de arriba a abajo, ¿qué figura plana ves en el corte? 🥫✂️', imageUrl: create3DShapeSVG('cylinder'), options: ['Círculo', 'Triángulo', 'Rectángulo'], answer: 'Rectángulo', hints:['Imagina una lata de refresco.', 'Si la partes por la mitad verticalmente...', 'La forma que ves en el interior del corte...', 'Tiene 4 lados y esquinas rectas.', 'Es un rectángulo.'], explanation: '¡Sorprendente pero cierto! 😲 Aunque el cilindro es redondo, si lo cortas verticalmente por el medio, la superficie que ves es un **rectángulo**. ¡La geometría tiene muchos trucos! 🥫📐', lessonId: GEOMETRIA_P3},
         ...Array.from({ length: 37 }).map((_, i): Question => {
             const isDiameterQuestion = i % 2 === 0;
             const value = 10 + i;
@@ -300,11 +306,15 @@ export const geometriaQuestions: Record<number, Question[]> = {
 
             return {
                 type: 'input',
-                question: isDiameterQuestion ? `Si el radio de un plato es ${value} cm, ¿cuál es su diámetro?` : `El diámetro de una rueda es ${value} cm. ¿Cuál es su radio?`,
+                question: isDiameterQuestion ? `Si el radio de un disco es de ${value} cm, ¿cuál es su diámetro total? 💿📏` : `El diámetro de un reloj circular es de ${value} cm. ¿Cuál es su radio? 🕰️📏`,
                 imageUrl: isDiameterQuestion ? createCircleSVG('radius', value) : createCircleSVG('diameter', value),
                 answer: answer.toString(),
-                hints: isDiameterQuestion ? ['El diámetro es el doble del radio.', `Multiplica ${value} x 2.`, `La respuesta es ${answer}.`] : ['El radio es la mitad del diámetro.', `Divide ${value} / 2.`, `La respuesta es ${answer}.`],
-                explanation: isDiameterQuestion ? `El diámetro es el doble del radio: ${value} x 2 = ${answer} cm.` : `El radio es la mitad del diámetro: ${value} / 2 = ${answer} cm.`,
+                hints: isDiameterQuestion 
+                    ? [`Recuerda: Diámetro = Radio x 2.`, `Multiplica ${value} por 2.`, `Es el doble de la medida que tienes.`, `Imagina dos radios juntos.`, `El resultado es ${answer}.`]
+                    : [`Recuerda: Radio = Diámetro / 2.`, `Divide ${value} entre 2.`, `Es la mitad de la medida que tienes.`, `Va desde el centro al borde.`, `El resultado es ${answer}.`],
+                explanation: isDiameterQuestion 
+                    ? `¡Genial! 💿 El diámetro es el doble del radio: **${value} x 2 = ${answer} cm**. ¡Has medido todo el ancho del disco! 🔴✨`
+                    : `¡Excelente! 🕰️ El radio es la mitad del diámetro: **${value} ÷ 2 = ${answer} cm**. ¡Esa es la distancia del centro al borde del reloj! 📏✨`,
                 lessonId: GEOMETRIA_P3
             };
         }).filter(Boolean) as Question[],

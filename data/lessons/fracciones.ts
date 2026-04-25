@@ -1,12 +1,10 @@
 import type { LessonContent } from '../../types';
-import { multiDiviQuestions } from '../categories/multi_divi';
-import { numerosQuestions } from '../categories/numeros';
+import { fraccionesQuestions } from '../categories/fracciones';
 
 const getQuestionsForLesson = (lessonId: string) => {
     const lessonQuestions: Record<number, any[]> = { 1: [], 2: [], 3: [] };
-    const allQuestions = { ...multiDiviQuestions, ...numerosQuestions };
-    for (const level in allQuestions) {
-        allQuestions[level as unknown as keyof typeof allQuestions].forEach(q => {
+    for (const level in fraccionesQuestions) {
+        fraccionesQuestions[level as unknown as keyof typeof fraccionesQuestions].forEach(q => {
             if (q.lessonId === lessonId) {
                 lessonQuestions[level as unknown as keyof typeof lessonQuestions].push(q);
             }
@@ -18,129 +16,126 @@ const getQuestionsForLesson = (lessonId: string) => {
 export const fraccionesLessons: LessonContent[] = [
     {
         id: 'fracciones_intro',
-        title: 'Fracciones y Decimales en la Recta',
-        period: 3,
-        categoryId: 'numeros',
+        title: 'Fracciones: ¡Partes de un Todo! 🍕',
+        period: 1,
+        categoryId: 'fracciones',
         theory: `
-            <h3 class="text-2xl font-bold mb-4 text-orange-600 dark:text-orange-400">¡El Mundo de las Fracciones y Decimales! 🍕</h3>
-            <p class="mb-4">Una fracción y un decimal son dos formas de hablar de <strong>trozos de algo</strong>. ¡Como cuando compartes una pizza con tus amigos!</p>
+            <h3 class="text-2xl font-bold mb-4 text-orange-600 dark:text-orange-400">¿Qué es una Fracción? 🧐🍽️</h3>
+            <p class="mb-4">Imagina que tienes una pizza 🍕 deliciosa y la cortas en partes iguales. Cada una de esas partes es una <strong>fracción</strong> del total. ¡Es así de sencillo!</p>
             
             <div class="bg-orange-50 dark:bg-orange-900/30 p-4 rounded-lg mb-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-orange-800 dark:text-orange-300">Las Partes de una Fracción</h4>
-                <p>Una fracción tiene dos números. En <strong>1/4</strong>, el 4 de abajo (denominador) nos dice que la pizza se partió en 4 trozos, y el 1 de arriba (numerador) nos dice que cogimos 1 trozo.</p>
+                <h4 class="text-xl font-bold mb-2 text-orange-800 dark:text-orange-300">Numerador y Denominador 🔢</h4>
+                <p>Una fracción tiene dos números separados por una rayita. Cada uno tiene un trabajo muy importante:</p>
+                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li><strong>El de arriba (Numerador):</strong> Te dice cuántas partes has tomado o coloreado. 😋</li>
+                    <li><strong>El de abajo (Denominador):</strong> Te dice en cuántas partes iguales se dividió el total. 🔪</li>
+                </ul>
+                <p class="mt-2 font-semibold">Ejemplo: En <strong>1/4</strong>, hemos tomado 1 parte de un total de 4. ¡Un cuarto de pizza!</p>
                 <div data-exercise-index="0"></div>
             </div>
 
-            <div class="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-lg my-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-indigo-800 dark:text-indigo-300">Los Decimales con Coma</h4>
-                <p>Los decimales usan una coma para separar los trozos del entero. ¡Son como las migajas!</p>
-                <ul class="list-disc list-inside ml-4 mt-2">
-                    <li><strong>0,5</strong> es lo mismo que <strong>1/2</strong>. ¡Es la mitad de algo!</li>
-                    <li><strong>0,25</strong> es lo mismo que <strong>1/4</strong>. ¡Un cuarto!</li>
+            <div class="bg-green-50 dark:bg-green-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-green-800 dark:text-green-300">¿Cómo se leen las Fracciones? 👄💬</h4>
+                <p>Leer fracciones es como aprender un nuevo idioma:</p>
+                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li><strong>1/2:</strong> Un medio (la mitad).</li>
+                    <li><strong>1/3:</strong> Un tercio.</li>
+                    <li><strong>1/4:</strong> Un cuarto.</li>
+                    <li><strong>1/5:</strong> Un quinto.</li>
                 </ul>
+                <p class="mt-2">¡Y así seguimos con sexto, séptimo, octavo, noveno y décimo! 🔟</p>
                 <div data-exercise-index="1"></div>
             </div>
-             <div class="bg-teal-50 dark:bg-teal-900/30 p-4 rounded-lg my-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-teal-800 dark:text-teal-300">La Recta Numérica 📏</h4>
-                <p>Podemos colocar todos estos "trozos" en una línea para ver cuál es más grande. ¡Es como una carrera para ver quién llega más lejos desde el 0!</p>
+
+            <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-blue-800 dark:text-blue-300">Fracciones en la Vida Real 🇨🇺🛍️</h4>
+                <p>Usamos fracciones todo el tiempo. Por ejemplo, en la bodega cuando pedimos <strong>media libra</strong> de café ☕ o <strong>un cuarto</strong> de queso 🧀. ¡Las fracciones nos ayudan a comprar justo lo que necesitamos!</p>
                 <div data-exercise-index="2"></div>
             </div>
         `,
         interactiveExercises: [
-             {
+            {
                 type: 'fill-in-the-text',
-                title: '¡A Practicar!: Las Partes de una Fracción',
-                textWithInputs: 'En la fracción 3/4, el numerador es __INPUT__ y el denominador es __INPUT__.',
-                correctAnswers: ['3', '4']
+                title: 'Partes de la Fracción',
+                textWithInputs: 'En 3/4, el número 3 se llama __INPUT__ y el número 4 se llama __INPUT__.',
+                correctAnswers: ['numerador', 'denominador']
             },
             {
                 type: 'match-pairs',
-                title: '¡A Practicar!: Decimales y Fracciones',
+                title: '¿Cómo se lee?',
                 pairs: [
-                    { term: '0,5', definition: '1/2' },
-                    { term: '0,25', definition: '1/4' },
-                    { term: '0,75', definition: '3/4' },
+                    { term: '1/2', definition: 'Un medio' },
+                    { term: '1/3', definition: 'Un tercio' },
+                    { term: '1/4', definition: 'Un cuarto' },
+                    { term: '1/5', definition: 'Un quinto' },
                 ]
             },
             {
-                type: 'number-line',
-                title: '¡A Practicar!: ¡Ordena en la Recta!',
-                min: 0,
-                max: 1,
-                items: [
-                    { value: 0.5, label: '1/2' },
-                    { value: 0.25, label: '0,25' },
-                    { value: 1, label: '1' },
-                    { value: 0.75, label: '3/4' },
-                    { value: 0, label: '0' },
-                ]
+                type: 'fill-in-the-text',
+                title: '¡En la Bodega!',
+                textWithInputs: 'Si pides la mitad de una libra, estás pidiendo __INPUT__/2 libra. Si pides un cuarto, es 1/__INPUT__ libra.',
+                correctAnswers: ['1', '4']
             }
         ],
         practice: getQuestionsForLesson('fracciones_intro'),
     },
     {
         id: 'fracciones_equivalentes',
-        title: 'Fracciones Equivalentes',
-        period: 3,
-        categoryId: 'numeros',
+        title: 'Fracciones Equivalentes: ¡Gemelas Matemáticas! 👯‍♂️',
+        period: 2,
+        categoryId: 'fracciones',
         theory: `
-            <h3 class="text-2xl font-bold mb-4 text-teal-600 dark:text-teal-400">¡Fracciones Gemelas! 👯</h3>
-            <p class="mb-4">Las fracciones equivalentes son fracciones que se escriben diferente, ¡pero valen lo mismo! Son como gemelos con ropa distinta.</p>
-            <p>Imagina que tienes <strong>1/2</strong> de una pizza. Si cortas ese trozo por la mitad, ahora tienes <strong>2/4</strong> de la pizza. ¡Es la misma cantidad de pizza!</p>
-            <div class="bg-teal-50 dark:bg-teal-900/30 p-4 rounded-lg my-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-teal-800 dark:text-teal-300">¿Cómo encontrar gemelos?</h4>
-                <p>¡Es fácil! Multiplica (o divide) el número de arriba y el de abajo <strong>por el mismo número</strong>.</p>
-                <p class="mt-2">Para <strong>2/3</strong>, si multiplicamos por 2: (2x2) / (3x2) = <strong>4/6</strong>. ¡Son equivalentes!</p>
-                <p class="mt-2"><strong>Simplificar</strong> es hacer lo contrario: dividir para encontrar el gemelo más simple. Para <strong>6/8</strong>, si dividimos por 2: (6÷2) / (8÷2) = <strong>3/4</strong>.</p>
+            <h3 class="text-2xl font-bold mb-4 text-purple-600 dark:text-purple-400">¿Qué significa Equivalente? 🤔⚖️</h3>
+            <p class="mb-4">Las fracciones <strong>equivalentes</strong> son aquellas que valen lo mismo, aunque se escriban con números diferentes. ¡Son como el mismo regalo pero con papeles de colores distintos! 🎁✨</p>
+            
+            <div class="bg-purple-50 dark:bg-purple-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-purple-800 dark:text-purple-300">Ejemplo de la Pizza 🍕🍕</h4>
+                <p>Si te comen <strong>1/2</strong> pizza, es lo mismo que si comes <strong>2/4</strong>. ¡Míralo bien! Estás comiendo exactamente la misma cantidad, solo que cortada en más trozos.</p>
+                <p class="mt-2 font-semibold">1/2 = 2/4 = 4/8. ¡Todas son gemelas! 👯‍♂️</p>
                 <div data-exercise-index="0"></div>
+            </div>
+
+            <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-yellow-800 dark:text-yellow-300">¿Cómo encontrar Fracciones Equivalentes? 🪄</h4>
+                <p>¡Es muy fácil! Solo tienes que multiplicar (o dividir) el número de arriba y el de abajo por el <strong>mismo número</strong>.</p>
+                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li>Si tienes 1/3 y multiplicas por 2: 1x2=<strong>2</strong> y 3x2=<strong>6</strong>. ¡Así que 1/3 = 2/6!</li>
+                </ul>
+                <p class="mt-2">¡Es como usar una lupa para ver las partes más pequeñas! 🔍</p>
+                <div data-exercise-index="1"></div>
+            </div>
+
+            <div class="bg-cyan-50 dark:bg-cyan-900/30 p-4 rounded-lg shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-cyan-800 dark:text-cyan-300">Comparar Fracciones ⚖️🧐</h4>
+                <p>Para saber cuál es mayor, fíjate en el denominador. Si dividimos lo mismo en más partes, ¡cada parte será más pequeñita! 🤏</p>
+                <p class="mt-2">Así que <strong>1/2</strong> es mucho más grande que <strong>1/8</strong>. ¡Mejor la mitad que un octavo! 😂</p>
+                <div data-exercise-index="2"></div>
             </div>
         `,
         interactiveExercises: [
             {
                 type: 'fill-in-the-text',
-                title: '¡A Practicar!: Fracciones Gemelas',
-                textWithInputs: 'Una fracción equivalente a 1/2 es 2/__INPUT__. La fracción 6/8 se puede simplificar a 3/__INPUT__.',
-                correctAnswers: ['4', '4']
+                title: 'Encontrando Gemelas 👯‍♂️',
+                textWithInputs: 'Si multiplico 1/2 por 3 arriba y abajo, obtengo __INPUT__/__INPUT__, que es equivalente.',
+                correctAnswers: ['3', '6']
+            },
+            {
+                type: 'match-pairs',
+                title: 'Parejas Equivalentes',
+                pairs: [
+                    { term: '1/2', definition: '2/4' },
+                    { term: '1/3', definition: '3/9' },
+                    { term: '2/5', definition: '4/10' },
+                    { term: '10/10', definition: '1 (El todo)' },
+                ]
+            },
+            {
+                type: 'fill-in-the-text',
+                title: '¿Cuál es mayor? ⚖️',
+                textWithInputs: 'Entre 1/2 y 1/4, la fracción mayor es __INPUT__/2. Entre 3/4 y 1/4, la mayor es __INPUT__/4.',
+                correctAnswers: ['1', '3']
             }
         ],
         practice: getQuestionsForLesson('fracciones_equivalentes'),
-    },
-    {
-        id: 'decimales_intro',
-        title: 'El Mundo de los Decimales',
-        period: 3,
-        categoryId: 'numeros',
-        theory: `
-            <h3 class="text-2xl font-bold mb-4 text-indigo-600 dark:text-indigo-400">¡Los números con coma! ,</h3>
-            <p class="mb-4">Los decimales son otra forma de hablar de "trozos". Son los números que viven después de la coma decimal. ¡Son como las migajas de un número entero!</p>
-            <div class="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-lg my-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-indigo-800 dark:text-indigo-300">Décimas y Centésimas</h4>
-                <p>El primer número después de la coma se llama <strong>décima</strong> (es como partir algo en 10 trozos).</p>
-                <ul class="list-disc list-inside ml-4 mt-2">
-                    <li><strong>0,1</strong> se lee "una décima" (es lo mismo que 1/10).</li>
-                    <li><strong>0,5</strong> se lee "cinco décimas" (es lo mismo que 5/10 o 1/2, ¡la mitad!).</li>
-                </ul>
-                 <p class="mt-4">El segundo número después de la coma se llama <strong>centésima</strong> (es como partir algo en 100 trocitos).</p>
-                 <ul class="list-disc list-inside ml-4 mt-2">
-                    <li><strong>0,01</strong> se lee "una centésima" (es 1/100).</li>
-                    <li><strong>0,25</strong> se lee "veinticinco centésimas" (es 25/100 o 1/4).</li>
-                </ul>
-                 <p class="mt-4 font-semibold">En el dinero, los decimales son los centavos. <strong>$1,50</strong> es un peso y cincuenta centavos.</p>
-                 <div data-exercise-index="0"></div>
-            </div>
-        `,
-        interactiveExercises: [
-            {
-                type: 'match-pairs',
-                title: '¡A Practicar!: Fracciones y Decimales',
-                pairs: [
-                    { term: '0,5', definition: '1/2 (la mitad)' },
-                    { term: '0,25', definition: '1/4 (un cuarto)' },
-                    { term: '0,1', definition: '1/10 (una décima)' },
-                    { term: '0,75', definition: '3/4 (tres cuartos)' },
-                ]
-            }
-        ],
-        practice: getQuestionsForLesson('decimales_intro'),
     },
 ];

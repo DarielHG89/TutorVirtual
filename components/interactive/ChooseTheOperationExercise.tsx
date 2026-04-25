@@ -43,6 +43,7 @@ export const ChooseTheOperationExercise: React.FC<ChooseTheOperationExerciseProp
     const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
     const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
     const [showConfetti, setShowConfetti] = useState(false);
+    const [showReset, setShowReset] = useState(!!savedState);
     const [isFinished, setIsFinished] = useState(!!savedState?.completed);
 
     const currentProblem = exercise.problems[currentProblemIndex];
@@ -70,6 +71,10 @@ export const ChooseTheOperationExercise: React.FC<ChooseTheOperationExerciseProp
                     setTimeout(() => {
                         onComplete({ completed: true });
                     }, 2000);
+
+                    setTimeout(() => {
+                        setShowReset(true);
+                    }, 3000);
                 }
             } else {
                 setTimeout(() => {
@@ -92,6 +97,7 @@ export const ChooseTheOperationExercise: React.FC<ChooseTheOperationExerciseProp
         setFeedback(null);
         setShowConfetti(false);
         setIsFinished(false);
+        setShowReset(false);
         onCompleteCalled.current = false;
     }
     
@@ -139,9 +145,11 @@ export const ChooseTheOperationExercise: React.FC<ChooseTheOperationExerciseProp
             {isFinished && (
                 <div className="animate-fade-in mt-4">
                     <p className="text-2xl font-bold text-green-600 dark:text-green-400">¡Felicidades! ¡Ejercicio completado! 🥳</p>
-                    <Button onClick={handleReset} variant="secondary" className="mt-4">
-                        Jugar de nuevo
-                    </Button>
+                    {showReset && (
+                        <Button onClick={handleReset} variant="secondary" className="mt-4">
+                            Jugar de nuevo
+                        </Button>
+                    )}
                 </div>
             )}
         </div>

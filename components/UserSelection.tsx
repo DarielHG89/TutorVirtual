@@ -89,6 +89,7 @@ const girlAvatars = ['🧜‍♀️', '🦸‍♀️', '🥷', '🤖', '🦄'];
 
 export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, onSave, currentUser }) => {
     const [name, setName] = useState(currentUser.name);
+    const [age, setAge] = useState(currentUser.age);
     const [selectedAvatar, setSelectedAvatar] = useState<string | null>(currentUser.avatar || null);
     const [userUploadedAvatars, setUserUploadedAvatars] = useState<string[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -108,6 +109,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
     useEffect(() => {
         if (isOpen) {
             setName(currentUser.name);
+            setAge(currentUser.age);
             setSelectedAvatar(currentUser.avatar || null);
             setError(null);
             // Reset other states
@@ -131,7 +133,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
         }
         
         const finalAvatar = selectedAvatar || (currentUser.gender === 'boy' ? '👦' : '👧');
-        onSave({ name: name.trim(), avatar: finalAvatar });
+        onSave({ name: name.trim(), age, avatar: finalAvatar });
     };
 
     const handleFileSelected = (event: React.ChangeEvent<HTMLInputElement>, target: 'manual' | 'gemini') => {
@@ -227,6 +229,18 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                             onChange={(e) => setName(e.target.value)}
                             className="p-3 text-lg border-2 border-slate-300 dark:border-slate-600 rounded-lg text-center w-full text-black bg-white dark:bg-slate-700 dark:text-white"
                         />
+                    </div>
+                    <div>
+                        <label className="text-lg font-bold text-slate-700 dark:text-slate-200 block mb-1">Edad</label>
+                        <select 
+                            value={age} 
+                            onChange={(e) => { playClickSound(); setAge(parseInt(e.target.value)); }}
+                            className="p-3 text-lg border-2 border-slate-300 dark:border-slate-600 rounded-lg text-center w-full bg-white dark:bg-slate-700 text-black dark:text-white"
+                        >
+                            {Array.from({ length: 8 }, (_, i) => i + 5).map(a => (
+                                <option key={a} value={a}>{a} años</option>
+                            ))}
+                        </select>
                     </div>
                      <div className="text-center">
                         <label className="text-lg font-bold text-slate-700 dark:text-slate-200 block mb-2">Avatar</label>

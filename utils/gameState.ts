@@ -1,13 +1,12 @@
 import type { GameState, CategoryId } from '../types';
-import { questions } from '../data/questions';
-import { lessons } from '../data/lessons';
+import { contentManager } from './contentManager';
 
 export const initialGameState = (): GameState => {
     const state: GameState = {};
     const allKeys = new Set<string>();
 
-    (Object.keys(questions) as CategoryId[]).forEach(key => allKeys.add(key));
-    lessons.forEach(lesson => allKeys.add(lesson.id));
+    (Object.keys(contentManager.getQuestions()) as CategoryId[]).forEach(key => allKeys.add(key));
+    contentManager.getLessons().forEach(lesson => allKeys.add(lesson.id));
     allKeys.add('exam_weekly');
     allKeys.add('exam_refresh');
     allKeys.add('exam_quick');

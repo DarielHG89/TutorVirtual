@@ -1,8 +1,14 @@
 import type { LiveServerMessage } from '@google/genai';
 
-export type Screen = 'main-menu' | 'level-selection' | 'quiz' | 'results' | 'live-conversation' | 'name-entry' | 'free-practice-menu' | 'study-area' | 'lesson' | 'parent-dashboard' | 'practice-history' | 'user-selection' | 'student-dashboard';
+export type Screen = 'main-menu' | 'level-selection' | 'quiz' | 'results' | 'live-conversation' | 'name-entry' | 'free-practice-menu' | 'study-area' | 'lesson' | 'parent-dashboard' | 'practice-history' | 'user-selection' | 'student-dashboard' | 'content-manager';
 
-export type CategoryId = 'numeros' | 'suma_resta' | 'multi_divi' | 'problemas' | 'geometria' | 'medidas' | 'reloj';
+export type CategoryId = string;
+
+export interface AppTaxonomy {
+    grades: { id: string; name: string }[];
+    subjects: { id: string; name: string; gradeId: string }[];
+    categories: { id: string; name: string; subjectId: string }[];
+}
 
 export type ConnectionStatus = 'checking' | 'online' | 'offline';
 
@@ -17,6 +23,7 @@ export interface Question {
     hints?: string[];
     imageUrl?: string;
     lessonId?: string;
+    categoryId?: string;
 }
 
 export interface QuestionResult {
@@ -137,6 +144,7 @@ export interface StudentProfile {
     gender: 'boy' | 'girl';
     avatar?: string;
     hasCompletedOnboarding?: boolean;
+    gradeId?: string;
 }
 
 // Types for Study Plan

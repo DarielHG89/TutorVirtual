@@ -67,6 +67,7 @@ export const NumberLineExercise: React.FC<NumberLineExerciseProps> = ({ exercise
     const [feedback, setFeedback] = useState<Record<number, FeedbackStatus>>({});
     const [isDraggingOver, setIsDraggingOver] = useState<boolean>(false);
     const [showConfetti, setShowConfetti] = useState(false);
+    const [showReset, setShowReset] = useState(!!savedState);
     const [aiState, setAiState] = useState<{ isLoading: boolean; error: string | null }>({ isLoading: false, error: null });
     const onCompleteCalled = useRef(!!savedState);
 
@@ -89,6 +90,11 @@ export const NumberLineExercise: React.FC<NumberLineExerciseProps> = ({ exercise
                  const finalState = { placed: Object.values(placedItems).filter(Boolean) };
                  onComplete(finalState);
             }, 2000);
+
+            const resetTimer = setTimeout(() => {
+                setShowReset(true);
+            }, 3000);
+            return () => clearTimeout(resetTimer);
         }
     }, [allCorrect, onComplete, placedItems]);
 
@@ -100,6 +106,7 @@ export const NumberLineExercise: React.FC<NumberLineExerciseProps> = ({ exercise
         setPlacedItems({});
         setFeedback({});
         setShowConfetti(false);
+        setShowReset(false);
         setAiState({ isLoading: false, error: null });
         onCompleteCalled.current = false;
     }, []);
@@ -227,9 +234,11 @@ export const NumberLineExercise: React.FC<NumberLineExerciseProps> = ({ exercise
                  {allCorrect ? (
                     <div className="animate-fade-in">
                         <p className="text-2xl font-bold text-green-600 dark:text-green-400">¡Felicidades! ¡Todo correcto! 🥳</p>
-                        <Button onClick={() => handleReset()} variant="secondary" className="mt-4">
-                            Jugar de nuevo
-                        </Button>
+                        {showReset && (
+                            <Button onClick={() => handleReset()} variant="secondary" className="mt-4">
+                                Jugar de nuevo
+                            </Button>
+                        )}
                     </div>
                 ) : (
                     <p className="text-slate-500 dark:text-slate-400">Arrastra cada número a su lugar correcto en la línea.</p>

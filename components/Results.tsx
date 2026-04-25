@@ -4,12 +4,12 @@ import React, { useEffect, useRef, useMemo } from 'react';
 import { Button } from './common/Button';
 import { useSpeech } from '../context/SpeechContext';
 import type { QuestionResult, CategoryId, QuizConfig } from '../types';
-import { questions } from '../data/questions';
-import { lessons } from '../data/lessons';
+import { contentManager } from '../utils/contentManager';
 
 interface ResultsProps {
     results: QuestionResult[];
     onBack: () => void;
+    onRetry: () => void;
     practiceSuggestion?: { categoryId: CategoryId, categoryName: string } | null;
     onGoToPractice?: (categoryId: CategoryId) => void;
     onGoToMainMenu?: () => void;
@@ -95,7 +95,7 @@ export const Confetti: React.FC<ConfettiProps> = ({ onComplete }) => {
 };
 
 
-export const Results: React.FC<ResultsProps> = ({ results, onBack, practiceSuggestion, onGoToPractice, onGoToMainMenu, onGoToStudyArea, quizConfig, onStartNextLevel }) => {
+export const Results: React.FC<ResultsProps> = ({ results, onBack, onRetry, practiceSuggestion, onGoToPractice, onGoToMainMenu, onGoToStudyArea, quizConfig, onStartNextLevel }) => {
     const score = results.filter(r => r.correct).length;
     const total = results.length;
     const totalTime = results.reduce((sum, r) => sum + r.time, 0);
@@ -125,11 +125,11 @@ export const Results: React.FC<ResultsProps> = ({ results, onBack, practiceSugge
 
         const nextLevel = currentLevel + 1;
         if (quizConfig.type === 'practice' && quizConfig.categoryId) {
-            return !!questions[quizConfig.categoryId]?.[nextLevel];
+            return !!contentManager.getQuestions()[quizConfig.categoryId]?.[nextLevel];
         }
 
         if (quizConfig.type === 'lesson' && quizConfig.lessonId) {
-            const lesson = lessons.find(l => l.id === quizConfig.lessonId);
+            const lesson = contentManager.getLessons().find(l => l.id === quizConfig.lessonId);
             return !!lesson?.practice?.[nextLevel];
         }
 
@@ -147,30 +147,49 @@ export const Results: React.FC<ResultsProps> = ({ results, onBack, practiceSugge
         <div className="animate-fade-in text-center flex flex-col h-full">
             {isPerfectScore && <Confetti />}
             <div className="flex-shrink-0">
-                <h2 className="text-5xl font-black text-slate-800 dark:text-slate-200 mb-4">{title}</h2>
+                <h2 className="text-5xl font-black text-slate-800 dark:text-slate-200 mb-2">{title}</h2>
+                {quizConfig && <h3 className="text-2xl font-bold text-slate-600 dark:text-slate-400 mb-4">{quizConfig.name}</h3>}
                 <p className="text-xl mb-2 text-slate-600 dark:text-slate-300">Tu resultado final es:</p>
                 <div className={`text-7xl font-black my-4 ${passed ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
                     {score} / {total}
                 </div>
-                <p className="text-lg text-slate-600 dark:text-slate-400 mb-4">
+                <p className="text-lg text-slate-600 dark:text-slate-400 mb-6">
                     Tiempo Total: <span className="font-bold">{formatTime(totalTime)}</span>
                 </p>
+
+                <div className="flex flex-wrap justify-center gap-3 mb-6 animate-fade-in">
+                    <Button onClick={onBack} variant="secondary">
+                        ⬅️ {backButtonText}
+                    </Button>
+                    <Button onClick={onRetry} variant="special">
+                        Repetir Nivel 🔄
+                    </Button>
+                    {showNextLevelButton && (
+                        <Button onClick={onStartNextLevel} variant="primary">
+                            Siguiente Nivel ➡️
+                        </Button>
+                    )}
+                    {onGoToStudyArea && (
+                            <Button onClick={onGoToStudyArea} variant="primary">
+                            📚 Área de Estudio
+                        </Button>
+                    )}
+                    {onGoToMainMenu && (
+                            <Button onClick={onGoToMainMenu} variant="primary">
+                            🏠 Menú Principal
+                        </Button>
+                    )}
+                </div>
             </div>
             
-            <div className="mt-4 flex-grow overflow-y-auto pr-2 border-t-2 border-slate-200 dark:border-slate-700 pt-4 min-h-0">
+            <div className="flex-grow overflow-y-auto pr-2 border-t-2 border-slate-200 dark:border-slate-700 pt-4 min-h-0">
                 {practiceSuggestion && onGoToPractice && onGoToMainMenu && onGoToStudyArea && (
                     <div className="mb-6 p-4 rounded-lg bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-300 dark:border-blue-600 animate-fade-in text-center">
                         <h3 className="text-xl font-bold text-blue-800 dark:text-blue-200">¡Lección Dominada! 🥳</h3>
-                        <p className="text-slate-700 dark:text-slate-300 mt-2">¡Felicidades! Has completado esta lección. ¿Qué quieres hacer ahora?</p>
-                        <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
+                        <p className="text-slate-700 dark:text-slate-300 mt-2">¡Felicidades! Has completado esta lección. ¿Te gustaría practicar libremente el tema?</p>
+                        <div className="mt-4 flex justify-center">
                             <Button onClick={() => onGoToPractice(practiceSuggestion.categoryId)} variant="special" className="w-full sm:w-auto">
-                                Practicar '{practiceSuggestion.categoryName}'
-                            </Button>
-                            <Button onClick={onGoToStudyArea} variant="primary" className="w-full sm:w-auto">
-                                Otras Lecciones
-                            </Button>
-                            <Button onClick={onGoToMainMenu} variant="secondary" className="w-full sm:w-auto">
-                                Menú Principal
+                                🎮 Practicar '{practiceSuggestion.categoryName}'
                             </Button>
                         </div>
                     </div>
@@ -196,21 +215,6 @@ export const Results: React.FC<ResultsProps> = ({ results, onBack, practiceSugge
                         </div>
                     ))}
                 </div>
-            </div>
-            
-            <div className="mt-6 flex-shrink-0">
-                { !practiceSuggestion ? (
-                    <div className="flex justify-center gap-4">
-                        <Button onClick={onBack} variant="secondary">
-                            {backButtonText}
-                        </Button>
-                        {showNextLevelButton && (
-                            <Button onClick={onStartNextLevel} variant="primary">
-                                Siguiente Nivel &rarr;
-                            </Button>
-                        )}
-                    </div>
-                ) : null }
             </div>
         </div>
     );

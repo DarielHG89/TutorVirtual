@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { GameState, CategoryId, QuestionResult } from '../types';
-import { questions } from '../data/questions';
-import { lessons } from '../data/lessons';
+import { contentManager } from '../utils/contentManager';
 import { initialGameState, loadGameStateForUser } from '../utils/gameState';
 
 const MIN_SCORE_to_UNLOCK_PERCENT = 0.8;
@@ -10,10 +9,10 @@ const getMaxLevelForKey = (key: string): number => {
     if (key.startsWith('exam')) {
         return 1;
     }
-    if (questions[key as CategoryId]) {
-        return Object.keys(questions[key as CategoryId]).length;
+    if (contentManager.getQuestions()[key as CategoryId]) {
+        return Object.keys(contentManager.getQuestions()[key as CategoryId]).length;
     }
-    const lesson = lessons.find(l => l.id === key);
+    const lesson = contentManager.getLessons().find(l => l.id === key);
     if (lesson && lesson.practice) {
         return Object.keys(lesson.practice).length;
     }
@@ -53,12 +52,12 @@ export const useGameState = (userId: string | null) => {
                 stateForKey.highScores[level] = score;
             }
             
-            const isCategory = !!questions[key as CategoryId];
+            const isCategory = !!contentManager.getQuestions()[key as CategoryId];
             let maxLevel = 3;
             if (isCategory) {
-                maxLevel = Object.keys(questions[key as CategoryId] || {}).length;
+                maxLevel = Object.keys(contentManager.getQuestions()[key as CategoryId] || {}).length;
             } else {
-                const lesson = lessons.find(l => l.id === key);
+                const lesson = contentManager.getLessons().find(l => l.id === key);
                 if (lesson) {
                     maxLevel = Object.keys(lesson.practice).length;
                 }
@@ -76,14 +75,17 @@ export const useGameState = (userId: string | null) => {
     const recordInteractiveExerciseState = useCallback((lessonId: string, exerciseIndex: number, state: any) => {
         setGameState(prev => {
             const newState: GameState = JSON.parse(JSON.stringify(prev));
-            const stateForKey = newState[lessonId];
-            if (!stateForKey) return prev;
+            let stateForKey = newState[lessonId];
+            if (!stateForKey) {
+                stateForKey = { unlockedLevel: 1, highScores: {}, skillHistory: [], usedQuestions: {}, contentVersion: 1 };
+            }
 
             if (!stateForKey.interactiveExerciseState) {
                 stateForKey.interactiveExerciseState = {};
             }
             stateForKey.interactiveExerciseState[exerciseIndex] = state;
             
+            newState[lessonId] = stateForKey;
             return newState;
         });
     }, []);

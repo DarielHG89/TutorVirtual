@@ -11,12 +11,14 @@ import { StudyAreaMenu } from './components/StudyAreaMenu';
 import { LessonScreen } from './components/LessonScreen';
 import { ParentDashboard } from './components/ParentDashboard';
 import { PracticeHistory } from './components/PracticeHistory';
+import { GlobalHistoryScreen } from './components/GlobalHistoryScreen';
 import { UserSelection, EditProfileModal } from './components/UserSelection';
 import { GlobalHeader } from './components/common/GlobalHeader';
 import { Modal } from './components/common/Modal';
 import { DashboardModal } from './components/DashboardModal';
 import { AvatarSelectorModal, type AvatarSelectorModalProps } from './components/AvatarSelectorModal';
 import { FeedbackModal } from './components/FeedbackModal';
+import { StudentDashboard } from './components/StudentDashboard';
 import { Onboarding } from './components/Onboarding';
 import { DynamicBackground, type BackgroundTheme } from './components/common/DynamicBackground';
 import { InteractiveMascot } from './components/common/InteractiveMascot'; // Import Mascot
@@ -24,14 +26,13 @@ import { useGameState } from './hooks/useGameState';
 import { useAppReducer } from './hooks/useAppReducer';
 import { useTheme } from './hooks/useTheme';
 import type { Screen, QuizConfig, CategoryId, ConnectionStatus, StudentProfile, VoiceMode, Question, QuestionResult } from './types';
-import { questions } from './data/questions';
-import { lessons } from './data/lessons';
+import { contentManager } from './utils/contentManager';
 import { checkGeminiConnection, generatePersonalizedSuggestion } from './services/aiService';
 import { SpeechProvider } from './context/SpeechContext';
 import { MascotProvider } from './context/MascotContext'; // Import Provider
 import { categoryNames } from './utils/constants';
 import { shuffleArray } from './utils/array';
-import { StudentDashboard } from './components/StudentDashboard';
+import { ContentManagerScreen } from './components/ContentManagerScreen';
 
 const USER_LIST_KEY = 'maestroDigitalUserList';
 const LAST_SCREEN_KEY_PREFIX = 'maestroDigitalLastScreen_';
@@ -52,7 +53,7 @@ export default function App() {
     const scrollPositionsRef = useRef<Record<string, number>>({});
     
     const [state, dispatch] = useAppReducer();
-    const { screen, quizConfig, selectedCategory, finalResults, allUsers, currentUser, isFreeMode, lessonId, showPracticeSuggestion, openPeriods, isFeedbackModalOpen, isEditProfileModalOpen } = state;
+    const { screen, quizConfig, selectedCategory, finalResults, allUsers, currentUser, isFreeMode, lessonId, activeSubjectId, showPracticeSuggestion, openPeriods, isFeedbackModalOpen, isEditProfileModalOpen } = state;
     
     const [theme, toggleTheme] = useTheme();
 
@@ -76,7 +77,7 @@ export default function App() {
     const [voiceMode, setVoiceMode] = useState<VoiceMode>('local');
     const [newContentNotifications, setNewContentNotifications] = useState<Partial<Record<CategoryId, boolean>>>({});
 
-    const lessonIdToNameMap = useMemo(() => new Map(lessons.map(l => [l.id, l.title])), []);
+    const lessonIdToNameMap = useMemo(() => new Map(contentManager.getLessons().map(l => [l.id, l.title])), []);
 
     const { gameState, recordPracticeResult, addSkillRecord, unlockNextLevel, resetProgressForKey, recordUsedQuestions, clearUsedQuestions, unlockAllLevels, resetAllProgress, resetPracticeCategoryProgress, recordInteractiveExerciseState } = useGameState(currentUser?.id || null);
     const prevGameState = usePrevious(gameState);
@@ -91,14 +92,14 @@ export default function App() {
         } 
         // 2. If in a lesson, find the lesson's category
         else if (lessonId) {
-            const lesson = lessons.find(l => l.id === lessonId);
+            const lesson = contentManager.getLessons().find(l => l.id === lessonId);
             if (lesson) category = lesson.categoryId;
         }
         // 3. If in a quiz (e.g. exam), try to infer or default
         else if (quizConfig) {
              if (quizConfig.categoryId) category = quizConfig.categoryId;
              else if (quizConfig.lessonId) {
-                 const lesson = lessons.find(l => l.id === quizConfig.lessonId);
+                 const lesson = contentManager.getLessons().find(l => l.id === quizConfig.lessonId);
                  if (lesson) category = lesson.categoryId;
              }
         }
@@ -140,8 +141,21 @@ export default function App() {
     useEffect(() => {
         const savedUsersRaw = localStorage.getItem(USER_LIST_KEY);
         if (savedUsersRaw) {
-            const users = JSON.parse(savedUsersRaw);
+            let users = JSON.parse(savedUsersRaw);
             if (users && users.length > 0) {
+                // MIGRATION: Update users who had 'grado-1' to 'grado-3' in legacy
+                let migrated = false;
+                users = users.map((u: any) => {
+                    if (u.gradeId === 'grado-1') {
+                        migrated = true;
+                        return { ...u, gradeId: 'grado-3' };
+                    }
+                    return u;
+                });
+                if (migrated) {
+                    localStorage.setItem(USER_LIST_KEY, JSON.stringify(users));
+                }
+                
                 dispatch({ type: 'SET_ALL_USERS', payload: users });
                 dispatch({ type: 'SET_SCREEN', payload: 'user-selection' });
             } else {
@@ -239,10 +253,9 @@ export default function App() {
     useEffect(() => {
         if (!prevGameState || !currentUser) return;
 
-        const allPeriods = [...new Set(lessons.map(l => l.period))].sort((a, b) => a - b);
-
+        const allPeriods = [...new Set(contentManager.getLessons().map(l => l.period))].sort((a, b) => a - b);
         for (const periodNumber of allPeriods) {
-            const lessonsInPeriod = lessons.filter(l => l.period === periodNumber);
+            const lessonsInPeriod = contentManager.getLessons().filter(l => l.period === periodNumber);
             if (lessonsInPeriod.length === 0) continue;
 
             const wasPeriodComplete = lessonsInPeriod.every(pLesson => {
@@ -257,7 +270,7 @@ export default function App() {
 
             if (!wasPeriodComplete && isPeriodNowComplete) {
                 const nextPeriodNumber = periodNumber + 1;
-                const hasNextPeriod = lessons.some(l => l.period === nextPeriodNumber);
+                const hasNextPeriod = contentManager.getLessons().some(l => l.period === nextPeriodNumber);
 
                 dispatch({ type: 'TOGGLE_PERIOD', payload: periodNumber });
                 if (hasNextPeriod) {
@@ -271,7 +284,7 @@ export default function App() {
     const unlockedPracticeCategories = useMemo(() => {
         const unlocked = new Set<CategoryId>();
     
-        lessons.forEach(lesson => {
+        contentManager.getLessons().forEach(lesson => {
             const lessonProgress = gameState[lesson.id];
             if (lessonProgress) {
                 const level1HighScore = lessonProgress.highScores?.[1] || 0;
@@ -281,7 +294,7 @@ export default function App() {
             }
         });
     
-        const allCategoryIds = Object.keys(questions) as CategoryId[];
+        const allCategoryIds = Object.keys(contentManager.getQuestions()) as CategoryId[];
         allCategoryIds.forEach(catId => {
             const practiceProgress = gameState[catId];
             if (practiceProgress && practiceProgress.unlockedLevel > 1) {
@@ -294,15 +307,23 @@ export default function App() {
 
     const learnedQuestionsPool = useMemo(() => {
         const completedLessonIds = new Set<string>();
-        lessons.forEach(lesson => {
+        contentManager.getLessons().forEach(lesson => {
             if ((gameState[lesson.id]?.highScores?.[1] || 0) >= MIN_SCORE_TO_UNLOCK) {
                 completedLessonIds.add(lesson.id);
             }
         });
 
+        const taxonomy = contentManager.getTaxonomy();
+        const activeSubject = activeSubjectId || (taxonomy.subjects.length > 0 ? taxonomy.subjects[0].id : null);
+        
+        const subjectCategories = activeSubject 
+            ? taxonomy.categories.filter(c => c.subjectId === activeSubject).map(c => c.id)
+            : Object.keys(contentManager.getQuestions());
+
         let pool: Question[] = [];
-        (Object.keys(questions) as CategoryId[]).forEach(catId => {
-            Object.values(questions[catId]).forEach(levelQuestions => {
+        subjectCategories.forEach(catId => {
+            const questionsForCat = contentManager.getQuestions()[catId as CategoryId] || {};
+            Object.values(questionsForCat).forEach(levelQuestions => {
                 levelQuestions.forEach(question => {
                     if (question.lessonId && completedLessonIds.has(question.lessonId)) {
                         pool.push(question);
@@ -312,7 +333,7 @@ export default function App() {
         });
         
         return pool;
-    }, [gameState]);
+    }, [gameState, activeSubjectId]);
 
     const areExamsEnabled = useMemo(() => {
         return learnedQuestionsPool.length >= 5;
@@ -437,9 +458,9 @@ export default function App() {
             scrollPositionsRef.current[key] = mainContentRef.current.scrollTop;
         }
 
-        const fullQuestionPool = (questions[categoryId][level] || []).map((q, index) => ({ question: q, originalIndex: index }));
+        const fullQuestionPool = (contentManager.getQuestions()[categoryId][level] || []).map((q, index) => ({ question: q, originalIndex: index }));
 
-        const completedLessonIds = lessons
+        const completedLessonIds = contentManager.getLessons()
             .filter(l => l.categoryId === categoryId && (gameState[l.id]?.highScores?.[1] || 0) >= MIN_SCORE_TO_UNLOCK)
             .map(l => l.id);
         
@@ -489,7 +510,7 @@ export default function App() {
             const key = `lesson-${lessonId}`;
             scrollPositionsRef.current[key] = mainContentRef.current.scrollTop;
         }
-        const lesson = lessons.find(l => l.id === lessonId);
+        const lesson = contentManager.getLessons().find(l => l.id === lessonId);
         if (!lesson || !lesson.practice[level]) return;
     
         const fullQuestionPool = (lesson.practice[level] || []).map((q, index) => ({ question: q, originalIndex: index }));
@@ -596,7 +617,7 @@ export default function App() {
         } else if (quizConfig.type === 'lesson' && quizConfig.lessonId && quizConfig.level) {
             key = quizConfig.lessonId;
             level = quizConfig.level;
-            const lesson = lessons.find(l => l.id === quizConfig.lessonId);
+            const lesson = contentManager.getLessons().find(l => l.id === quizConfig.lessonId);
             skillKey = lesson?.categoryId;
             lessonIdForRecord = key;
             if (quizConfig.questionIndices) recordUsedQuestions(key, level, quizConfig.questionIndices);
@@ -626,7 +647,7 @@ export default function App() {
             }
             
             if (quizConfig.type === 'lesson' && quizConfig.lessonId) {
-                const lesson = lessons.find(l => l.id === quizConfig.lessonId);
+                const lesson = contentManager.getLessons().find(l => l.id === quizConfig.lessonId);
                 const previousHighScore = gameState[quizConfig.lessonId]?.highScores?.[1] || 0;
 
                 if (lesson) {
@@ -660,14 +681,26 @@ export default function App() {
         if (!currentUser) return;
         setAiSuggestion({ text: '', isLoading: true, error: null });
         try {
-            const suggestion = await generatePersonalizedSuggestion(gameState, currentUser);
+            const taxonomy = contentManager.getTaxonomy();
+            const activeSubject = activeSubjectId || (taxonomy.subjects.length > 0 ? taxonomy.subjects[0].id : null);
+            const subjectCategoryIds = activeSubject 
+                ? taxonomy.categories.filter(c => c.subjectId === activeSubject).map(c => c.id)
+                : undefined;
+
+            const suggestion = await generatePersonalizedSuggestion(gameState, currentUser, subjectCategoryIds);
             setAiSuggestion({ text: suggestion, isLoading: false, error: null });
         } catch (error) {
             const message = error instanceof Error ? error.message : "No se pudo generar el consejo.";
             setAiSuggestion({ text: '', isLoading: false, error: `Error: ${message}` });
         }
-    }, [currentUser, gameState]);
+    }, [currentUser, gameState, activeSubjectId]);
 
+
+    const handleRetryQuiz = useCallback(() => {
+        if (!quizConfig) return;
+        dispatch({ type: 'START_QUIZ', payload: quizConfig });
+        navigateTo('quiz');
+    }, [quizConfig, dispatch, navigateTo]);
 
     const handleBackToMenu = useCallback(() => dispatch({ type: 'GO_TO_MAIN_MENU' }), [dispatch]);
     const handleBackToStudyArea = useCallback(() => navigateTo('study-area'), [navigateTo]);
@@ -678,8 +711,9 @@ export default function App() {
     const handleBackToFreePracticeMenu = useCallback(() => navigateTo('free-practice-menu'), [navigateTo]);
     const handleGoToDashboard = useCallback(() => navigateTo('student-dashboard'), [navigateTo]);
 
-    const handleStartStudyArea = useCallback(() => {
-        const allSubmodulesFlat = lessons.filter(l => l.period);
+    const handleStartStudyArea = useCallback((subjectId?: string) => {
+        const allLessons = contentManager.getLessons().filter(l => !subjectId || l.categoryId.startsWith(subjectId) || contentManager.getTaxonomy().categories.find(c => c.id === l.categoryId)?.subjectId === subjectId);
+        const allSubmodulesFlat = allLessons.filter(l => l.period);
         const processedSubmodules = new Map<string, {isCompleted: boolean}>();
 
         for (const submodule of allSubmodulesFlat) {
@@ -688,20 +722,24 @@ export default function App() {
             processedSubmodules.set(submodule.id, { isCompleted });
         }
         
-        const processedStudyPlan = [...new Set(lessons.map(l => l.period))].sort((a,b) => a-b).map(pNum => {
-            const allSubmodulesInPeriod = lessons.filter(l => l.period === pNum);
-            const isPeriodCompleted = allSubmodulesInPeriod.every(sm => processedSubmodules.get(sm.id)?.isCompleted);
+        const processedStudyPlan = [...new Set(allLessons.map(l => l.period))].sort((a,b) => a-b).map(pNum => {
+            const allSubmodulesInPeriod = allLessons.filter(l => l.period === pNum);
+            const isPeriodCompleted = allSubmodulesInPeriod.length > 0 && allSubmodulesInPeriod.every(sm => processedSubmodules.get(sm.id)?.isCompleted);
             return { period: pNum, isCompleted: isPeriodCompleted };
         });
 
-        const firstUncompletedPeriod = processedStudyPlan.find(p => !p.isCompleted);
+        const firstUncompletedPeriod = processedStudyPlan.find(p => !p.isCompleted && p.period !== undefined);
         const initialOpenState: Record<number, boolean> = {};
-        processedStudyPlan.forEach(p => initialOpenState[p.period] = false);
+        processedStudyPlan.forEach(p => {
+            if (p.period !== undefined) {
+                initialOpenState[p.period] = false;
+            }
+        });
         
-        if (firstUncompletedPeriod) initialOpenState[firstUncompletedPeriod.period] = true;
-        else if (processedStudyPlan.length > 0) initialOpenState[processedStudyPlan[processedStudyPlan.length - 1].period] = true;
+        if (firstUncompletedPeriod && firstUncompletedPeriod.period !== undefined) initialOpenState[firstUncompletedPeriod.period] = true;
+        else if (processedStudyPlan.length > 0 && processedStudyPlan[processedStudyPlan.length - 1].period !== undefined) initialOpenState[processedStudyPlan[processedStudyPlan.length - 1].period as number] = true;
         
-        dispatch({ type: 'GO_TO_STUDY_AREA', payload: initialOpenState });
+        dispatch({ type: 'GO_TO_STUDY_AREA', payload: { openPeriods: initialOpenState, subjectId } });
     }, [gameState, dispatch]);
 
     const handleTogglePeriod = useCallback((periodNumber: number) => dispatch({ type: 'TOGGLE_PERIOD', payload: periodNumber }), [dispatch]);
@@ -724,15 +762,15 @@ export default function App() {
     const handleStartNextLevel = useCallback(() => {
         if (!quizConfig || quizConfig.level === undefined) return;
         const nextLevel = quizConfig.level + 1;
-        if (quizConfig.type === 'practice' && quizConfig.categoryId && questions[quizConfig.categoryId]?.[nextLevel]) {
+        if (quizConfig.type === 'practice' && quizConfig.categoryId && contentManager.getQuestions()[quizConfig.categoryId]?.[nextLevel]) {
             handleStartPractice(quizConfig.categoryId, nextLevel);
         } else if (quizConfig.type === 'lesson' && quizConfig.lessonId) {
-            const lesson = lessons.find(l => l.id === quizConfig.lessonId);
+            const lesson = contentManager.getLessons().find(l => l.id === quizConfig.lessonId);
             if (lesson?.practice?.[nextLevel]) handleStartLessonPractice(quizConfig.lessonId, nextLevel);
         }
     }, [quizConfig, handleStartPractice, handleStartLessonPractice]);
     
-    const currentLesson = useMemo(() => lessonId ? lessons.find(l => l.id === lessonId) || null : null, [lessonId]);
+    const currentLesson = useMemo(() => lessonId ? contentManager.getLessons().find(l => l.id === lessonId) || null : null, [lessonId]);
 
     const screenConfig = useMemo(() => {
         const backFromResults = () => {
@@ -748,11 +786,11 @@ export default function App() {
             case 'name-entry':
                 return { component: <NameEntry onProfileSubmit={handleCreateProfile} onBack={handleSwitchUser} showBackButton={allUsers.length > 0} theme={theme} onToggleTheme={toggleTheme} setAvatarSelectorProps={setAvatarSelectorProps} />, showHeader: false, allowScroll: true };
             case 'main-menu':
-                 return { component: <MainMenu studentProfile={currentUser} gameState={gameState} onSelectCategory={handleSelectCategory} onStartWeeklyExam={handleStartWeeklyExam} onStartRefreshExam={handleStartRefreshExam} onStartQuickChallenge={handleStartQuickChallenge} onStartLiveConversation={handleStartLiveConversation} onStartFreePractice={handleStartFreePractice} onStartStudyArea={handleStartStudyArea} onGoToParentDashboard={handleGoToParentDashboard} onViewHistory={handleViewPracticeHistory} connectionStatus={connectionStatus} isAiEnabled={isAiEnabled} unlockedPracticeCategories={unlockedPracticeCategories} newContentNotifications={newContentNotifications} areExamsEnabled={areExamsEnabled} aiSuggestion={aiSuggestion} onGenerateSuggestion={handleGenerateSuggestion} onGoToDashboard={handleGoToDashboard} />, showHeader: true };
+                 return { component: <MainMenu studentProfile={currentUser} gameState={gameState} onSelectCategory={handleSelectCategory} onStartWeeklyExam={handleStartWeeklyExam} onStartRefreshExam={handleStartRefreshExam} onStartQuickChallenge={handleStartQuickChallenge} onStartLiveConversation={handleStartLiveConversation} onStartFreePractice={handleStartFreePractice} onStartStudyArea={handleStartStudyArea} onGoToParentDashboard={handleGoToParentDashboard} onViewHistory={handleViewPracticeHistory} connectionStatus={connectionStatus} isAiEnabled={isAiEnabled} unlockedPracticeCategories={unlockedPracticeCategories} newContentNotifications={newContentNotifications} areExamsEnabled={areExamsEnabled} aiSuggestion={aiSuggestion} onGenerateSuggestion={handleGenerateSuggestion} onGoToDashboard={handleGoToDashboard} activeSubjectId={activeSubjectId} onSubjectChange={(sid) => dispatch({ type: 'SET_ACTIVE_SUBJECT', payload: sid })} />, showHeader: true };
             case 'free-practice-menu':
-                return { component: <FreePracticeMenu onSelectCategory={handleSelectCategoryForFreePractice} />, title: 'Práctica Libre', onBack: handleBackToMenu, showHeader: true };
+                return { component: <FreePracticeMenu onSelectCategory={handleSelectCategoryForFreePractice} subjectId={activeSubjectId} studentProfile={currentUser} />, title: 'Práctica Libre', onBack: handleBackToMenu, showHeader: true };
             case 'study-area':
-                return { component: <StudyAreaMenu onSelectSubmodule={handleSelectSubmodule} gameState={gameState} openPeriods={openPeriods} onTogglePeriod={handleTogglePeriod} />, title: 'Área de Estudio', onBack: handleBackToMenu, showHeader: true };
+                return { component: <StudyAreaMenu onSelectSubmodule={handleSelectSubmodule} gameState={gameState} openPeriods={openPeriods} onTogglePeriod={handleTogglePeriod} subjectId={activeSubjectId} studentProfile={currentUser} />, title: 'Área de Estudio', onBack: handleBackToMenu, showHeader: true };
             case 'lesson':
                 if (!currentLesson || !currentUser) return { component: null, showHeader: false };
                 return { component: <LessonScreen lesson={currentLesson} onStartPractice={handleStartLessonPractice} gameState={gameState} isAiEnabled={isAiEnabled} studentProfile={currentUser} recordInteractiveExerciseState={recordInteractiveExerciseState} isDebugMode={isDebugMode} />, title: currentLesson.title, onBack: handleBackToStudyArea, showHeader: true };
@@ -764,23 +802,27 @@ export default function App() {
                 return { component: <Quiz quizConfig={quizConfig} onQuizEnd={handleQuizEnd} onBack={backFromQuiz} isAiEnabled={isAiEnabled} studentProfile={currentUser} isDebugMode={isDebugMode} />, title: quizConfig.name, onBack: backFromQuiz, showHeader: true };
             case 'results':
                 if (!finalResults) return { component: null, showHeader: false };
-                return { component: <Results results={finalResults} onBack={backFromResults} practiceSuggestion={showPracticeSuggestion} onGoToPractice={handleGoToPracticeFromSuggestion} onGoToMainMenu={handleBackToMenu} onGoToStudyArea={handleBackToStudyArea} quizConfig={quizConfig} onStartNextLevel={handleStartNextLevel} />, title: 'Resultados', onBack: backFromResults, showHeader: true };
+                return { component: <Results results={finalResults} onBack={backFromResults} onRetry={handleRetryQuiz} practiceSuggestion={showPracticeSuggestion} onGoToPractice={handleGoToPracticeFromSuggestion} onGoToMainMenu={handleBackToMenu} onGoToStudyArea={handleBackToStudyArea} quizConfig={quizConfig} onStartNextLevel={handleStartNextLevel} />, title: 'Resultados', onBack: backFromResults, showHeader: true };
             case 'live-conversation':
                  if (!currentUser) return { component: null, showHeader: false };
                  return { component: <LiveConversation studentProfile={currentUser} onBack={handleBackToMenu} isAiEnabled={isAiEnabled} connectionStatus={connectionStatus} />, title: 'Charla con el Maestro', onBack: handleBackToMenu, showHeader: true };
             case 'parent-dashboard':
                 if (!currentUser) return { component: null, showHeader: false };
-                return { component: <ParentDashboard studentProfile={currentUser} gameState={gameState} onUnlockNextLevel={unlockNextLevel} onResetProgress={resetProgressForKey} onUnlockAll={unlockAllLevels} onResetAll={resetAllProgress} showModal={showModal} onOpenFeedbackModal={() => dispatch({ type: 'OPEN_FEEDBACK_MODAL' })} />, title: 'Panel de Padres', onBack: handleBackToMenu, showHeader: true };
+                return { component: <ParentDashboard studentProfile={currentUser} gameState={gameState} onUnlockNextLevel={unlockNextLevel} onResetProgress={resetProgressForKey} onUnlockAll={unlockAllLevels} onResetAll={resetAllProgress} showModal={showModal} onOpenFeedbackModal={() => dispatch({ type: 'OPEN_FEEDBACK_MODAL' })} onGoToContentManager={() => navigateTo('content-manager')} onUpdateProfile={handleUpdateProfile} subjectId={activeSubjectId} />, title: 'Panel de Padres', onBack: handleBackToMenu, showHeader: true };
+            case 'content-manager':
+                return { component: <ContentManagerScreen onBack={() => navigateTo('parent-dashboard')} />, title: 'Gestión de Contenidos', onBack: () => navigateTo('parent-dashboard'), showHeader: true };
             case 'practice-history':
                 if (!selectedCategory) return { component: null, showHeader: false };
                 return { component: <PracticeHistory categoryId={selectedCategory} gameState={gameState} onBack={handleBackToMenu} lessonIdToNameMap={lessonIdToNameMap} />, title: `Historial: ${categoryNames[selectedCategory]}`, onBack: handleBackToMenu, showHeader: true };
+            case 'global-history':
+                return { component: <GlobalHistoryScreen gameState={gameState} onBack={() => navigateTo('student-dashboard')} lessonIdToNameMap={lessonIdToNameMap} />, title: 'Historial Completo', onBack: () => navigateTo('student-dashboard'), showHeader: true };
             case 'student-dashboard':
                 if (!currentUser) return { component: null, showHeader: false };
-                return { component: <StudentDashboard studentProfile={currentUser} gameState={gameState} />, title: 'Panel de Progreso', onBack: handleBackToMenu, showHeader: true };
+                return { component: <StudentDashboard studentProfile={currentUser} gameState={gameState} subjectId={activeSubjectId} onViewGlobalHistory={() => navigateTo('global-history')} />, title: 'Panel de Progreso', onBack: handleBackToMenu, showHeader: true };
             default:
                  return { component: null, showHeader: false };
         }
-    }, [screen, allUsers, currentUser, gameState, unlockedPracticeCategories, newContentNotifications, areExamsEnabled, openPeriods, handleSelectCategory, handleStartWeeklyExam, handleStartRefreshExam, handleStartQuickChallenge, handleStartLiveConversation, handleStartFreePractice, handleStartStudyArea, connectionStatus, isAiEnabled, handleCreateProfile, handleSelectCategoryForFreePractice, handleBackToMenu, selectedCategory, handleStartPractice, isFreeMode, quizConfig, handleQuizEnd, finalResults, currentLesson, handleSelectSubmodule, handleStartLessonPractice, handleBackToStudyArea, handleBackToLesson, handleGoToParentDashboard, unlockNextLevel, resetProgressForKey, unlockAllLevels, resetAllProgress, handleViewPracticeHistory, handleTogglePeriod, isDebugMode, showPracticeSuggestion, handleGoToPracticeFromSuggestion, lessonIdToNameMap, navigateTo, handleBackToFreePracticeMenu, handleSwitchUser, handleAddNewUser, handleSelectUser, showModal, handleStartNextLevel, handleBackToLevelSelection, aiSuggestion, handleGenerateSuggestion, dispatch, theme, toggleTheme, recordInteractiveExerciseState, handleGoToDashboard, handleOpenDashboard, setAvatarSelectorProps]);
+    }, [screen, allUsers, currentUser, gameState, unlockedPracticeCategories, newContentNotifications, areExamsEnabled, openPeriods, activeSubjectId, handleSelectCategory, handleStartWeeklyExam, handleStartRefreshExam, handleStartQuickChallenge, handleStartLiveConversation, handleStartFreePractice, handleStartStudyArea, connectionStatus, isAiEnabled, handleCreateProfile, handleSelectCategoryForFreePractice, handleBackToMenu, selectedCategory, handleStartPractice, isFreeMode, quizConfig, handleQuizEnd, finalResults, currentLesson, handleSelectSubmodule, handleStartLessonPractice, handleBackToStudyArea, handleBackToLesson, handleGoToParentDashboard, unlockNextLevel, resetProgressForKey, unlockAllLevels, resetAllProgress, handleViewPracticeHistory, handleTogglePeriod, isDebugMode, showPracticeSuggestion, handleGoToPracticeFromSuggestion, lessonIdToNameMap, navigateTo, handleBackToFreePracticeMenu, handleSwitchUser, handleAddNewUser, handleSelectUser, showModal, handleStartNextLevel, handleBackToLevelSelection, aiSuggestion, handleGenerateSuggestion, dispatch, theme, toggleTheme, recordInteractiveExerciseState, handleGoToDashboard, handleOpenDashboard, setAvatarSelectorProps]);
     
     return (
         <SpeechProvider voiceMode={voiceMode}>

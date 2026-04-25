@@ -40,6 +40,7 @@ export const FillInTheBlanksExercise: React.FC<FillInTheBlanksExerciseProps> = (
     const [isSubmitted, setIsSubmitted] = useState(!!savedState);
     const [allCorrect, setAllCorrect] = useState(!!savedState);
     const [showConfetti, setShowConfetti] = useState(false);
+    const [showReset, setShowReset] = useState(!!savedState);
     const onCompleteCalled = useRef(!!savedState);
 
     const exerciseParts = useMemo(() => {
@@ -97,6 +98,10 @@ export const FillInTheBlanksExercise: React.FC<FillInTheBlanksExerciseProps> = (
                 setTimeout(() => {
                     onComplete({ answers: userAnswers });
                 }, 2000);
+
+                setTimeout(() => {
+                    setShowReset(true);
+                }, 3000);
             }
         } else {
             playIncorrectSound();
@@ -110,6 +115,7 @@ export const FillInTheBlanksExercise: React.FC<FillInTheBlanksExerciseProps> = (
         setIsSubmitted(false);
         setAllCorrect(false);
         setShowConfetti(false);
+        setShowReset(false);
         onCompleteCalled.current = false;
     };
 
@@ -144,9 +150,11 @@ export const FillInTheBlanksExercise: React.FC<FillInTheBlanksExerciseProps> = (
                 {allCorrect ? (
                      <div className="animate-fade-in">
                         <p className="text-2xl font-bold text-green-600 dark:text-green-400">¡Felicidades! ¡Todo correcto! 🥳</p>
-                        <Button onClick={handleReset} variant="secondary" className="mt-4">
-                            Jugar de nuevo
-                        </Button>
+                        {showReset && (
+                            <Button onClick={handleReset} variant="secondary" className="mt-4">
+                                Jugar de nuevo
+                            </Button>
+                        )}
                     </div>
                 ) : (
                     <Button onClick={checkAnswers} disabled={isCheckDisabled}>

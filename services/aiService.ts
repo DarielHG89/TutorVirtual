@@ -1,7 +1,7 @@
 import { GoogleGenAI, LiveServerMessage, Modality, FunctionDeclaration, Type } from "@google/genai";
 import type { Question, StudentProfile, GameState, CategoryId, QuestionResult } from "../types";
 import { categoryNames } from "../utils/constants";
-import { lessons } from "../data/lessons";
+import { contentManager } from "../utils/contentManager";
 
 // Para una futura integración con una IA de Gemini auto-hospedada,
 // se modificaría la inicialización del cliente o se usaría un endpoint de fetch aquí.
@@ -358,14 +358,14 @@ export async function processUserFeedback(feedback: string): Promise<string> {
 }
 
 
-function summarizePerformance(gameState: GameState): string {
+function summarizePerformance(gameState: GameState, categoryIdFilter?: string[]): string {
     let summary = "Resumen de rendimiento:\n";
     let entries = 0;
 
-    const allCategoryIds = Object.keys(categoryNames) as CategoryId[];
+    const allCategoryIds = categoryIdFilter || (Object.keys(contentManager.getQuestions()) as CategoryId[]);
 
     for (const categoryId of allCategoryIds) {
-        const categoryData = gameState[categoryId];
+        const categoryData = gameState[categoryId as CategoryId];
         if (categoryData && categoryData.skillHistory.length > 0) {
             const lastFiveSessions = categoryData.skillHistory.slice(-5);
             
@@ -382,7 +382,7 @@ function summarizePerformance(gameState: GameState): string {
             });
 
             if (entries < 4) {
-                summary += `- Categoría "${categoryNames[categoryId]}": Puntuación promedio reciente de ${Math.round(avgScore)}. `;
+                summary += `- Categoría "${categoryNames[categoryId as CategoryId] || categoryId}": Puntuación promedio reciente de ${Math.round(avgScore)}. `;
                 if (failedQuestions.length > 0) {
                     summary += `Algunos errores recientes incluyen la pregunta: "${failedQuestions[0].q}" (respuesta: ${failedQuestions[0].a}). `;
                 }
@@ -399,12 +399,12 @@ function summarizePerformance(gameState: GameState): string {
     return summary;
 }
 
-export async function generatePersonalizedSuggestion(gameState: GameState, profile: StudentProfile): Promise<string> {
+export async function generatePersonalizedSuggestion(gameState: GameState, profile: StudentProfile, categoryIdFilter?: string[]): Promise<string> {
     if (!isApiAvailable || !ai) {
         return `¡Hola, ${profile.name}! Sigue así, ¡estás aprendiendo muchísimas cosas nuevas hoy! ✨ Sigue practicando en tus categorías favoritas para ser un maestro.`;
     }
 
-    const performanceSummary = summarizePerformance(gameState);
+    const performanceSummary = summarizePerformance(gameState, categoryIdFilter);
 
     const prompt = `
         Analiza el siguiente resumen de rendimiento del estudiante llamado ${profile.name}.

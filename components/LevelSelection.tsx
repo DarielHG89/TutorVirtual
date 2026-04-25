@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { GameState, CategoryId } from '../types';
-import { questions } from '../data/questions';
+import { contentManager } from '../utils/contentManager';
 import { Card } from './common/Card';
 import { categoryNames } from '../utils/constants';
 
@@ -22,7 +22,7 @@ const levelDetails: Record<number, { name: string; color: string; bg: string; bo
 
 export const LevelSelection: React.FC<LevelSelectionProps> = ({ categoryId, gameState, onStartPractice, isFreeMode = false }) => {
     const categoryData = gameState[categoryId];
-    const levels = Object.keys(questions[categoryId]);
+    const levels = Object.keys(contentManager.getQuestions()[categoryId]);
     const QUIZ_LENGTH = 10;
     const MIN_SCORE_TO_PASS = 8;
 

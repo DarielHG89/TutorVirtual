@@ -57,6 +57,7 @@ export const MatchPairsExercise: React.FC<MatchPairsExerciseProps> = ({ exercise
     const [feedback, setFeedback] = useState<Record<number, FeedbackStatus>>({});
     const [isDraggingOver, setIsDraggingOver] = useState<number | null>(null);
     const [showConfetti, setShowConfetti] = useState(false);
+    const [showReset, setShowReset] = useState(!!savedState);
     const onCompleteCalled = useRef(!!savedState);
 
     const correctlyPlacedOriginalIndexes = useMemo(() => 
@@ -75,6 +76,11 @@ export const MatchPairsExercise: React.FC<MatchPairsExerciseProps> = ({ exercise
             setTimeout(() => {
                 onComplete({ dropped: droppedTerms });
             }, 2000);
+            
+            const resetTimer = setTimeout(() => {
+                setShowReset(true);
+            }, 3000); // 3 second delay for "Play again"
+            return () => clearTimeout(resetTimer);
         }
     }, [allCorrect, onComplete, droppedTerms]);
 
@@ -121,6 +127,7 @@ export const MatchPairsExercise: React.FC<MatchPairsExerciseProps> = ({ exercise
         setDroppedTerms({});
         setFeedback({});
         setShowConfetti(false);
+        setShowReset(false);
         onCompleteCalled.current = false;
         // This won't reset the parent's saved state, allowing for a temporary replay.
         // The saved state will reappear if the lesson is reloaded.
@@ -183,7 +190,7 @@ export const MatchPairsExercise: React.FC<MatchPairsExerciseProps> = ({ exercise
             {allCorrect && (
                 <div className="animate-fade-in text-center mt-6">
                     <p className="text-2xl font-bold text-green-600 dark:text-green-400">¡Excelente! ¡Todo correcto! 🎉</p>
-                    <Button onClick={handleReset} variant="secondary" className="mt-4">Jugar de nuevo</Button>
+                    {showReset && <Button onClick={handleReset} variant="secondary" className="mt-4">Jugar de nuevo</Button>}
                 </div>
             )}
         </div>

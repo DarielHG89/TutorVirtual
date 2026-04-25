@@ -15,86 +15,117 @@ const getQuestionsForLesson = (lessonId: string) => {
 
 export const problemasLessons: LessonContent[] = [
     {
-        id: 'division_3_4',
-        title: 'Ejercitación y problemas',
-        period: 3,
+        id: 'problemas_aritmetica',
+        title: 'Desafíos Matemáticos: ¡Aventura en Cuba! 🇨🇺🏝️',
+        period: 1,
         categoryId: 'problemas',
         theory: `
-            <h3 class="text-2xl font-bold mb-4 text-emerald-600 dark:text-emerald-400">¡Conviértete en un Superdetective de Problemas! 🕵️‍♀️</h3>
-            <p class="mb-4">¡Ya conoces todos los superpoderes: sumar, restar, multiplicar y dividir! Ahora vamos a usarlos para resolver misterios (problemas). ¡Ponte tu lupa y tu gabardina!</p>
+            <h3 class="text-2xl font-bold mb-4 text-emerald-600 dark:text-emerald-400">¿Qué es un Problema Matemático? 🧐🧩</h3>
+            <p class="mb-4">Un problema es una historia corta que tiene números y una pregunta que debemos resolver. ¡Es como ser un detective matemático que busca la verdad! 🕵️‍♂️🔍</p>
             
             <div class="bg-emerald-50 dark:bg-emerald-900/30 p-4 rounded-lg mb-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-emerald-800 dark:text-emerald-300">El Plan Secreto de 4 Pasos</h4>
-                <ol class="list-decimal list-inside ml-4 mt-2 space-y-3">
-                    <li>
-                        <strong>Leer y Entender (La Misión):</strong> Lee el problema despacio. ¿Qué te están preguntando? ¡Busca la pregunta! ❓ Es la pista más importante.
-                    </li>
-                    <li>
-                        <strong>Encontrar las Pistas (Las Huellas):</strong> Busca los números y las palabras clave en el problema. Son como las huellas que deja el culpable.
-                    </li>
-                    <li>
-                        <strong>Elegir el Superpoder (La Herramienta):</strong> Decide qué operación necesitas. Cada palabra clave te sugiere una herramienta:
-                        <ul class="list-disc list-inside ml-6 mt-2 bg-white dark:bg-slate-700 p-2 rounded">
-                            <li><strong>Sumar (+):</strong> juntar, en total, añadir, más que...</li>
-                            <li><strong>Restar (-):</strong> quedan, faltan, diferencia, menos que...</li>
-                            <li><strong>Multiplicar (x):</strong> en total (con grupos iguales), cada uno, doble, triple...</li>
-                            <li><strong>Dividir (÷):</strong> repartir, en cada uno, mitad, tercera parte...</li>
-                        </ul>
-                    </li>
-                    <li>
-                        <strong>¡Resolver y Comprobar! (El Veredicto):</strong> Haz la operación y piensa si el resultado tiene sentido. ¿Un caramelo no puede costar 1000 pesos, verdad? ¡Usa tu lógica de detective!
-                    </li>
-                </ol>
+                <h4 class="text-xl font-bold mb-2 text-emerald-800 dark:text-emerald-300">Paso 1: ¡Los Datos son las Pistas! 🕵️‍♂️👟</h4>
+                <p>Lee con cuidado e identifica qué números hay y qué significan. ¡En Cuba resolvemos muchos problemas diarios!</p>
+                <p class="mt-2 text-semibold">Ejemplo: "En la cola del agromercado hay 5 personas delante de ti y 3 detrás". ¿Cuántas personas hay en total contando contigo? 🥕🍅</p>
                 <div data-exercise-index="0"></div>
             </div>
-        `,
-        interactiveExercises: [
-            {
-                type: 'choose-the-operation',
-                title: '¡A Practicar!: Elige el Superpoder Correcto',
-                problems: [
-                    { text: 'Juan tenía 10 manzanas y compró 5 más. ¿Cuántas tiene en total?', correctOperation: '+' },
-                    { text: 'Había 15 pájaros en un árbol y 7 se volaron. ¿Cuántos quedaron?', correctOperation: '-' },
-                    { text: 'Compré 4 cajas con 6 refrescos cada una. ¿Cuántos refrescos tengo?', correctOperation: 'x' },
-                    { text: 'Tengo 20 caramelos para repartir en partes iguales entre 5 amigos. ¿Cuántos le tocan a cada uno?', correctOperation: '÷' }
-                ]
-            }
-        ],
-        practice: getQuestionsForLesson('division_3_4'),
-    },
-     {
-        id: 'operaciones_combinadas',
-        title: 'Operaciones Combinadas',
-        period: 3,
-        categoryId: 'problemas',
-        theory: `
-            <h3 class="text-2xl font-bold mb-4 text-rose-600 dark:text-rose-400">¡El Orden de los Superpoderes! 🛡️⚔️</h3>
-            <p class="mb-4">Cuando en un problema hay varias operaciones, ¡no podemos hacerlas en cualquier orden! Hay unas reglas, como en un juego de mesa.</p>
-            <div class="bg-rose-50 dark:bg-rose-900/30 p-4 rounded-lg my-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-rose-800 dark:text-rose-300">Regla 1: ¡Los Paréntesis Mandan! ()</h4>
-                <p>Si ves algo dentro de un paréntesis, ¡eso es lo primero que tienes que resolver, sin importar qué operación sea!</p>
-                <p class="mt-2">En <strong>(2 + 3) x 4</strong>, primero haces 2+3=5, y luego 5x4=20.</p>
+
+            <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-yellow-800 dark:text-yellow-300">Paso 2: ¿Qué operación necesito? ➕➖✖️➗</h4>
+                <p>Las palabras clave te dan la respuesta:</p>
+                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li><strong>Ganar, juntar, recibir o comprar más:</strong> ¡Es una Suma! ➕</li>
+                    <li><strong>Perder, dar, comer, gastar o faltar:</strong> ¡Es una Resta! ➖</li>
+                    <li><strong>Repetir varias veces lo mismo:</strong> ¡Multiplicación! ✖️</li>
+                    <li><strong>Repartir, hacer grupos iguales:</strong> ¡División! ➗</li>
+                </ul>
+                <div data-exercise-index="1"></div>
             </div>
-            <div class="bg-amber-50 dark:bg-amber-900/30 p-4 rounded-lg my-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-amber-800 dark:text-amber-300">Regla 2: Multiplicación y División Primero ✖️➗</h4>
-                <p>Después de los paréntesis, las multiplicaciones y divisiones tienen prioridad sobre las sumas y restas. Son más "fuertes".</p>
-                 <p class="mt-2">En <strong>2 + 3 x 4</strong>, primero haces 3x4=12, y luego 2+12=14. ¡No hagas 2+3 primero!</p>
+
+            <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-blue-800 dark:text-blue-300">Paso 3 y 4: ¡Calcular y Revisar! 🎯✅</h4>
+                <p>Haz la cuenta con cuidado. Al final, piensa: "¿Mi respuesta tiene sentido?". Si compraste 2 mangos y gastaste 10 pesos, ¡no puedes tener 100 mangos de respuesta! 😂</p>
+                <div data-exercise-index="2"></div>
             </div>
-             <div class="bg-lime-50 dark:bg-lime-900/30 p-4 rounded-lg my-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-lime-800 dark:text-lime-300">Regla 3: Sumas y Restas al Final ➕➖</h4>
-                <p>Una vez que solo queden sumas y restas, las haces de izquierda a derecha, como lees un libro.</p>
-                 <p class="mt-2">En <strong>10 - 4 + 2</strong>, primero haces 10-4=6, y luego 6+2=8.</p>
-            </div>
-            <div data-exercise-index="0"></div>
         `,
         interactiveExercises: [
             {
                 type: 'fill-in-the-text',
-                title: '¡A Practicar!: El Orden Correcto',
-                textWithInputs: '(2 + 3) x 4 = __INPUT__.  2 + 3 x 4 = __INPUT__.  10 - 4 + 2 = __INPUT__.',
-                correctAnswers: ['20', '14', '8']
+                title: 'Detectives en el Campo 🕵️‍♂️🌾',
+                textWithInputs: 'Si en una finca hay 10 palmas y siembran 5 más, tengo que __INPUT__ (operación) para saber el total. El resultado es __INPUT__.',
+                correctAnswers: ['sumar', '15']
+            },
+            {
+                type: 'match-pairs',
+                title: 'Palabras Mágicas ✨',
+                pairs: [
+                    { term: 'Juntar o Ganar', definition: 'Suma ➕' },
+                    { term: 'Perder o Gastar', definition: 'Resta ➖' },
+                    { term: 'Repartir en partes iguales', definition: 'División ➗' },
+                    { term: 'Sumar el mismo número varias veces', definition: 'Multiplicación ✖️' },
+                ]
+            },
+            {
+                type: 'fill-in-the-text',
+                title: 'Sentido Común 🤔',
+                textWithInputs: 'Si tengo 20 caramelos y regalo 25, ¿puedo resolver el problema? __INPUT__ (Sí/No). Porque no puedo regalar más de lo que __INPUT__.',
+                correctAnswers: ['No', 'tengo']
             }
         ],
-        practice: getQuestionsForLesson('operaciones_combinadas'),
+        practice: getQuestionsForLesson('problemas_aritmetica'),
+    },
+    {
+        id: 'problemas_logica',
+        title: 'Lógica y Curiosidades: ¡Piensa Rápido! 🧠⚡',
+        period: 2,
+        categoryId: 'problemas',
+        theory: `
+            <h3 class="text-2xl font-bold mb-4 text-red-600 dark:text-red-400">¡Más que solo números! 🧠🌀</h3>
+            <p class="mb-4">A veces los problemas matemáticos son como acertijos. ¡Necesitas usar tu lógica y fijarte bien en los detalles! 🧩✨</p>
+            
+            <div class="bg-red-50 dark:bg-red-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-red-800 dark:text-red-300">Atención a los Detalles 👁️🗨️</h4>
+                <p>A veces hay información que no necesitas. Por ejemplo: "Luis tenía 5 canicas azules, 2 rojas y se comió un pan". ¿Cuántas canicas tiene Luis? 🥯</p>
+                <p class="mt-2 text-semibold">¡El pan no importa para las canicas! No te dejes distraer. 😂</p>
+                <div data-exercise-index="0"></div>
+            </div>
+
+            <div class="bg-orange-50 dark:bg-orange-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-orange-800 dark:text-orange-300">Problemas de Posición 🥇🥈🥉</h4>
+                <p>Si en una carrera de chivichanas 🏎️ adelantas al que va en SEGUNDO lugar... ¿en qué lugar vas ahora?</p>
+                <p class="mt-2 font-bold">¡Muchos dicen primero, pero es SEGUNDO! Porque ahora tú ocupas su lugar. ¡Piensa bien! 😉</p>
+                <div data-exercise-index="1"></div>
+            </div>
+
+            <div class="bg-teal-50 dark:bg-teal-900/30 p-4 rounded-lg shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-teal-800 dark:text-teal-300">Usa el Dibujo ✏️🎨</h4>
+                <p>Si un problema es difícil de imaginar, ¡dibújalo! Haz palitos para representar personas o cuadraditos para las cajas. ¡Ver el problema ayuda mucho a resolverlo! 🖼️✨</p>
+                <div data-exercise-index="2"></div>
+            </div>
+        `,
+        interactiveExercises: [
+            {
+                type: 'fill-in-the-text',
+                title: '¡No te distraigas! 🙈',
+                textWithInputs: 'Tengo 5 gatos, 2 perros y 3 pelotas. El número total de MASCOTAS es __INPUT__.',
+                correctAnswers: ['7']
+            },
+            {
+                type: 'match-pairs',
+                title: 'Acertijos Lógicos 🎡',
+                pairs: [
+                    { term: 'Adelantas al 2do', definition: 'Vas 2do' },
+                    { term: 'Mes con 28 días', definition: '¡Todos! 😂' },
+                    { term: 'Mitad de 2+2', definition: 'Primero suma, luego divide' },
+                ]
+            },
+            {
+                type: 'fill-in-the-text',
+                title: 'Dibuja y Resuelve 🖍️',
+                textWithInputs: 'Si hay 4 filas de 4 personas, dibujo un cuadrado de __INPUT__ por __INPUT__ y veo que hay __INPUT__ personas en total.',
+                correctAnswers: ['4', '4', '16']
+            }
+        ],
+        practice: getQuestionsForLesson('problemas_logica'),
     },
 ];

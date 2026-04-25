@@ -15,110 +15,135 @@ const getQuestionsForLesson = (lessonId: string) => {
 
 export const multiDiviLessons: LessonContent[] = [
     {
-        id: 'multiplicacion_3_2',
-        title: 'Procedimiento escrito de la multiplicación',
-        period: 2,
+        id: 'multiplicacion_3_1',
+        title: 'Multiplicación y sus Secretos 🚀',
+        period: 1,
         categoryId: 'multi_divi',
         theory: `
-            <h3 class="text-2xl font-bold mb-4 text-purple-600 dark:text-purple-400">¡Multiplicando como un Pro! 🚀</h3>
-            <p class="mb-4">Multiplicar números grandes es como hacer magia. ¡Con un truco, puedes sumar un número muchas veces súper rápido!</p>
+            <h3 class="text-2xl font-bold mb-4 text-purple-600 dark:text-purple-400">¡Multiplicar es como tener Súper Poderes! 🦸‍♂️💥</h3>
+            <p class="mb-4">¿Te imaginas tener que sumar 5 + 5 + 5 + 5 + 5 + 5? ¡Qué aburrido! 🥱 Para eso existe la <strong>multiplicación</strong>, la forma más rápida de sumar el mismo número muchas veces.</p>
             
             <div class="bg-purple-50 dark:bg-purple-900/30 p-4 rounded-lg mb-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-purple-800 dark:text-purple-300">Paso 1: ¡A sus puestos! 🔢</h4>
-                <p>Pon el número más grande arriba y el más pequeño (el que multiplica) debajo, a la derecha. ¡Listos para la acción!</p>
-                <pre class="bg-white dark:bg-slate-800 p-2 rounded mt-2 text-lg text-slate-700 dark:text-slate-200">  123\n x  2\n-----</pre>
-            </div>
-
-            <div class="bg-cyan-50 dark:bg-cyan-900/30 p-4 rounded-lg mb-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-cyan-800 dark:text-cyan-300">Paso 2: ¡El ataque del número de abajo! 💥</h4>
-                <p>El número de abajo va multiplicando a cada uno de los de arriba, empezando por las <strong>unidades</strong> (¡siempre de derecha a izquierda!).</p>
-                <ul class="list-disc list-inside ml-4 mt-2">
-                    <li>2 x 3 = <strong>6</strong></li>
-                    <li>2 x 2 = <strong>4</strong></li>
-                    <li>2 x 1 = <strong>2</strong></li>
+                <h4 class="text-xl font-bold mb-2 text-purple-800 dark:text-purple-300">¿Qué es Multiplicar? 🧩</h4>
+                <p>Es una "suma abreviada". Por ejemplo, si tienes 3 cajas de refrescos 🥤 y cada una tiene 6 botellas:</p>
+                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li>Suma: 6 + 6 + 6 = 18</li>
+                    <li>Multiplicación: <strong>3 x 6 = 18</strong></li>
                 </ul>
-                 <pre class="bg-white dark:bg-slate-800 p-2 rounded mt-2 text-lg text-slate-700 dark:text-slate-200">  123\n x  2\n-----\n  246</pre>
-                 <div data-exercise-index="0"></div>
-            </div>
-
-            <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-yellow-800 dark:text-yellow-300">El truco de "llevarse una" (¡otra vez!) 🎈</h4>
-                <p>Si una multiplicación da 10 o más, también nos llevamos. En <strong>45 x 3</strong>:</p>
-                 <ul class="list-disc list-inside ml-4 mt-2">
-                    <li>3 x 5 = 15. Escribimos el <strong>5</strong> y nos "llevamos" el 1 como un globito a la siguiente columna.</li>
-                    <li>3 x 4 = 12. ¡No te olvides de sumar el globito que te llevabas! 12 + <strong>1</strong> = 13.</li>
-                </ul>
-                <p class="mt-2 font-semibold">¡El resultado es <strong>135</strong>! ¡Magia!</p>
-                <div data-exercise-index="1"></div>
-            </div>
-        `,
-        interactiveExercises: [
-            {
-                type: 'fill-in-the-text',
-                title: '¡A Practicar!: Multiplicación Simple',
-                textWithInputs: 'Calcula 123 x 2 = __INPUT__.',
-                correctAnswers: ['246']
-            },
-            {
-                type: 'fill-in-the-text',
-                title: '¡A Practicar!: Multiplicación con Llevada',
-                textWithInputs: 'Calcula 45 x 3 = __INPUT__.',
-                correctAnswers: ['135']
-            }
-        ],
-        practice: getQuestionsForLesson('multiplicacion_3_2'),
-    },
-    {
-        id: 'division_3_3',
-        title: 'Procedimiento escrito de la división',
-        period: 3,
-        categoryId: 'multi_divi',
-        theory: `
-            <h3 class="text-2xl font-bold mb-4 text-cyan-600 dark:text-cyan-400">¡Dividiendo tesoros! 💎</h3>
-            <p class="mb-4">Dividir es repartir en partes iguales. La división escrita nos ayuda a repartir tesoros grandes entre piratas. ¡Vamos a usar "la cajita"!</p>
-            
-            <div class="bg-cyan-50 dark:bg-cyan-900/30 p-4 rounded-lg mb-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-cyan-800 dark:text-cyan-300">La tripulación de la división 🏴‍☠️</h4>
-                <p>En <strong>8 ÷ 2 = 4</strong>:</p>
-                <ul class="list-disc list-inside ml-4 mt-2">
-                    <li><strong>Dividendo (8):</strong> El tesoro total que vamos a repartir.</li>
-                    <li><strong>Divisor (2):</strong> Entre cuántos piratas repartimos.</li>
-                    <li><strong>Cociente (4):</strong> Cuántas monedas le tocan a cada pirata.</li>
-                    <li><strong>Resto:</strong> Las monedas que sobran si no se puede repartir exactamente.</li>
-                </ul>
+                <p class="mt-2">¡Llegas al mismo resultado mucho más rápido! 🏃💨</p>
                 <div data-exercise-index="0"></div>
             </div>
 
-            <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-yellow-800 dark:text-yellow-300">Los pasos del pirata para 48 ÷ 2</h4>
-                <ol class="list-decimal list-inside ml-4 mt-2 space-y-2">
-                    <li> <strong>"Coger" un número:</strong> Cogemos la primera cifra del tesoro (4). ¿Podemos repartir 4 monedas entre 2 piratas? ¡Sí!</li>
-                    <li> <strong>Buscar en la tabla:</strong> En la tabla del 2, ¿qué número da 4 o se acerca? ¡2x2=4! Le tocan 2 monedas a cada uno.</li>
-                    <li> <strong>Restar y bajar:</strong> Ponemos el 2 en el cociente (el botín de cada pirata). 2x2=4. Restamos 4-4=0. ¡No sobra nada! Ahora, ¡bajamos el siguiente número del tesoro, el 8!</li>
-                    <li> <strong>Repetir:</strong> Ahora tenemos 8. En la tabla del 2... ¡2x4=8! Le tocan 4 monedas más a cada uno. Ponemos el 4 en el cociente. Restamos 8-8=0. ¡No sobra nada!</li>
-                </ol>
-                <p class="mt-2 font-semibold">El resultado (cociente) es <strong>24</strong>. ¡Cada pirata se lleva 24 monedas!</p>
+            <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-yellow-800 dark:text-yellow-300">Los Factores y el Producto 🔢</h4>
+                <p>En una multiplicación, los números que se multiplican se llaman <strong>factores</strong> y el resultado se llama <strong>producto</strong>. ¡Como en una fábrica!</p>
+                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li><strong>4</strong> (Factor) x <strong>5</strong> (Factor) = <strong>20</strong> (Producto)</li>
+                </ul>
+                <p class="mt-2 font-semibold">Recuerda: ¡El orden de los factores no altera el producto! 2 x 5 es lo mismo que 5 x 2. 🔄</p>
                 <div data-exercise-index="1"></div>
+            </div>
+
+            <div class="bg-cyan-50 dark:bg-cyan-900/30 p-4 rounded-lg shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-cyan-800 dark:text-cyan-300">Multiplicar por 10, 100 y 1000 🪄</h4>
+                <p>¡Esto es como magia! Solo tienes que añadir los ceros al final del número:</p>
+                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li>5 x <strong>10</strong> = 5<strong>0</strong></li>
+                    <li>5 x <strong>100</strong> = 5<strong>00</strong></li>
+                    <li>5 x <strong>1000</strong> = 5<strong>000</strong></li>
+                </ul>
+                <p class="mt-2">¡Añadir ceros es el truco más divertido! 🎩✨</p>
+                <div data-exercise-index="2"></div>
             </div>
         `,
         interactiveExercises: [
             {
+                type: 'fill-in-the-text',
+                title: 'De Suma a Multiplicación',
+                textWithInputs: '4 + 4 + 4 es igual a __INPUT__ x __INPUT__ que da __INPUT__.',
+                correctAnswers: ['3', '4', '12']
+            },
+            {
                 type: 'match-pairs',
-                title: '¡A Practicar!: La Tripulación',
+                title: '¡No importa el orden!',
                 pairs: [
-                    { term: 'Dividendo', definition: 'El tesoro total a repartir.' },
-                    { term: 'Divisor', definition: 'El número de piratas entre los que se reparte.' },
-                    { term: 'Cociente', definition: 'El botín que le toca a cada pirata.' },
-                    { term: 'Resto', definition: 'Las monedas que sobran.' },
+                    { term: '2 x 8', definition: '8 x 2' },
+                    { term: '5 x 3', definition: '3 x 5' },
+                    { term: '10 x 4', definition: '4 x 10' },
+                    { term: '6 x 7', definition: '7 x 6' },
                 ]
             },
             {
                 type: 'fill-in-the-text',
-                title: '¡A Practicar!: ¡A Dividir!',
-                textWithInputs: 'Al dividir 48 entre 2, el cociente es __INPUT__.',
-                correctAnswers: ['24']
+                title: 'El truco de los ceros',
+                textWithInputs: '12 x 10 = __INPUT__. 7 x 100 = __INPUT__. 9 x 1000 = __INPUT__.',
+                correctAnswers: ['120', '700', '9000']
             }
         ],
-        practice: getQuestionsForLesson('division_3_3'),
+        practice: getQuestionsForLesson('multiplicacion_3_1'),
+    },
+    {
+        id: 'division_3_2',
+        title: 'División: ¡A repartir el Botín! 💎',
+        period: 2,
+        categoryId: 'multi_divi',
+        theory: `
+            <h3 class="text-2xl font-bold mb-4 text-cyan-600 dark:text-cyan-400">¡Repartir es la clave! 🤝🍔</h3>
+            <p class="mb-4">Imagina que tienes una pizza 🍕 de 8 porciones y tienes que repartirla entre 4 amigos. ¿Cuántas le tocan a cada uno? ¡Eso es <strong>dividir</strong>!</p>
+            
+            <div class="bg-cyan-50 dark:bg-cyan-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-cyan-800 dark:text-cyan-300">La División es Repartir Equitativamente ⚖️</h4>
+                <p>Dividir significa hacer grupos iguales. Si tienes 12 caramelos 🍬 y quieres hacer 3 montoncitos iguales:</p>
+                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li><strong>12 ÷ 3 = 4</strong></li>
+                </ul>
+                <p class="mt-2">¡Cada montón tendrá 4 caramelos! 🤝✨</p>
+                <div data-exercise-index="0"></div>
+            </div>
+
+            <div class="bg-red-50 dark:bg-red-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-red-800 dark:text-red-300">Las Partes de la División 🏴‍☠️</h4>
+                <p>Como en un equipo de piratas, cada número tiene un nombre:</p>
+                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li><strong>Dividendo:</strong> El tesoro total (lo que repartes).</li>
+                    <li><strong>Divisor:</strong> El número de piratas (entre cuántos repartes).</li>
+                    <li><strong>Cociente:</strong> Lo que le toca a cada uno (el resultado).</li>
+                    <li><strong>Resto:</strong> Lo que sobra (si no se puede repartir todo).</li>
+                </ul>
+                <div data-exercise-index="1"></div>
+            </div>
+
+            <div class="bg-green-50 dark:bg-green-900/30 p-4 rounded-lg shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-green-800 dark:text-green-300">Multiplicar vs Dividir 🔄</h4>
+                <p>¡Son como hermanos gemelos que hacen cosas opuestas! Si sabes multiplicar, ¡ya sabes dividir!</p>
+                <p class="mt-2">¿Por qué? Porque si <strong>3 x 4 = 12</strong>, entonces <strong>12 ÷ 3 = 4</strong>. ¡Es como ir y volver por el mismo camino! 🛤️</p>
+                <div data-exercise-index="2"></div>
+            </div>
+        `,
+        interactiveExercises: [
+            {
+                type: 'fill-in-the-text',
+                title: 'Repartiendo Galletas 🍪',
+                textWithInputs: 'Si tengo 20 galletas y las reparto entre 4 niños, a cada uno le tocan __INPUT__ galletas.',
+                correctAnswers: ['5']
+            },
+            {
+                type: 'match-pairs',
+                title: 'Nombres de los Piratas',
+                pairs: [
+                    { term: 'Lo que reparto', definition: 'Dividendo' },
+                    { term: 'Entre cuántos', definition: 'Divisor' },
+                    { term: 'Lo que le toca a cada uno', definition: 'Cociente' },
+                    { term: 'Lo que sobra', definition: 'Resto' },
+                ]
+            },
+            {
+                type: 'fill-in-the-text',
+                title: 'La Operación Inversa 🔄',
+                textWithInputs: 'Si 6 x 5 = 30, entonces 30 ÷ 6 = __INPUT__. Si 2 x 9 = 18, entonces 18 ÷ 2 = __INPUT__.',
+                correctAnswers: ['5', '9']
+            }
+        ],
+        practice: getQuestionsForLesson('division_3_2'),
     },
 ];

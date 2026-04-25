@@ -209,7 +209,12 @@ export const MascotDisplay: React.FC<MascotDisplayProps> = ({
                 <ellipse cx="60" cy="115" rx="25" ry="4" fill="#000" opacity={isDragging ? "0.1" : "0.3"} />
 
                 {HAS_CAPE && (
-                    <path d="M 40 40 Q 20 80 10 110 L 110 110 Q 100 80 80 40 Z" fill="#ef4444" className="robot-container" style={{transformOrigin: '60px 40px'}} />
+                    <g className="robot-container" style={{transformOrigin: '60px 40px'}}>
+                        <path d="M 40 40 Q 20 80 5 110 Q 22 116 40 106 Q 60 116 80 106 Q 98 116 115 110 Q 100 80 80 40 Z" fill="#ef4444" />
+                        <path d="M 45 42 Q 28 80 23 111 Q 32 115 40 106 Q 48 80 53 43 Z" fill="#dc2626" opacity="0.6" />
+                        <path d="M 75 42 Q 92 80 97 111 Q 88 115 80 106 Q 72 80 67 43 Z" fill="#dc2626" opacity="0.6" />
+                        <path d="M 60 45 Q 60 80 60 111 Q 53 113 47 110 Q 55 80 57 45 Z" fill="#991b1b" opacity="0.3" />
+                    </g>
                 )}
 
                 <g className="robot-container">
@@ -330,11 +335,15 @@ export const MascotDisplay: React.FC<MascotDisplayProps> = ({
                             </g>
                         )}
                         {HAS_HAT && !isMusic && (
-                            <g transform="translate(35, -5) rotate(-5)">
-                                <path d="M 0 10 L 25 0 L 50 10 L 25 20 Z" fill="#1e1b4b" stroke="#000" strokeWidth="1"/>
-                                <rect x="15" y="18" width="20" height="10" fill="#1e1b4b" />
-                                <line x1="50" y1="10" x2="50" y2="25" stroke="#fbbf24" strokeWidth="2" />
-                                <circle cx="50" cy="25" r="2" fill="#fbbf24" />
+                            <g transform="translate(35, -12) rotate(-5)">
+                                {/* Cap base (skull cap) */}
+                                <path d="M 15 15 L 15 26 Q 25 32 35 26 L 35 15 Z" fill="#1e1b4b" />
+                                {/* Tassel */}
+                                <path d="M 25 10 Q 50 8 48 28" stroke="#fbbf24" strokeWidth="1.5" fill="none" />
+                                <path d="M 46 28 L 50 28 L 52 35 L 44 35 Z" fill="#fcd34d" />
+                                {/* Cap top (mortarboard) */}
+                                <path d="M 0 10 L 25 -2 L 50 10 L 25 22 Z" fill="#312e81" stroke="#1e1b4b" strokeWidth="1.5" strokeLinejoin="round"/>
+                                <circle cx="25" cy="10" r="2.5" fill="#fbbf24" />
                             </g>
                         )}
                     </g>

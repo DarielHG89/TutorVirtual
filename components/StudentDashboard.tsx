@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import type { GameState, StudentProfile, CategoryId, QuestionResult } from '../types';
 import { Card } from './common/Card';
-import { questions } from '../data/questions';
-import { lessons } from '../data/lessons';
+import { contentManager } from '../utils/contentManager';
 import { categoryNames } from '../utils/constants';
 import { SkillChart } from './common/SkillChart';
+import { playClickSound } from '../utils/sounds';
 
 const categoryIcons: Record<CategoryId, string> = {
     numeros: '🔢',
@@ -41,9 +41,38 @@ const formatTime = (seconds: number): string => {
 interface StudentDashboardProps {
     studentProfile: StudentProfile;
     gameState: GameState;
+    subjectId?: string;
+    onViewGlobalHistory: () => void;
 }
 
-export const StudentDashboard: React.FC<StudentDashboardProps> = ({ studentProfile, gameState }) => {
+export const StudentDashboard: React.FC<StudentDashboardProps> = ({ studentProfile, gameState, subjectId, onViewGlobalHistory }) => {
+
+    const taxonomy = contentManager.getTaxonomy();
+
+    const initialGrade = useMemo(() => {
+        if (studentProfile?.gradeId) return studentProfile.gradeId;
+        if (subjectId) {
+            const subject = taxonomy.subjects.find(s => s.id === subjectId);
+            if (subject) return subject.gradeId;
+        }
+        return taxonomy.grades[0]?.id || '';
+    }, [subjectId, studentProfile?.gradeId, taxonomy.subjects, taxonomy.grades]);
+
+    const [selectedGrade, setSelectedGrade] = useState<string>(initialGrade);
+    const [selectedSubject, setSelectedSubject] = useState<string>(subjectId || '');
+
+    useEffect(() => {
+        if (taxonomy.grades.length > 0 && !taxonomy.grades.find(g => g.id === selectedGrade)) {
+            setSelectedGrade(studentProfile?.gradeId || taxonomy.grades[0].id);
+        }
+    }, [taxonomy.grades, selectedGrade, studentProfile?.gradeId]);
+
+    useEffect(() => {
+        const subjectsForGrade = taxonomy.subjects.filter(s => s.gradeId === selectedGrade);
+        if (subjectsForGrade.length > 0 && !subjectsForGrade.find(s => s.id === selectedSubject)) {
+            setSelectedSubject(subjectsForGrade[0].id);
+        }
+    }, [selectedGrade, taxonomy.subjects, selectedSubject]);
 
     const { 
         overallProgress, 
@@ -53,19 +82,35 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ studentProfi
         totalQuestionsAnswered,
         recentActivity,
         mostPracticed,
-        strengthsAndWeaknesses
+        strengthsAndWeaknesses,
+        subjectName,
+        gradeName
     } = useMemo(() => {
-        // Overall Progress (based on lessons)
-        const totalLessons = lessons.length;
-        const completedLessons = lessons.filter(lesson => (gameState[lesson.id]?.highScores?.[1] || 0) >= MIN_SCORE_TO_PASS).length;
+        const activeSubject = selectedSubject;
+        
+        const subjectCategories = taxonomy.categories.filter(c => c.subjectId === activeSubject);
+        const subjectCategoryIds = new Set(subjectCategories.map(c => c.id));
+        
+        const subjObj = taxonomy.subjects.find(s => s.id === activeSubject);
+        const subjectNameStr = subjObj?.name || '';
+        const gradeNameStr = taxonomy.grades.find(g => g.id === subjObj?.gradeId)?.name || '';
+
+        const lessonsForSubject = contentManager.getLessons().filter(l => subjectCategoryIds.has(l.categoryId) || l.categoryId.startsWith(activeSubject || ''));
+        const categoryIdsForSubject = subjectCategories.map(c => c.id as CategoryId);
+
+        // Overall Progress (based on lessons for this subject)
+        const totalLessons = lessonsForSubject.length;
+        const completedLessons = lessonsForSubject.filter(lesson => (gameState[lesson.id]?.highScores?.[1] || 0) >= MIN_SCORE_TO_PASS).length;
         const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
         let allHistory: (GameState[string]['skillHistory'][0] & { categoryId: string })[] = [];
         let totalTime = 0;
         let totalQuestionsAnswered = 0;
 
-        // Mastery & History calculation
-        const levels = (Object.keys(questions) as CategoryId[]).map(categoryId => {
+        // Mastery & History calculation (filtered by categoryIdsForSubject)
+        const relevantCategoryIds = categoryIdsForSubject.length > 0 ? categoryIdsForSubject : (Object.keys(contentManager.getQuestions()) as CategoryId[]);
+
+        const levels = relevantCategoryIds.map(categoryId => {
             const categoryData = gameState[categoryId];
             const history = categoryData?.skillHistory || [];
             allHistory.push(...history.map(h => ({...h, categoryId})));
@@ -78,14 +123,30 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ studentProfi
             const accuracy = totalAttemptedInCategory > 0 ? Math.round((totalCorrectInCategory / totalAttemptedInCategory) * 100) : 0;
             const averageScore = history.length > 0 ? history.reduce((sum, s) => sum + s.score, 0) / history.length : 0;
 
-            const totalLevels = Object.keys(questions[categoryId]).length;
+            const questionsForCat = contentManager.getQuestions()[categoryId] || {};
+            let totalAvailableLevels = Object.keys(questionsForCat).length;
             let completedLevelsCount = 0;
+            
+            // Practice levels mastery
             if (categoryData?.highScores) {
                  Object.values(categoryData.highScores).forEach((score: number) => {
                     if (score >= MIN_SCORE_TO_PASS) completedLevelsCount++;
                 });
             }
-            const mastery = totalLevels > 0 ? Math.round((completedLevelsCount / totalLevels) * 100) : 0;
+
+            // Lesson levels mastery
+            const lessonsInCat = contentManager.getLessons().filter(l => l.categoryId === categoryId);
+            lessonsInCat.forEach(lesson => {
+                const lessonData = gameState[lesson.id];
+                totalAvailableLevels += Object.keys(lesson.practice).length;
+                if (lessonData?.highScores) {
+                    Object.values(lessonData.highScores).forEach((score: number) => {
+                        if (score >= MIN_SCORE_TO_PASS) completedLevelsCount++;
+                    });
+                }
+            });
+
+            const mastery = totalAvailableLevels > 0 ? Math.round((completedLevelsCount / totalAvailableLevels) * 100) : 0;
             
             return { 
                 id: categoryId, 
@@ -112,24 +173,63 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ studentProfi
 
         return { 
             overallProgress: { percent: progressPercent, completed: completedLessons, total: totalLessons },
-            masteryLevels: levels,
+            masteryLevels: levels.filter(l => l.practiceCount > 0 || categoryIdsForSubject.includes(l.id)),
             totalSessions: allHistory.length,
             totalTime,
             totalQuestionsAnswered,
             recentActivity,
             mostPracticed,
-            strengthsAndWeaknesses
+            strengthsAndWeaknesses,
+            subjectName: subjectNameStr,
+            gradeName: gradeNameStr
         };
 
-    }, [gameState]);
+    }, [gameState, selectedSubject, taxonomy]);
 
     return (
         <div className="animate-fade-in space-y-6">
             <Card className="flex flex-col sm:flex-row items-center gap-6 !p-6 bg-slate-50 dark:bg-slate-700/50">
                 <AvatarDisplay profile={studentProfile} />
-                <div className="text-center sm:text-left">
+                <div className="text-center sm:text-left flex-grow">
                     <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200">{studentProfile.name}</h1>
-                    <p className="text-lg text-slate-500 dark:text-slate-400">Resumen de tu aventura de aprendizaje</p>
+                    <p className="text-lg text-slate-500 dark:text-slate-400">Progreso por Asignatura</p>
+                </div>
+                
+                <div className="flex flex-col gap-2 w-full sm:w-auto mt-4 sm:mt-0">
+                    <div className="flex items-center justify-between sm:justify-end gap-2">
+                        <span className="text-sm font-bold text-slate-600 dark:text-slate-400">Grado:</span>
+                        <select
+                            value={selectedGrade}
+                            onChange={(e) => {
+                                playClickSound();
+                                setSelectedGrade(e.target.value);
+                            }}
+                            className="p-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold"
+                        >
+                            {taxonomy.grades.map(g => (
+                                <option key={g.id} value={g.id}>{g.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="flex items-center justify-between sm:justify-end gap-2">
+                        <span className="text-sm font-bold text-slate-600 dark:text-slate-400">Asignatura:</span>
+                        <select
+                            value={selectedSubject}
+                            onChange={(e) => {
+                                playClickSound();
+                                setSelectedSubject(e.target.value);
+                            }}
+                            className="p-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold"
+                        >
+                            {taxonomy.subjects.filter(s => s.gradeId === selectedGrade).map(subject => (
+                                <option key={subject.id} value={subject.id}>{subject.name}</option>
+                            ))}
+                            {taxonomy.subjects.filter(s => s.gradeId === selectedGrade).length === 0 && (
+                                <option value="">Sin asignaturas</option>
+                            )}
+                        </select>
+                    </div>
                 </div>
             </Card>
 
@@ -213,7 +313,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ studentProfi
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                  <Card>
                     <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4 text-center">Actividad Reciente</h2>
-                    <div className="space-y-3">
+                    <div className="space-y-3 mb-4">
                         {recentActivity.length > 0 ? recentActivity.map((entry) => {
                              const correctAnswers = entry.results?.filter(r => r.correct).length || 0;
                              const totalQuestions = entry.results?.length || 0;
@@ -228,6 +328,13 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ studentProfi
                              )
                         }) : <p className="text-slate-500 dark:text-slate-400 text-center py-4">¡Empieza a practicar para ver tu actividad!</p>}
                     </div>
+                    {totalSessions > 0 && (
+                        <div className="flex justify-center border-t border-slate-200 dark:border-slate-700 pt-4">
+                            <button onClick={() => { playClickSound(); onViewGlobalHistory(); }} className="text-blue-600 dark:text-blue-400 font-bold hover:underline transition-colors text-sm">
+                                Ver Todo el Historial &rarr;
+                            </button>
+                        </div>
+                    )}
                 </Card>
                 <Card>
                     <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4 text-center">Evolución de Habilidad</h2>

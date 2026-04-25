@@ -7,6 +7,7 @@ import { problemasQuestions } from './categories/problemas';
 import { geometriaQuestions } from './categories/geometria';
 import { medidasQuestions } from './categories/medidas';
 import { relojQuestions } from './categories/reloj';
+import { fraccionesQuestions } from './categories/fracciones';
 
 export const questions: Record<CategoryId, Record<number, Question[]>> = {
     numeros: numerosQuestions,
@@ -15,5 +16,6 @@ export const questions: Record<CategoryId, Record<number, Question[]>> = {
     problemas: problemasQuestions,
     geometria: geometriaQuestions,
     medidas: medidasQuestions,
-    reloj: relojQuestions
+    reloj: relojQuestions,
+    fracciones: fraccionesQuestions
 };

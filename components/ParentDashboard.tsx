@@ -1,7 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { GameState, StudentProfile, CategoryId } from '../types';
-import { questions } from '../data/questions';
-import { lessons } from '../data/lessons';
+import { contentManager } from '../utils/contentManager';
 import { categoryNames } from '../utils/constants';
 import { Card } from './common/Card';
 import { Button } from './common/Button';
@@ -16,6 +15,9 @@ interface ParentDashboardProps {
     onResetAll: () => void;
     showModal: (title: string, message: string, onConfirm?: () => void, confirmVariant?: 'primary' | 'warning') => void;
     onOpenFeedbackModal: () => void;
+    onGoToContentManager: () => void;
+    onUpdateProfile: (updatedData: Partial<Omit<StudentProfile, 'id'>>) => void;
+    subjectId?: string;
 }
 
 const AccordionItem: React.FC<{
@@ -67,9 +69,9 @@ const ProgressItem: React.FC<{
 
     let maxLevel = 0;
     if (type === 'category') {
-        maxLevel = Object.keys(questions[itemKey as CategoryId] || {}).length;
+        maxLevel = Object.keys(contentManager.getQuestions()[itemKey as CategoryId] || {}).length;
     } else {
-        const lesson = lessons.find(l => l.id === itemKey);
+        const lesson = contentManager.getLessons().find(l => l.id === itemKey);
         if (lesson) maxLevel = Object.keys(lesson.practice).length;
     }
     
@@ -111,9 +113,44 @@ const ProgressItem: React.FC<{
     );
 };
 
-export const ParentDashboard: React.FC<ParentDashboardProps> = ({ studentProfile, gameState, onUnlockNextLevel, onResetProgress, onUnlockAll, onResetAll, showModal, onOpenFeedbackModal }) => {
-    const [openAccordion, setOpenAccordion] = useState<string | null>('data');
+export const ParentDashboard: React.FC<ParentDashboardProps> = ({ studentProfile, gameState, onUnlockNextLevel, onResetProgress, onUnlockAll, onResetAll, showModal, onOpenFeedbackModal, onGoToContentManager, onUpdateProfile, subjectId }) => {
+    const taxonomy = contentManager.getTaxonomy();
+
+    const initialGrade = studentProfile?.gradeId || taxonomy.grades[0]?.id || '';
+    const initialSubject = subjectId || taxonomy.subjects.find(s => s.gradeId === initialGrade)?.id || '';
+
+    const [selectedGrade, setSelectedGrade] = useState<string>(initialGrade);
+    const [selectedSubject, setSelectedSubject] = useState<string>(initialSubject || '');
+    const [openAccordion, setOpenAccordion] = useState<string | null>('profile');
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const [editName, setEditName] = useState(studentProfile?.name || '');
+    const [editAge, setEditAge] = useState(studentProfile?.age || 8);
+    const [editGradeId, setEditGradeId] = useState(studentProfile?.gradeId || taxonomy.grades[0]?.id || '');
+
+    const hasChanges = editName !== studentProfile?.name || editAge !== studentProfile?.age || editGradeId !== studentProfile?.gradeId;
+
+    const handleSaveProfile = () => {
+        if (!editName.trim()) return;
+        onUpdateProfile({
+            name: editName.trim(),
+            age: editAge,
+            gradeId: editGradeId
+        });
+        showModal('Éxito', 'Perfil actualizado correctamente.');
+    };
+
+    const activeSubjectCategories = selectedSubject
+        ? new Set(taxonomy.categories.filter(c => c.subjectId === selectedSubject).map(c => c.id))
+        : null;
+
+    const lessonItems = contentManager.getLessons()
+        .filter(lesson => !activeSubjectCategories || activeSubjectCategories.has(lesson.categoryId))
+        .map(lesson => ({ key: lesson.id, name: lesson.title, type: 'lesson' as 'lesson' }));
+    
+    const categoryItems = (Object.keys(contentManager.getQuestions()) as CategoryId[])
+        .filter(catId => !activeSubjectCategories || activeSubjectCategories.has(catId))
+        .map(key => ({ key, name: categoryNames[key] || key, type: 'category' as 'category' }));
 
     const handleExport = () => {
         if (!studentProfile) return;
@@ -179,21 +216,115 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ studentProfile
         event.target.value = ''; // Reset file input
     };
 
-    const lessonItems = lessons.map(lesson => ({ key: lesson.id, name: lesson.title, type: 'lesson' as 'lesson' }));
-    const categoryItems = (Object.keys(questions) as CategoryId[]).map(key => ({ key, name: categoryNames[key], type: 'category' as 'category' }));
+    useEffect(() => {
+        if (taxonomy.grades.length > 0 && !taxonomy.grades.find(g => g.id === selectedGrade)) {
+            setSelectedGrade(studentProfile?.gradeId || taxonomy.grades[0].id);
+        }
+    }, [taxonomy.grades, selectedGrade, studentProfile?.gradeId]);
+
+    useEffect(() => {
+        const subjectsForGrade = taxonomy.subjects.filter(s => s.gradeId === selectedGrade);
+        if (subjectsForGrade.length > 0 && !subjectsForGrade.find(s => s.id === selectedSubject)) {
+            setSelectedSubject(subjectsForGrade[0].id);
+        } else if (subjectsForGrade.length === 0) {
+            setSelectedSubject('');
+        }
+    }, [selectedGrade, taxonomy.subjects, selectedSubject]);
 
     return (
         <div className="animate-fade-in">
             <div className="text-center mb-8">
                 <h1 className="text-3xl font-black text-slate-800 dark:text-slate-200 mb-2">Panel de Padres</h1>
                 <p className="text-slate-600 dark:text-slate-400">
-                    Progreso de <strong className="font-bold">{studentProfile?.name || 'Estudiante'}</strong>.
+                    Gestionando <strong className="font-bold">{studentProfile?.name || 'Estudiante'}</strong>.
                 </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-slate-600 dark:text-slate-400">Grado:</span>
+                        <select
+                            value={selectedGrade}
+                            onChange={(e) => {
+                                playClickSound();
+                                setSelectedGrade(e.target.value);
+                            }}
+                            className="p-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold"
+                        >
+                            {taxonomy.grades.map(g => (
+                                <option key={g.id} value={g.id}>{g.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-slate-600 dark:text-slate-400">Asignatura:</span>
+                        <select
+                            value={selectedSubject}
+                            onChange={(e) => {
+                                playClickSound();
+                                setSelectedSubject(e.target.value);
+                            }}
+                            className="p-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold"
+                        >
+                            {taxonomy.subjects.filter(s => s.gradeId === selectedGrade).map(subject => (
+                                <option key={subject.id} value={subject.id}>{subject.name}</option>
+                            ))}
+                            {taxonomy.subjects.filter(s => s.gradeId === selectedGrade).length === 0 && (
+                                <option value="">Sin asignaturas</option>
+                            )}
+                        </select>
+                    </div>
+                </div>
             </div>
 
             <div className="space-y-4">
+                <AccordionItem id="profile" title="👤 Perfil del Estudiante" openId={openAccordion} setOpenId={setOpenAccordion}>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Nombre</label>
+                            <input 
+                                type="text" 
+                                value={editName} 
+                                onChange={(e) => setEditName(e.target.value)}
+                                className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Edad</label>
+                            <select 
+                                value={editAge} 
+                                onChange={(e) => setEditAge(parseInt(e.target.value))}
+                                className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                            >
+                                {Array.from({ length: 8 }, (_, i) => i + 5).map(a => (
+                                    <option key={a} value={a}>{a} años</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Grado Escolar</label>
+                            <select 
+                                value={editGradeId} 
+                                onChange={(e) => setEditGradeId(e.target.value)}
+                                className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                            >
+                                {taxonomy.grades.map(grade => (
+                                    <option key={grade.id} value={grade.id}>{grade.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    <div className="mt-4 flex justify-end">
+                        <Button onClick={handleSaveProfile} disabled={!hasChanges || !editName.trim()} variant="primary">
+                            Guardar Cambios del Perfil
+                        </Button>
+                    </div>
+                </AccordionItem>
+
                 <AccordionItem id="global" title="🔧 Herramientas Globales" openId={openAccordion} setOpenId={setOpenAccordion}>
                      <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
+                        <Button onClick={onGoToContentManager} variant="primary" className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700">
+                             📚 Administrar Contenido de Estudio
+                        </Button>
                         <Button onClick={onOpenFeedbackModal} variant="primary" className="w-full sm:w-auto">
                             ✉️ Enviar Sugerencias
                         </Button>

@@ -11,6 +11,7 @@ interface AppState {
     currentUser: StudentProfile | null;
     isFreeMode: boolean;
     lessonId: string | null;
+    activeSubjectId: string | undefined;
     showPracticeSuggestion: { categoryId: CategoryId; categoryName: string } | null;
     openPeriods: Record<number, boolean>;
     isFeedbackModalOpen: boolean;
@@ -29,13 +30,14 @@ type AppAction =
     | { type: 'GO_TO_MAIN_MENU' }
     | { type: 'GO_TO_LEVEL_SELECTION' }
     | { type: 'GO_TO_LESSON' }
-    | { type: 'GO_TO_STUDY_AREA'; payload: Record<number, boolean> }
+    | { type: 'GO_TO_STUDY_AREA'; payload: { openPeriods: Record<number, boolean>; subjectId?: string } }
     | { type: 'SET_SHOW_PRACTICE_SUGGESTION'; payload: { categoryId: CategoryId; categoryName: string } | null }
     | { type: 'TOGGLE_PERIOD'; payload: number }
     | { type: 'OPEN_FEEDBACK_MODAL' }
     | { type: 'CLOSE_FEEDBACK_MODAL' }
     | { type: 'OPEN_EDIT_PROFILE_MODAL' }
-    | { type: 'CLOSE_EDIT_PROFILE_MODAL' };
+    | { type: 'CLOSE_EDIT_PROFILE_MODAL' }
+    | { type: 'SET_ACTIVE_SUBJECT'; payload: string | undefined };
 
 const initialState: AppState = {
     screen: 'name-entry',
@@ -46,6 +48,7 @@ const initialState: AppState = {
     currentUser: null,
     isFreeMode: false,
     lessonId: null,
+    activeSubjectId: undefined,
     showPracticeSuggestion: null,
     openPeriods: {},
     isFeedbackModalOpen: false,
@@ -79,7 +82,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
         case 'GO_TO_LESSON':
              return { ...state, screen: 'lesson', quizConfig: null, finalResults: null, showPracticeSuggestion: null };
         case 'GO_TO_STUDY_AREA':
-            return { ...state, screen: 'study-area', lessonId: null, quizConfig: null, finalResults: null, showPracticeSuggestion: null, openPeriods: action.payload };
+            return { ...state, screen: 'study-area', lessonId: null, quizConfig: null, finalResults: null, showPracticeSuggestion: null, openPeriods: action.payload.openPeriods, activeSubjectId: action.payload.subjectId };
         case 'SET_SHOW_PRACTICE_SUGGESTION':
             return { ...state, showPracticeSuggestion: action.payload };
         case 'TOGGLE_PERIOD':
@@ -93,6 +96,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
             return { ...state, isEditProfileModalOpen: true };
         case 'CLOSE_EDIT_PROFILE_MODAL':
             return { ...state, isEditProfileModalOpen: false };
+        case 'SET_ACTIVE_SUBJECT':
+            return { ...state, activeSubjectId: action.payload };
         default:
             return state;
     }

@@ -176,62 +176,84 @@ export const medidasQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: '¿Cuántos metros hay en 1 kilómetro?', options: ['10', '100', '1000'], answer: '1000', hints:['La palabra "kilo" significa mil.', 'Un kilómetro es una distancia muy grande.', 'Son mil metros.', 'Un 1 con tres ceros.', '1000.'], explanation: '¡Correcto! 1 kilómetro es igual a 1000 metros. ¡Es una distancia para campeones! 🏃', lessonId: MEDIDAS_LONGITUD_1},
         ...Array.from({ length: 37 }).map((_, i): Question => {
             const metros = i + 2;
+            const centimetros = metros * 100;
             return {
                 type: 'input',
-                question: `Si un pasillo mide ${metros} metros de largo, ¿cuántos centímetros son?`,
-                answer: (metros * 100).toString(),
-                hints: [`Recuerda que 1 metro = 100 centímetros.`, `Para convertir de metros a centímetros, multiplicamos por 100.`, `La operación es ${metros} x 100.`, `Un truco es añadir dos ceros al número de metros.`, `La respuesta es ${metros}00.` ],
-                explanation: `Multiplicamos los metros por 100: ${metros} m × 100 = ${metros * 100} cm.`,
+                question: `Si un pasillo de tu escuela mide ${metros} metros de largo, ¿cuántos centímetros mide en total? 🏫📏`,
+                imageUrl: createMedidasSVG('ruler', { val1: metros, val2: metros * 2, unit: 'm' }),
+                answer: centimetros.toString(),
+                hints: [`¡Atención!: 1 metro es igual a 100 centímetros.`, `Para pasar de metros a centímetros, debes multiplicar el número por 100.`, `La operación es ${metros} x 100.`, `Un truco rápido: añade dos ceros al final del número ${metros}.`, `El resultado final es ${centimetros}.`],
+                explanation: `¡Muy bien calculado! 📏 Para convertir de metros a centímetros, multiplicamos por 100:
+                **${metros} m x 100 = ${centimetros} cm**. 
+                ¡El pasillo mide ${centimetros} centímetros de punta a punta! 🏃💨`,
                 lessonId: MEDIDAS_LONGITUD_1
             };
         }),
 
         // --- Lección: Masa (MEDIDAS_MASA_1) ---
-        { type: 'input', question: '¿Cuántos gramos hay en 1 kilogramo?', answer: '1000', hints:['"Kilo" significa mil.', 'En 1 kg caben 1000 gramos.', 'Mil.', 'Un 1 con tres ceros.', 'Es una conversión importante.'], explanation: '¡Eso es! 1 kilogramo (kg) es igual a 1000 gramos (g). ¡Recuérdalo siempre! ⚖️', lessonId: MEDIDAS_MASA_1},
-        { type: 'input', question: 'Una bolsa de café pesa 3 kilogramos. ¿Cuántos gramos pesa?', imageUrl: createMedidasSVG('item', {item1: '☕', val1: 3, unit: 'kg'}), answer: '3000', hints:['Si 1 kg son 1000 g...', '...3 kg serán el triple.', '1000 + 1000 + 1000 = ?', 'O puedes multiplicar: 3 x 1000.', 'Tres mil.'], explanation: 'Multiplicamos los kilogramos por 1000 para convertirlos a gramos: 3 x 1000 = 3000 g. ¡Mucho café! ☕', lessonId: MEDIDAS_MASA_1},
-        { type: 'mcq', question: '¿Qué pesa más, 2000 gramos de arroz o 2 kilogramos de arroz?', options: ['2000 gramos', '2 kilogramos', 'Pesan lo mismo'], answer: 'Pesan lo mismo', hints:['Primero, convierte todo a la misma unidad.', 'Sabemos que 1 kg = 1000 g.', 'Entonces, 2 kg = 2000 g.', 'Ahora compara: 2000 g vs 2000 g.', 'Son iguales.'], explanation: 'Como 1 kg es igual a 1000 g, entonces 2 kg son 2000 g. ¡Pesan exactamente lo mismo! ¡Es un truco! 😉', lessonId: MEDIDAS_MASA_1},
+        { type: 'input', question: '¿Cuántos gramos hay exactamente en 1 kilogramo? ⚖️🔢', answer: '1000', hints:['La palabra "kilo" significa mil.', 'Es una unidad que usamos para pesar cosas como el arroz.', 'En 1 kg caben mil unidades pequeñas llamadas gramos.', 'Un 1 con tres ceros.', 'Mil.'], explanation: '¡Correcto! 💪 1 kilogramo (kg) equivale a **1000 gramos (g)**. ¡Es la medida estándar para los pesos en la cocina y la bodega! ⚖️✨', lessonId: MEDIDAS_MASA_1},
+        { type: 'input', question: 'Un paquete de café cubano pesa 3 kilogramos. ¿Cuántos gramos pesa en total? ☕⚖️', imageUrl: createMedidasSVG('item', {item1: '☕', val1: 3, unit: 'kg'}), answer: '3000', hints:['Sabemos que 1 kg = 1000 g.', 'Para saber cuánto son 3 kg, multiplicamos 3 por 1000.', '3 x 1000 = ?', 'Un 3 con tres ceros.', 'Tres mil.'], explanation: `¡Excelente! ☕ Como cada kilogramo tiene 1000 gramos, multiplicamos:
+        **3 kg x 1000 = 3000 g**. 
+        ¡Ese paquete tiene 3000 gramos de puro aroma! ☕🤤`, lessonId: MEDIDAS_MASA_1},
+        { type: 'mcq', question: '¿Qué pesa más: 2 kilogramos de boniato o 2000 gramos de boniato? 🍠⚖️', options: ['2 kilogramos', '2000 gramos', 'Pesan exactamente lo mismo'], answer: 'Pesan exactamente lo mismo', hints:['Primero hagamos la conversión: 1 kg = 1000 g.', 'Entonces, 2 kg son iguales a 2000 g.', 'Compara 2000 g con 2000 g.', 'No hay uno mayor que otro.', 'Son iguales.'], explanation: '¡Justo así! 😉 Como 1 kg es igual a 1000 g, 2000 g es exactamente lo mismo que 2 kg. ¡El mismo peso dicho con palabras diferentes! 🍠✨', lessonId: MEDIDAS_MASA_1},
         ...Array.from({ length: 37 }).map((_, i): Question => {
             const kg = i + 2;
+            const gramos = kg * 1000;
             return {
                 type: 'input',
-                question: `Una calabaza pesa ${kg} kg. ¿Cuántos gramos son?`,
-                answer: (kg * 1000).toString(),
-                hints: [`Recuerda que 1 kg = 1000 gramos.`, `Para convertir de kg a g, multiplicamos por 1000.`, `La operación es ${kg} x 1000.`, `Un truco es añadir tres ceros al número de kilogramos.`, `La respuesta es ${kg}000.` ],
-                explanation: `Multiplicamos los kilogramos por 1000: ${kg} kg × 1000 = ${kg * 1000} g.`,
+                question: `Si compras una calabaza que pesa ${kg} kg en el agromercado, ¿cuántos gramos pesa? 🎃⚖️`,
+                imageUrl: createMedidasSVG('item', {item1: '🎃', val1: kg, unit: 'kg'}),
+                answer: gramos.toString(),
+                hints: [`Recuerda la regla: 1 kg = 1000 gramos.`, `Multiplica los kilogramos por 1000.`, `La operación es ${kg} x 1000.`, `Añade tres ceros al final del número ${kg}.`, `El resultado es ${gramos}.`],
+                explanation: `¡Buen trabajo! 🎃 Para pasar de kilogramos a gramos, multiplicamos por 1000:
+                **${kg} kg x 1000 = ${gramos} g**. 
+                ¡Tu calabaza pesa ${gramos} gramos! 🥧✨`,
                 lessonId: MEDIDAS_MASA_1
             };
         }),
 
         // --- Lección: Capacidad (MEDIDAS_CAPACIDAD_1) ---
-        { type: 'input', question: '¿Cuántos mililitros hay en 1 litro?', answer: '1000', hints:['La palabra "mili" viene de mil.', 'En 1 litro caben 1000 mililitros.', 'Mil.', 'Un 1 con tres ceros.', 'Es una conversión clave.'], explanation: '¡Correcto! 1 litro (L) es igual a 1000 mililitros (ml). ¡La fórmula mágica de los líquidos! 🧪', lessonId: MEDIDAS_CAPACIDAD_1},
-        { type: 'input', question: 'Una botella de refresco tiene 2 litros. ¿Cuántos mililitros son?', imageUrl: createMedidasSVG('item', {item1: '🍾', val1: 2, unit: 'L'}), answer: '2000', hints:['Si 1 L son 1000 ml...', '...2 L serán el doble.', '1000 + 1000 = ?', 'O puedes multiplicar: 2 x 1000.', 'Dos mil.'], explanation: 'Multiplicamos los litros por 1000 para convertirlos a mililitros: 2 x 1000 = 2000 ml. ¡Para servir muchos vasos! 🥤', lessonId: MEDIDAS_CAPACIDAD_1},
-        { type: 'mcq', question: '¿Qué es más, medio litro o 500 mililitros?', options: ['Medio litro', '500 mililitros', 'Son lo mismo'], answer: 'Son lo mismo', hints:['Primero, piensa cuántos mililitros tiene 1 litro entero. (Son 1000 ml).', 'Ahora, ¿cuánto es "medio litro"? Es la mitad de 1000 ml.', 'La mitad de 1000 es 500.', 'Ahora compara: 500 ml vs 500 ml.', 'Son iguales.'], explanation: 'Un litro son 1000 ml, por lo tanto, medio litro es la mitad, 500 ml. ¡Son exactamente la misma cantidad! 🌗', lessonId: MEDIDAS_CAPACIDAD_1},
+        { type: 'input', question: '¿Cuántos mililitros hay en 1 litro de leche? 🥛💧', answer: '1000', hints:['La palabra "mili" nos da la pista de mil.', 'Es la cantidad de líquido que cabe en una botella estándar.', 'En 1 litro caben 1000 partes pequeñitas llamadas mililitros.', 'Un 1 seguido de tres ceros.', 'Mil.'], explanation: '¡Exacto! 🥛 1 litro (L) es igual a **1000 mililitros (ml)**. ¡Es la medida perfecta para llenar tu vaso! 🥛✨', lessonId: MEDIDAS_CAPACIDAD_1},
+        { type: 'input', question: 'Una botella de refresco familiar tiene 2 litros. ¿Cuántos mililitros tiene? 🍾🥤', imageUrl: createMedidasSVG('item', {item1: '🥤', val1: 2, unit: 'L'}), answer: '2000', hints:['Si 1 L = 1000 ml...', '...2 L serán el doble.', 'Multiplica 2 x 1000.', 'Dos mil.', '2000.'], explanation: `¡Muy bien! 🥳 Multiplicamos los litros por 1000 para obtener los mililitros:
+        **2 L x 1000 = 2000 ml**. 
+        ¡Tienes 2000 mililitros para compartir con tus amigos! 🥤🙌`, lessonId: MEDIDAS_CAPACIDAD_1},
+        { type: 'mcq', question: '¿Qué cantidad es mayor: medio litro o 500 mililitros? 🥛💧', options: ['Medio litro', '500 mililitros', 'Son la misma cantidad'], answer: 'Son la misma cantidad', hints:['Si 1 litro entero son 1000 ml...', '...la mitad de un litro (medio litro) es la mitad de 1000 ml.', 'La mitad de 1000 es 500.', 'Entonces, medio litro son 500 ml.', 'Son lo mismo.'], explanation: '¡Correcto! 🎯 Puesto que 1 litro son 1000 ml, la mitad es exactamente 500 ml. Medio litro y 500 ml son dos formas de llamar a la misma cantidad de jugo. 🧃✨', lessonId: MEDIDAS_CAPACIDAD_1},
         ...Array.from({ length: 37 }).map((_, i): Question => {
             const L = i + 2;
+            const mililitros = L * 1000;
             return {
                 type: 'input',
-                question: `Un cubo tiene ${L} litros de agua. ¿Cuántos mililitros son?`,
-                answer: (L * 1000).toString(),
-                hints: [`Recuerda que 1 Litro = 1000 mililitros.`, `Para convertir de L a ml, multiplicamos por 1000.`, `La operación es ${L} x 1000.`, `Un truco es añadir tres ceros al número de litros.`, `La respuesta es ${L}000.` ],
-                explanation: `Multiplicamos los litros por 1000: ${L} L × 1000 = ${L * 1000} ml.`,
+                question: `Si llenas un cubo con ${L} litros de agua para limpiar la casa, ¿cuántos mililitros de agua tienes? 🪣💧`,
+                imageUrl: createMedidasSVG('beaker', { val1: L, total: L + 5, unit: 'L' }),
+                answer: mililitros.toString(),
+                hints: [`Recuerda: 1 Litro = 1000 mililitros.`, `Multiplica la cantidad de litros por 1000.`, `La operación es ${L} x 1000.`, `Añade tres ceros al número ${L}.`, `El resultado es ${mililitros}.`],
+                explanation: `¡Excelente! 🌊 Para convertir de litros a mililitros, multiplicamos por 1000:
+                **${L} L x 1000 = ${mililitros} ml**. 
+                ¡Tienes ${mililitros} mililitros de agua listos para usar! 🪣✨`,
                 lessonId: MEDIDAS_CAPACIDAD_1
             };
         }),
 
         // --- Lección: Moneda (MEDIDAS_MONEDA_1) ---
-        { type: 'input', question: 'Un helado cuesta 18 CUP. Si pagas con un billete de 20, ¿cuánto te devuelven?', imageUrl: createMedidasSVG('item', {item1: '🍦', val1: 18, unit: 'CUP'}), answer: '2', hints:['"Devuelven" o "vuelto" significa que tienes que restar.', '20 (lo que das) - 18 (lo que cuesta) = ?', 'La diferencia es muy pequeña.', 'Dos.', '2.'], explanation: 'Restamos el precio del dinero que entregamos: 20 - 18 = 2 CUP de vuelto. ¡Justo para un chicle! 😉', lessonId: MEDIDAS_MONEDA_1},
-        { type: 'mcq', question: '¿Con qué billete pagarías algo que cuesta 80 CUP?', options: ['Uno de 50', 'Uno de 100', 'Uno de 20'], answer: 'Uno de 100', hints:['Busca un billete que sea igual o más grande que el precio.', 'Con 50 no te alcanza.', 'Con 20 tampoco.', 'El billete de 100 sí te alcanza.', 'Tendrías que usar el de 100 y te darían vuelto.'], explanation: 'Necesitas un billete de valor igual o mayor al precio. El de 100 CUP es el único que sirve, ¡y te darán 20 de vuelto! 💵', lessonId: MEDIDAS_MONEDA_1},
-        { type: 'input', question: 'Tienes 5 monedas de 3 CUP. ¿Cuánto dinero tienes en total?', answer: '15', hints:['Son 5 grupos de 3.', 'Es una multiplicación.', '5 x 3 = ?', 'También puedes sumar: 3+3+3+3+3.', 'Quince.'], explanation: 'Multiplicamos la cantidad de monedas por su valor: 5 x 3 = 15 CUP. ¡Ya tienes para algo rico! 😋', lessonId: MEDIDAS_MONEDA_1},
+        { type: 'input', question: 'Un helado en la barquillera cuesta 18 CUP. Si pagas con un billete de 20 CUP, ¿cuánto dinero te deben devolver de vuelto? 🍦💵', imageUrl: createMedidasSVG('item', {item1: '🍦', val1: 18, unit: 'CUP'}), answer: '2', hints:['El "vuelto" es la diferencia entre lo que diste y lo que costó.', 'Debes hacer una resta.', '20 (billete) - 18 (helado) = ?', 'Solo faltan 2 para llegar a 20.', 'Dos pesos.'], explanation: `¡Muy bien calculado! 🍦 Restamos el precio del dinero entregado: **20 - 18 = 2 CUP**. 
+        ¡Te deben devolver 2 pesos cubanos de vuelto! 💸😉`, lessonId: MEDIDAS_MONEDA_1},
+        { type: 'mcq', question: 'Quieres comprar un juguete que cuesta 80 CUP. ¿Cuál es el billete más pequeño que te alcanza para pagar? 🧸💰', options: ['Un billete de 50', 'Un billete de 100', 'Un billete de 20'], answer: 'Un billete de 100', hints:['Necesitas un billete que sea mayor o igual a 80.', '50 es menor que 80, no te alcanza.', '20 también es menor que 80.', '100 es mayor que 80, así que con ese sí puedes pagar.', 'Te sobraría dinero.'], explanation: '¡Exacto! 🧸 Como el juguete cuesta 80 CUP, el billete de 100 CUP es el único que cubre el precio. ¡Incluso te sobrarán 20 pesos de vuelto! 💵✨', lessonId: MEDIDAS_MONEDA_1},
+        { type: 'input', question: 'Si tienes 5 monedas de 3 CUP cada una, ¿cuánto dinero tienes en total? 🪙💰', answer: '15', hints:['Tienes 5 veces 3 pesos.', 'Puedes sumar 3+3+3+3+3.', 'O multiplicar 5 x 3.', 'Tabla del 5 o del 3.', 'Quince.'], explanation: `¡Magnífico! 🚀 Multiplicamos la cantidad de monedas por su valor:
+        **5 monedas x 3 pesos = 15 CUP**. 
+        ¡Ya tienes 15 pesos para tu alcancía! 🐷🪙✨`, lessonId: MEDIDAS_MONEDA_1},
         ...Array.from({ length: 37 }).map((_, i): Question => {
             const price = 10 + i;
             const paid = Math.ceil((price + 1) / 10) * 10;
             const change = paid - price;
             return {
                 type: 'input',
-                question: `Un dulce cuesta ${price} CUP. Si pagas con un billete de ${paid}, ¿cuánto te devuelven?`,
+                question: `Un refresco de lata cuesta ${price} CUP. Si pagas con un billete de ${paid} CUP, ¿cuánto dinero te queda de vuelto? 🥤💸`,
+                imageUrl: createMedidasSVG('coins', { val1: 0, val2: paid, unit: 'CUP' }),
                 answer: change.toString(),
-                hints: [`La palabra "devuelven" indica una resta.`, `Resta el precio de lo que pagaste.`, `La operación es ${paid} - ${price}.`, `Calcula la diferencia.`, `La respuesta es ${change}.`],
-                explanation: `Restamos el precio al dinero entregado para encontrar el vuelto: ${paid} - ${price} = ${change} CUP.`,
+                hints: [`El vuelto es lo que te sobra después de pagar.`, `Resta el precio (${price}) del dinero que entregaste (${paid}).`, `La operación es ${paid} - ${price}.`, `Haz la cuenta con cuidado.`, `La respuesta es ${change}.`],
+                explanation: `¡Esa es la cuenta! 🎯 Restamos el precio al dinero entregado: 
+                **${paid} - ${price} = ${change} CUP**. 
+                ¡Te quedan ${change} pesos cubanos de vuelto! 💸✨`,
                 lessonId: MEDIDAS_MONEDA_1
             };
         }),
