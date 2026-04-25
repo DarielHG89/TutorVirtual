@@ -108,6 +108,37 @@ export async function checkGeminiConnection(): Promise<boolean> {
     return isApiAvailable;
 }
 
+export async function fetchLocalModels(endpoint: string): Promise<string[]> {
+    if (!endpoint) return [];
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        
+        // Try OpenAI compatible first
+        let response = await fetch(`${endpoint}/v1/models`, { signal: controller.signal }).catch(() => null);
+        
+        if (response && response.ok) {
+            const data = await response.json();
+            clearTimeout(timeoutId);
+            return data.data?.map((m: any) => m.id) || [];
+        }
+
+        // Try Ollama specific if v1/models failed or isn't compatible
+        response = await fetch(`${endpoint}/api/tags`).catch(() => null);
+        if (response && response.ok) {
+            const data = await response.json();
+            clearTimeout(timeoutId);
+            return data.models?.map((m: any) => m.name) || [];
+        }
+
+        clearTimeout(timeoutId);
+        return [];
+    } catch (e) {
+        console.error("Error fetching local models:", e);
+        return [];
+    }
+}
+
 export async function testAiConnection(config: AiConfig): Promise<{ success: boolean; message: string }> {
     if (config.mode === 'none') {
         return { success: true, message: "Modo sin IA seleccionado." };

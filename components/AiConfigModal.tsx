@@ -4,7 +4,8 @@ import { Brain, Globe, Laptop, X, Check, AlertTriangle } from 'lucide-react';
 import { Button } from './common/Button';
 import { aiConfigManager } from '../utils/aiConfigManager';
 import { AiConfig, AiMode } from '../types';
-import { testAiConnection } from '../services/aiService';
+import { testAiConnection, fetchLocalModels } from '../services/aiService';
+import { Loader2, RefreshCw } from 'lucide-react';
 
 interface AiConfigModalProps {
     onClose: () => void;
@@ -15,6 +16,8 @@ export const AiConfigModal: React.FC<AiConfigModalProps> = ({ onClose }) => {
     const [isSaving, setIsSaving] = useState(false);
     const [isTesting, setIsTesting] = useState(false);
     const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+    const [localModels, setLocalModels] = useState<string[]>([]);
+    const [isFetchingModels, setIsFetchingModels] = useState(false);
 
     const handleSave = () => {
         setIsSaving(true);
@@ -35,6 +38,20 @@ export const AiConfigModal: React.FC<AiConfigModalProps> = ({ onClose }) => {
             setTestResult({ success: false, message: "Ocurrió un error inesperado al probar la conexión." });
         } finally {
             setIsTesting(false);
+        }
+    };
+
+    const handleRefreshModels = async () => {
+        if (!config.localEndpoint) return;
+        setIsFetchingModels(true);
+        try {
+            const models = await fetchLocalModels(config.localEndpoint);
+            setLocalModels(models);
+            if (models.length > 0 && !config.localModel) {
+                setConfig(prev => ({ ...prev, localModel: models[0] }));
+            }
+        } finally {
+            setIsFetchingModels(false);
         }
     };
 
@@ -119,14 +136,39 @@ export const AiConfigModal: React.FC<AiConfigModalProps> = ({ onClose }) => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">Nombre del Modelo</label>
-                                <input 
-                                    type="text"
-                                    value={config.localModel || ''}
-                                    onChange={(e) => setConfig({ ...config, localModel: e.target.value })}
-                                    placeholder="llama3, mistral, gemma..."
-                                    className="w-full p-3 bg-slate-100 dark:bg-slate-700 rounded-xl border-2 border-transparent focus:border-indigo-500 focus:outline-none dark:text-white"
-                                />
+                                <div className="flex justify-between items-center">
+                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">Nombre del Modelo</label>
+                                    {config.localEndpoint && (
+                                        <button 
+                                            onClick={handleRefreshModels}
+                                            disabled={isFetchingModels}
+                                            className="text-xs text-indigo-600 flex items-center gap-1 hover:underline"
+                                        >
+                                            {isFetchingModels ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                                            Listar modelos
+                                        </button>
+                                    )}
+                                </div>
+                                {localModels.length > 0 ? (
+                                    <select
+                                        value={config.localModel || ''}
+                                        onChange={(e) => setConfig({ ...config, localModel: e.target.value })}
+                                        className="w-full p-3 bg-slate-100 dark:bg-slate-700 rounded-xl border-2 border-transparent focus:border-indigo-500 focus:outline-none dark:text-white"
+                                    >
+                                        <option value="">Selecciona un modelo...</option>
+                                        {localModels.map(m => (
+                                            <option key={m} value={m}>{m}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <input 
+                                        type="text"
+                                        value={config.localModel || ''}
+                                        onChange={(e) => setConfig({ ...config, localModel: e.target.value })}
+                                        placeholder="llama3, mistral, gemma..."
+                                        className="w-full p-3 bg-slate-100 dark:bg-slate-700 rounded-xl border-2 border-transparent focus:border-indigo-500 focus:outline-none dark:text-white"
+                                    />
+                                )}
                             </div>
                         </motion.div>
                     )}
