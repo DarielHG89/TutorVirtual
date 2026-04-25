@@ -125,6 +125,14 @@ export const AiConfigModal: React.FC<AiConfigModalProps> = ({ onClose }) => {
 
                     {config.mode === 'local' && (
                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4">
+                            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-200 dark:border-blue-800">
+                                <p className="text-[10px] text-blue-800 dark:text-blue-300 leading-tight">
+                                    <strong className="block mb-1">⚠️ Importante para Ollama:</strong>
+                                    Para permitir la conexión desde el navegador, debes configurar la variable de entorno:
+                                    <code className="block mt-1 p-1 bg-blue-100 dark:bg-blue-900/40 rounded">OLLAMA_ORIGINS="*"</code>
+                                    y reiniciar Ollama.
+                                </p>
+                            </div>
                             <div className="space-y-2">
                                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">Endpoint Local (ej. Ollama)</label>
                                 <input 

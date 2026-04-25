@@ -174,6 +174,23 @@ export default function App() {
             setConnectionStatus(isOnline ? 'online' : 'offline');
         });
 
+        const handleAiConfigUpdated = () => {
+            checkGeminiConnection().then(isOnline => {
+                setConnectionStatus(isOnline ? 'online' : 'offline');
+                
+                // If AI was disabled and now we have a valid config, enable it for this session/user
+                const config = aiConfigManager.getConfig();
+                if (isOnline && config.mode !== 'none') {
+                    setIsAiEnabled(true);
+                    if (currentUser) {
+                         localStorage.setItem(`maestroDigitalAiEnabled_${currentUser.id}`, JSON.stringify(true));
+                    }
+                }
+            });
+        };
+
+        window.addEventListener('ai-config-updated', handleAiConfigUpdated);
+
         // Startup AI config check
         if (!aiConfigManager.hasConfig()) {
             setIsAiConfigModalOpen(true);
@@ -186,7 +203,10 @@ export default function App() {
             setIsDebugMode(false);
         }
 
-    }, [dispatch]);
+        return () => {
+            window.removeEventListener('ai-config-updated', handleAiConfigUpdated);
+        };
+    }, [dispatch, currentUser]);
     
     useEffect(() => {
         localStorage.setItem(DEBUG_MODE_KEY, JSON.stringify(isDebugMode));
