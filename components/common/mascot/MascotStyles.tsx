@@ -235,15 +235,27 @@ export const MascotStyles: React.FC<MascotStylesProps> = ({
 
                 /* New Emotion Particles */
                 @keyframes gearSpin {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
+                    0% { transform: rotate(0deg); }
+                    15% { transform: rotate(45deg); }
+                    25% { transform: rotate(40deg); }
+                    40% { transform: rotate(120deg); }
+                    55% { transform: rotate(115deg); }
+                    70% { transform: rotate(230deg); }
+                    85% { transform: rotate(220deg); }
+                    100% { transform: rotate(360deg); }
                 }
                 @keyframes gearSpinCounter {
-                    from { transform: rotate(360deg); }
-                    to { transform: rotate(0deg); }
+                    0% { transform: rotate(360deg); }
+                    15% { transform: rotate(315deg); }
+                    25% { transform: rotate(320deg); }
+                    40% { transform: rotate(240deg); }
+                    55% { transform: rotate(245deg); }
+                    70% { transform: rotate(130deg); }
+                    85% { transform: rotate(140deg); }
+                    100% { transform: rotate(0deg); }
                 }
-                .gear-spin { transform-origin: center; transform-box: fill-box; animation: gearSpin 4s linear infinite; }
-                .gear-spin-c { transform-origin: center; transform-box: fill-box; animation: gearSpinCounter 4s linear infinite; }
+                .gear-spin { transform-origin: center; transform-box: fill-box; animation: gearSpin 6s ease-in-out infinite; }
+                .gear-spin-c { transform-origin: center; transform-box: fill-box; animation: gearSpinCounter 6s ease-in-out infinite; }
 
                 @keyframes heartFloat {
                     0% { transform: translateY(0) scale(0.8); opacity: 0; }

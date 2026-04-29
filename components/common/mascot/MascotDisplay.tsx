@@ -110,6 +110,7 @@ export const MascotDisplay: React.FC<MascotDisplayProps> = ({
     angle: number,
     handCx: number,
     handCy: number,
+    radius: number = 2.3,
   ) => {
     // Calculate vector from hand center to finger target
     const dx = targetCx - handCx;
@@ -126,7 +127,7 @@ export const MascotDisplay: React.FC<MascotDisplayProps> = ({
     return {
       cx: finalCx,
       cy: finalCy,
-      r: "2.3",
+      r: radius.toString(),
       fill: "url(#whitePlastic)",
       stroke: "#94a3b8",
       strokeWidth: "1",
@@ -222,45 +223,7 @@ export const MascotDisplay: React.FC<MascotDisplayProps> = ({
           </clipPath>
         </defs>
 
-        {/* EMOTION PARTICLES BACKGROUND - Shifted Up */}
-        {isThinking && (
-          <g opacity="0.6" transform="translate(0, -12)">
-            <path
-              d="M 30 20 L 34 20 L 34 24 L 30 24 Z"
-              fill="none"
-              stroke="#cbd5e1"
-              strokeWidth="3"
-              className="gear-spin"
-            />
-            <path
-              d="M 90 20 L 94 20 L 94 24 L 90 24 Z"
-              fill="none"
-              stroke="#94a3b8"
-              strokeWidth="4"
-              className="gear-spin-c"
-            />
-            <circle
-              cx="32"
-              cy="22"
-              r="8"
-              stroke="#94a3b8"
-              strokeWidth="2"
-              fill="none"
-              strokeDasharray="2,2"
-              className="gear-spin"
-            />
-            <circle
-              cx="92"
-              cy="22"
-              r="6"
-              stroke="#cbd5e1"
-              strokeWidth="2"
-              fill="none"
-              strokeDasharray="2,2"
-              className="gear-spin-c"
-            />
-          </g>
-        )}
+        {/* Success Particles */}
         {isSuccess && (
           <g transform="translate(0, -15)">
             <path
@@ -1023,8 +986,8 @@ export const MascotDisplay: React.FC<MascotDisplayProps> = ({
               <circle {...getFinger(19.5, 83, 15, 15, 75)} />
               {/* Middle */}
               <circle {...getFinger(13.5, 84, -5, 15, 75)} />
-              {/* Pinky/Ring */}
-              <circle {...getFinger(7.5, 82, -25, 15, 75)} />
+              {/* Pinky (Small but visible) */}
+              <circle {...getFinger(9, 81.5, -20, 15, 75, 2.0)} />
 
               {/* Palm */}
               <circle
@@ -1052,8 +1015,8 @@ export const MascotDisplay: React.FC<MascotDisplayProps> = ({
               <circle {...getFinger(100.5, 83, -15, 105, 75)} />
               {/* Middle */}
               <circle {...getFinger(106.5, 84, 5, 105, 75)} />
-              {/* Pinky/Ring */}
-              <circle {...getFinger(112.5, 82, 25, 105, 75)} />
+              {/* Pinky (Small but visible) */}
+              <circle {...getFinger(111, 81.5, 20, 105, 75, 2.0)} />
 
               {/* Palm */}
               <circle
@@ -1067,6 +1030,37 @@ export const MascotDisplay: React.FC<MascotDisplayProps> = ({
             </g>
           </g>
         </g>
+
+        {/* THINKING GEARS - FRONT LAYER (Top Right) */}
+        {isThinking && (
+          <g opacity="0.8" transform="translate(95, 5)">
+            {/* Main Gear */}
+            <g className="gear-spin" transform="translate(10, 10)">
+              <circle r="8" fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="1,1" />
+              {[0, 45, 90, 135, 180, 225, 270, 315].map((ang) => (
+                <rect key={ang} x="-2" y="-10" width="4" height="2.5" rx="1" fill="#94a3b8" transform={`rotate(${ang})`} />
+              ))}
+              <circle r="4" fill="none" stroke="#cbd5e1" strokeWidth="2" />
+            </g>
+
+            {/* Second Gear - Counter-rotating */}
+            <g className="gear-spin-c" transform="translate(0, 18)">
+              <circle r="6" fill="none" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="1,1" />
+              {[0, 60, 120, 180, 240, 300].map((ang) => (
+                <rect key={ang} x="-1.5" y="-8" width="3" height="2" rx="0.8" fill="#cbd5e1" transform={`rotate(${ang})`} />
+              ))}
+              <circle r="3" fill="none" stroke="#94a3b8" strokeWidth="1.5" />
+            </g>
+
+            {/* Small Connector */}
+            <g className="gear-spin" transform="translate(16, 22)">
+              <circle r="4" fill="none" stroke="#64748b" strokeWidth="1" />
+              {[0, 90, 180, 270].map((ang) => (
+                <rect key={ang} x="-1" y="-5" width="2" height="1.5" rx="0.5" fill="#64748b" transform={`rotate(${ang})`} />
+              ))}
+            </g>
+          </g>
+        )}
 
         {/* Dizzy Stars */}
         {isDizzy && (
