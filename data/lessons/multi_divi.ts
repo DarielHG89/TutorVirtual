@@ -58,10 +58,14 @@ export const multiDiviLessons: LessonContent[] = [
         `,
         interactiveExercises: [
             {
-                type: 'fill-in-the-text',
+                type: 'fill-in-the-blanks',
                 title: 'De Suma a Multiplicación',
-                textWithInputs: '4 + 4 + 4 es igual a __INPUT__ x __INPUT__ que da __INPUT__.',
-                correctAnswers: ['3', '4', '12']
+                textWithBlanks: '4 + 4 + 4 es igual a __BLANK__ x __BLANK__ que da __BLANK__.',
+                blanks: [
+                    { correctAnswer: '3', options: ['3', '4', '12'] },
+                    { correctAnswer: '4', options: ['3', '4', '12'] },
+                    { correctAnswer: '12', options: ['8', '12', '16'] }
+                ]
             },
             {
                 type: 'match-pairs',
@@ -74,10 +78,14 @@ export const multiDiviLessons: LessonContent[] = [
                 ]
             },
             {
-                type: 'fill-in-the-text',
+                type: 'fill-in-the-blanks',
                 title: 'El truco de los ceros',
-                textWithInputs: '12 x 10 = __INPUT__. 7 x 100 = __INPUT__. 9 x 1000 = __INPUT__.',
-                correctAnswers: ['120', '700', '9000']
+                textWithBlanks: '12 x 10 = __BLANK__. 7 x 100 = __BLANK__. 9 x 1000 = __BLANK__.',
+                blanks: [
+                    { correctAnswer: '120', options: ['120', '1200', '12'] },
+                    { correctAnswer: '700', options: ['70', '700', '7000'] },
+                    { correctAnswer: '9000', options: ['90', '900', '9000'] }
+                ]
             }
         ],
         practice: getQuestionsForLesson('multiplicacion_3_1'),
@@ -122,10 +130,12 @@ export const multiDiviLessons: LessonContent[] = [
         `,
         interactiveExercises: [
             {
-                type: 'fill-in-the-text',
+                type: 'fill-in-the-blanks',
                 title: 'Repartiendo Galletas 🍪',
-                textWithInputs: 'Si tengo 20 galletas y las reparto entre 4 niños, a cada uno le tocan __INPUT__ galletas.',
-                correctAnswers: ['5']
+                textWithBlanks: 'Si tengo 20 galletas y las reparto entre 4 niños, a cada uno le tocan __BLANK__ galletas.',
+                blanks: [
+                    { correctAnswer: '5', options: ['4', '5', '6'] }
+                ]
             },
             {
                 type: 'match-pairs',
@@ -138,10 +148,13 @@ export const multiDiviLessons: LessonContent[] = [
                 ]
             },
             {
-                type: 'fill-in-the-text',
+                type: 'fill-in-the-blanks',
                 title: 'La Operación Inversa 🔄',
-                textWithInputs: 'Si 6 x 5 = 30, entonces 30 ÷ 6 = __INPUT__. Si 2 x 9 = 18, entonces 18 ÷ 2 = __INPUT__.',
-                correctAnswers: ['5', '9']
+                textWithBlanks: 'Si 6 x 5 = 30, entonces 30 ÷ 6 = __BLANK__. Si 2 x 9 = 18, entonces 18 ÷ 2 = __BLANK__.',
+                blanks: [
+                    { correctAnswer: '5', options: ['5', '6', '10'] },
+                    { correctAnswer: '9', options: ['2', '9', '18'] }
+                ]
             }
         ],
         practice: getQuestionsForLesson('division_3_2'),

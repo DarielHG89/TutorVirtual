@@ -21,7 +21,7 @@ export interface AiConfig {
 
 export type ConnectionStatus = 'checking' | 'online' | 'offline';
 
-export type VoiceMode = 'auto' | 'local' | 'online';
+export type VoiceMode = 'auto' | 'local' | 'online' | 'local-wasm';
 
 export type QuestionBase = {
     explanation?: string;

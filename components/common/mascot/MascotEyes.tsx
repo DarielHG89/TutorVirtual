@@ -8,7 +8,9 @@ interface MascotEyesProps {
     isBlinking: boolean;
     isInterested: boolean;
     idleAction: string;
+    isSpeaking: boolean;
     eyeColor: string;
+    debugIdleDisabled?: boolean;
 }
 
 export const MascotEyes: React.FC<MascotEyesProps> = ({
@@ -17,7 +19,9 @@ export const MascotEyes: React.FC<MascotEyesProps> = ({
     isBlinking,
     isInterested,
     idleAction,
-    eyeColor
+    isSpeaking,
+    eyeColor,
+    debugIdleDisabled = false
 }) => {
     const isDizzy = emotion === 'dizzy';
     const isSuccess = emotion === 'success';
@@ -40,7 +44,6 @@ export const MascotEyes: React.FC<MascotEyesProps> = ({
         );
     }
     
-    // PRIORITY: Dragging overrides happy/music/sleeping
     if (isDragging || emotion === 'surprised') {
         return (
             <g>
@@ -53,7 +56,6 @@ export const MascotEyes: React.FC<MascotEyesProps> = ({
     }
 
     if (isMusic) {
-            // Happy closed eyes for music
             return (
             <g transform="translate(0, -3)">
                 <path d="M 38 46 L 45 38 L 52 46" stroke={eyeColor} strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
@@ -70,7 +72,6 @@ export const MascotEyes: React.FC<MascotEyesProps> = ({
             </g>
         );
     }
-    // Yawning: Closed eyes go UP slightly to make room for big mouth
     if (isYawning) {
             return (
             <g transform="translate(0, -7)">
@@ -79,7 +80,6 @@ export const MascotEyes: React.FC<MascotEyesProps> = ({
             </g>
         );
     }
-    // Sleeping & Cleaning: Closed eyes go DOWN slightly
     if (emotion === 'sleeping' || isCleaning) {
         return (
             <g transform="translate(0, 5)">
@@ -109,39 +109,78 @@ export const MascotEyes: React.FC<MascotEyesProps> = ({
     // Default Eyes (Standard or Reading) - Base Y is 41
     const pupilSize = isInterested ? 6 : 3.5;
     const eyeHeight = isInterested ? 14 : 12;
+    const totalEyeHeight = eyeHeight * 2;
+    const eyeTopY = EYE_BASE_Y - eyeHeight;
+    const eyeBottomY = EYE_BASE_Y + eyeHeight;
+    const blinkMeetingY = eyeTopY + (totalEyeHeight * 0.8);
+
+    const GLOW_PADDING = 20;
+
+    const upperEyelidY = isBlinking ? blinkMeetingY : eyeTopY - GLOW_PADDING;
+    const lowerEyelidY = isBlinking ? blinkMeetingY : eyeBottomY + GLOW_PADDING;
+    const clipY = upperEyelidY;
+    const clipHeight = Math.max(0, lowerEyelidY - upperEyelidY);
     
-    // Update animations: Vertical for eyes group, Horizontal for pupils
     const eyeGroupAnimation = isReading ? 'readingScanVertical 3s ease-in-out infinite' : 'none';
     const pupilAnimation = isReading ? 'readingScanHorizontal 3s ease-in-out infinite' : 'none';
     const pupilOffsetY = isReading ? 2 : 0;
     
-    // Force pupil position to look down (translate Y) when reading to align with book
-    // Also ignore CSS variables when reading to prevent "stuck" eyes if mouse moves
-    // When reading, the animation takes control of the transform.
     const pupilTransform = isReading 
         ? undefined 
         : 'translate(var(--pupil-x, 0px), var(--pupil-y, 0px))';
 
+    const allowIdleAnimations = emotion === 'idle' && idleAction === 'none' && !isSpeaking && !isDragging && !debugIdleDisabled;
+    const pupilJitterClass = allowIdleAnimations ? 'pupil-jitter' : '';
+
     return (
         <g className="transition-transform duration-75 ease-out" style={{ transform: 'translate(var(--eye-group-x, 0), var(--eye-group-y, 0))', animation: eyeGroupAnimation }}>
-            <ellipse cx="45" cy={EYE_BASE_Y} rx="9" ry={eyeHeight} fill={eyeColor} filter="url(#glow)" className="transition-all duration-300" />
-            
-            {/* Left Pupil Group for Tracking */}
-            <g className="transition-transform duration-75" style={{ transform: pupilTransform, animation: pupilAnimation }}>
-                {/* Inner Circle for Jitter */}
-                <circle cx="45" cy={EYE_BASE_Y + pupilOffsetY} r={pupilSize} fill="#0f172a" className="pupil-jitter" />
-            </g>
-            
-            <circle cx="49" cy={EYE_BASE_Y - 6} r="2.5" fill="white" opacity="0.9" /> 
+            <defs>
+                <clipPath id="eye-clip">
+                    <rect 
+                        x="15" 
+                        y={clipY}
+                        width="90" 
+                        height={clipHeight} 
+                        style={{
+                            transition: 'y 150ms cubic-bezier(0.4, 0, 0.2, 1), height 150ms cubic-bezier(0.4, 0, 0.2, 1)'
+                        }}
+                    />
+                </clipPath>
+                <clipPath id="eyelid-clip">
+                    <ellipse cx="45" cy={EYE_BASE_Y} rx="9" ry={eyeHeight} />
+                    <ellipse cx="75" cy={EYE_BASE_Y} rx="9" ry={eyeHeight} />
+                </clipPath>
+            </defs>
 
-            <ellipse cx="75" cy={EYE_BASE_Y} rx="9" ry={eyeHeight} fill={eyeColor} filter="url(#glow)" className="transition-all duration-300" />
+            {/* Background "Off" Eyes (Visible during blink) */}
+            <ellipse cx="45" cy={EYE_BASE_Y} rx="9" ry={eyeHeight} fill="#0f172a" opacity="0.4" />
+            <ellipse cx="75" cy={EYE_BASE_Y} rx="9" ry={eyeHeight} fill="#0f172a" opacity="0.4" />
             
-            {/* Right Pupil Group for Tracking */}
-            <g className="transition-transform duration-75" style={{ transform: pupilTransform, animation: pupilAnimation }}>
-                 <circle cx="75" cy={EYE_BASE_Y + pupilOffsetY} r={pupilSize} fill="#0f172a" className="pupil-jitter" />
+            {/* Clipped Active Eyes Content */}
+            <g clipPath="url(#eye-clip)">
+                <ellipse cx="45" cy={EYE_BASE_Y} rx="9" ry={eyeHeight} fill={eyeColor} filter="url(#glow)" className="transition-all duration-300" />
+                <g className="transition-transform duration-75" style={{ transform: pupilTransform, animation: pupilAnimation }}>
+                    <circle cx="45" cy={EYE_BASE_Y + pupilOffsetY} r={pupilSize} fill="#0f172a" className={`pupil ${pupilJitterClass}`} />
+                </g>
+                <circle cx="49" cy={EYE_BASE_Y - 6} r="2.5" fill="white" opacity="0.9" /> 
+
+                <ellipse cx="75" cy={EYE_BASE_Y} rx="9" ry={eyeHeight} fill={eyeColor} filter="url(#glow)" className="transition-all duration-300" />
+                <g className="transition-transform duration-75" style={{ transform: pupilTransform, animation: pupilAnimation }}>
+                    <circle cx="75" cy={EYE_BASE_Y + pupilOffsetY} r={pupilSize} fill="#0f172a" className={`pupil ${pupilJitterClass}`} />
+                </g>
+                <circle cx="79" cy={EYE_BASE_Y - 6} r="2.5" fill="white" opacity="0.9" /> 
             </g>
 
-            <circle cx="79" cy={EYE_BASE_Y - 6} r="2.5" fill="white" opacity="0.9" /> 
+            {/* Dark Eyelid Lines */}
+            <g clipPath="url(#eyelid-clip)" style={{ opacity: isBlinking ? 0.35 : 0, transition: 'opacity 150ms ease-out' }}>
+                {/* Left Eye */}
+                <line x1="30" y1="0" x2="60" y2="0" stroke="#0f172a" strokeWidth="0.8" strokeLinecap="round" style={{ transform: `translateY(${upperEyelidY}px)`, transition: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1)' }} />
+                <line x1="30" y1="0" x2="60" y2="0" stroke="#0f172a" strokeWidth="0.8" strokeLinecap="round" style={{ transform: `translateY(${lowerEyelidY}px)`, transition: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1)' }} />
+                
+                {/* Right Eye */}
+                <line x1="60" y1="0" x2="90" y2="0" stroke="#0f172a" strokeWidth="0.8" strokeLinecap="round" style={{ transform: `translateY(${upperEyelidY}px)`, transition: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1)' }} />
+                <line x1="60" y1="0" x2="90" y2="0" stroke="#0f172a" strokeWidth="0.8" strokeLinecap="round" style={{ transform: `translateY(${lowerEyelidY}px)`, transition: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1)' }} />
+            </g>
         </g>
     );
 };

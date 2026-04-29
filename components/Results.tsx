@@ -125,12 +125,14 @@ export const Results: React.FC<ResultsProps> = ({ results, onBack, onRetry, prac
 
         const nextLevel = currentLevel + 1;
         if (quizConfig.type === 'practice' && quizConfig.categoryId) {
-            return !!contentManager.getQuestions()[quizConfig.categoryId]?.[nextLevel];
+            const levelQuestions = contentManager.getQuestions()[quizConfig.categoryId]?.[nextLevel];
+            return (levelQuestions?.length || 0) > 0;
         }
 
         if (quizConfig.type === 'lesson' && quizConfig.lessonId) {
             const lesson = contentManager.getLessons().find(l => l.id === quizConfig.lessonId);
-            return !!lesson?.practice?.[nextLevel];
+            const levelQuestions = lesson?.practice?.[nextLevel];
+            return (levelQuestions?.length || 0) > 0;
         }
 
         return false;

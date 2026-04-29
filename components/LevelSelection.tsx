@@ -1,16 +1,20 @@
 
 
-import React from 'react';
-import type { GameState, CategoryId } from '../types';
+import React, { useState } from 'react';
+import type { GameState, CategoryId, Question } from '../types';
 import { contentManager } from '../utils/contentManager';
 import { Card } from './common/Card';
 import { categoryNames } from '../utils/constants';
+import { ContentEditorModal } from './ContentEditorModal';
 
 interface LevelSelectionProps {
     categoryId: CategoryId;
     gameState: GameState;
     onStartPractice: (categoryId: CategoryId, level: number) => void;
     isFreeMode?: boolean;
+    isEditorMode?: boolean;
+    questionsPool: Record<CategoryId, Record<number, Question[]>>;
+    onUpdateQuestionsPool?: (updatedQuestions: Record<CategoryId, Record<number, Question[]>>) => void;
 }
 
 // Nueva paleta de colores para diferenciar dificultad de estado.
@@ -20,11 +24,41 @@ const levelDetails: Record<number, { name: string; color: string; bg: string; bo
     3: { name: 'Difícil', color: 'text-red-800', bg: 'bg-red-100', border: 'border-red-500', darkColor: 'dark:text-red-200', darkBg: 'dark:bg-red-900/50', darkBorder: 'dark:border-red-600' }
 };
 
-export const LevelSelection: React.FC<LevelSelectionProps> = ({ categoryId, gameState, onStartPractice, isFreeMode = false }) => {
+export const LevelSelection: React.FC<LevelSelectionProps> = ({ categoryId, gameState, onStartPractice, isFreeMode = false, isEditorMode, questionsPool, onUpdateQuestionsPool }) => {
     const categoryData = gameState[categoryId];
-    const levels = Object.keys(contentManager.getQuestions()[categoryId]);
+    const categoryQuestions = questionsPool[categoryId] || {};
+    const levels = Object.keys(categoryQuestions);
     const QUIZ_LENGTH = 10;
     const MIN_SCORE_TO_PASS = 8;
+
+    const [editorModal, setEditorModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        initialValue: string;
+        onSave: (newValue: string) => void | Promise<void>;
+        type: 'text' | 'html' | 'json';
+    }>({ isOpen: false, title: '', initialValue: '', onSave: () => {}, type: 'text' });
+
+    const handleSaveQuestionPool = async (level: number, jsonValue: string) => {
+        try {
+            const newQuestions = JSON.parse(jsonValue);
+            const updatedQuestions = {
+                ...questionsPool,
+                [categoryId]: {
+                    ...questionsPool[categoryId],
+                    [level]: newQuestions
+                }
+            };
+            await contentManager.saveQuestions(updatedQuestions);
+            if (onUpdateQuestionsPool) {
+                onUpdateQuestionsPool(updatedQuestions);
+            } else {
+                window.location.reload();
+            }
+        } catch (e) {
+            throw e;
+        }
+    };
 
     return (
         <div className="animate-fade-in text-center">
@@ -82,6 +116,24 @@ export const LevelSelection: React.FC<LevelSelectionProps> = ({ categoryId, game
                                     <p className="mt-2 font-semibold text-slate-500 dark:text-slate-400">
                                         Mejor: {highScore}/{QUIZ_LENGTH}
                                     </p>
+
+                                    {isEditorMode && (
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setEditorModal({
+                                                    isOpen: true,
+                                                    title: `Preguntas ${categoryNames[categoryId]} - Nivel ${level}`,
+                                                    initialValue: JSON.stringify(categoryQuestions[level], null, 4),
+                                                    type: 'json',
+                                                    onSave: (val) => handleSaveQuestionPool(level, val)
+                                                });
+                                            }}
+                                            className="mt-3 px-3 py-1 bg-slate-200 dark:bg-slate-700 text-xs font-bold rounded hover:bg-slate-300 transition-colors"
+                                        >
+                                            Editar Pool 📝
+                                        </button>
+                                    )}
                                 </div>
                             </Card>
                             {isLocked && (
@@ -94,6 +146,15 @@ export const LevelSelection: React.FC<LevelSelectionProps> = ({ categoryId, game
                     );
                 })}
             </div>
+
+            <ContentEditorModal 
+                isOpen={editorModal.isOpen}
+                onClose={() => setEditorModal(prev => ({ ...prev, isOpen: false }))}
+                title={editorModal.title}
+                initialValue={editorModal.initialValue}
+                onSave={editorModal.onSave}
+                type={editorModal.type}
+            />
         </div>
     );
 };

@@ -15,132 +15,134 @@ const getQuestionsForLesson = (lessonId: string) => {
 
 export const geometriaLessons: LessonContent[] = [
     {
-        id: 'geometria_figuras',
-        title: 'Figuras Planas: ¡El Mundo de las Formas! 📐',
+        id: 'geometria_p1',
+        title: 'Rectas: Paralelas y Perpendiculares 🛤️',
         period: 1,
         categoryId: 'geometria',
         theory: `
-            <h3 class="text-2xl font-bold mb-4 text-pink-600 dark:text-pink-400">¡Todo tiene una forma! ⏹️⏺️🔼</h3>
-            <p class="mb-4">Si miras a tu alrededor en tu casa 🏠 o en la calle 🛣️, veras que todo está hecho de formas. ¡Vamos a conocer a las figuras planas más famosas!</p>
+            <h3 class="text-2xl font-bold mb-4 text-blue-600 dark:text-blue-400">¡Líneas en el Espacio! 🛤️➕</h3>
+            <p class="mb-4">Las rectas pueden relacionarse de diferentes formas. ¡Es como el mapa de una ciudad! 🗺️</p>
             
-            <div class="bg-pink-50 dark:bg-pink-900/30 p-4 rounded-lg mb-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-pink-800 dark:text-pink-300">El Triángulo, Cuadrado y Rectángulo 📐⏹️</h4>
-                <p>Estas figuras tienen lados rectos y esquinas llamadas <strong>vértices</strong>:</p>
-                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
-                    <li><strong>Triángulo:</strong> ¡Tiene 3 lados y 3 vértices! Como un pedazo de pizza 🍕.</li>
-                    <li><strong>Cuadrado:</strong> Tiene 4 lados <strong>igualitos</strong>. Como una losita del piso.</li>
-                    <li><strong>Rectángulo:</strong> Tiene 4 lados, pero son iguales de dos en dos. ¡Como una puerta! 🚪</li>
-                </ul>
+            <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-blue-800 dark:text-blue-300">Rectas Paralelas 🛤️</h4>
+                <p>Son aquellas que NUNCA se cortan por más que las alargues. ¡Como las vías del tren! 🚄</p>
                 <div data-exercise-index="0"></div>
             </div>
 
-            <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg mb-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-blue-800 dark:text-blue-300">El Círculo y el Óvalo ⏺️🥚</h4>
-                <p>¡Estas figuras son curvas y no tienen esquinas! Son suaves como una pelota ⚽.</p>
-                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
-                    <li><strong>Círculo:</strong> Es perfectamente redondo. Como una moneda de 1 peso 🪙.</li>
-                    <li><strong>Óvalo:</strong> Es alargado, como un huevo de gallina 🥚.</li>
-                </ul>
+            <div class="bg-red-50 dark:bg-red-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-red-800 dark:text-red-300">Rectas Perpendiculares ➕</h4>
+                <p>Se cortan formando un ángulo recto (esquina perfecta, como una L o una T). ¡Como el marco de una ventana! 🖼️</p>
                 <div data-exercise-index="1"></div>
-            </div>
-
-            <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-yellow-800 dark:text-yellow-300">Lados y Vértices 📏📍</h4>
-                <p>Para identificar una figura, cuenta sus partes:</p>
-                <p class="mt-2 text-semibold">Los <strong>lados</strong> son las líneas rectas que forman el borde, y los <strong>vértices</strong> son los puntitos donde se unen dos lados. ¡Cuenta bien y sabrás quién es quién! 🕵️‍♂️</p>
-                <div data-exercise-index="2"></div>
             </div>
         `,
         interactiveExercises: [
             {
-                type: 'fill-in-the-text',
-                title: 'Contando Partes',
-                textWithInputs: 'Un triángulo tiene __INPUT__ lados. Un cuadrado tiene __INPUT__ vértices.',
-                correctAnswers: ['3', '4']
-            },
-            {
-                type: 'match-pairs',
-                title: '¿A qué se parece?',
-                pairs: [
-                    { term: 'Círculo', definition: 'Una moneda 🪙' },
-                    { term: 'Triángulo', definition: 'Un trozo de pizza 🍕' },
-                    { term: 'Rectángulo', definition: 'Una puerta 🚪' },
-                    { term: 'Cuadrado', definition: 'Una ventana' },
+                type: 'fill-in-the-blanks',
+                title: 'Tipos de Rectas',
+                textWithBlanks: 'Las rectas que nunca se tocan son __BLANK__. Las que forman una esquina perfecta son __BLANK__.',
+                blanks: [
+                    { correctAnswer: 'paralelas', options: ['paralelas', 'perpendiculares', 'secantes'] },
+                    { correctAnswer: 'perpendiculares', options: ['paralelas', 'perpendiculares', 'secantes'] }
                 ]
-            },
-            {
-                type: 'fill-in-the-text',
-                title: 'La Diferencia 🤔',
-                textWithInputs: 'El __INPUT__ tiene sus 4 lados iguales, pero el __INPUT__ los tiene iguales de dos en dos.',
-                correctAnswers: ['cuadrado', 'rectángulo']
             }
         ],
-        practice: getQuestionsForLesson('geometria_figuras'),
+        practice: getQuestionsForLesson('geometria_p1'),
     },
     {
-        id: 'geometria_cuerpos',
-        title: 'Cuerpos Geométricos: ¡Formas con Volumen! 📦',
+        id: 'geometria_p2_1',
+        title: 'Figuras Planas: Cuadrado y Rectángulo ⏹️',
+        period: 1,
+        categoryId: 'geometria',
+        theory: `
+            <h3 class="text-2xl font-bold mb-4 text-emerald-600 dark:text-emerald-400">¡Figuras de 4 Lados! ⏹️🖼️</h3>
+            <p class="mb-4">El cuadrado y el rectángulo son figuras planas con 4 lados y 4 ángulos rectos. ¡Pero tienen un secreto! 🤫</p>
+            
+            <div class="bg-emerald-50 dark:bg-emerald-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-emerald-800 dark:text-emerald-300">El Cuadrado vs Rectángulo ⏹️</h4>
+                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li><strong>Cuadrado:</strong> Sus 4 lados son exactamente IGUALES. ¡Como una losita del piso!</li>
+                    <li><strong>Rectángulo:</strong> Sus lados son iguales de dos en dos. ¡Tiene 2 largos y 2 cortos, como una puerta! 🚪</li>
+                </ul>
+                <div data-exercise-index="0"></div>
+            </div>
+        `,
+        interactiveExercises: [
+            {
+                type: 'fill-in-the-blanks',
+                title: 'Contando Lados',
+                textWithBlanks: 'Un cuadrado tiene sus __BLANK__ lados iguales. Un rectángulo tiene lados iguales de __BLANK__ en __BLANK__.',
+                blanks: [
+                    { correctAnswer: '4', options: ['2', '3', '4'] },
+                    { correctAnswer: '2', options: ['2', '3', '4'] },
+                    { correctAnswer: '2', options: ['2', '3', '4'] }
+                ]
+            }
+        ],
+        practice: getQuestionsForLesson('geometria_p2_1'),
+    },
+    {
+        id: 'geometria_p2_2',
+        title: 'Prismas: Cubos y Ortoedros 🧊',
         period: 2,
         categoryId: 'geometria',
         theory: `
-            <h3 class="text-2xl font-bold mb-4 text-purple-600 dark:text-purple-400">¿Qué es el Volumen? 📦🏐</h3>
-            <p class="mb-4">A diferencia de las figuras planas, los <strong>cuerpos geométricos</strong> tienen volumen, ¡ocupan un lugar en el espacio! Son objetos que puedes agarrar con las manos. 👐</p>
+            <h3 class="text-2xl font-bold mb-4 text-purple-600 dark:text-purple-400">¡Formas con Volumen! 🧊📦</h3>
+            <p class="mb-4">Los prismas son cuerpos geométricos que tienen caras, vértices y aristas. ¡No son planos, ocupan un espacio! 📦✨</p>
             
             <div class="bg-purple-50 dark:bg-purple-900/30 p-4 rounded-lg mb-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-purple-800 dark:text-purple-300">El Cubo y el Prisma 🧊🎁</h4>
-                <p>Tienen caras planas y no ruedan:</p>
+                <h4 class="text-xl font-bold mb-2 text-purple-800 dark:text-purple-300">Cubo y Ortoedro 🧊</h4>
                 <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
-                    <li><strong>Cubo:</strong> Todas sus caras son cuadrados iguales. ¡Como un dado! 🎲.</li>
-                    <li><strong>Prisma:</strong> Sus caras pueden ser rectángulos. Como una caja de leche 🥛 o de medicinas.</li>
+                    <li><strong>Cubo:</strong> Todas sus caras son cuadrados iguales. ¡Como un dado! 🎲</li>
+                    <li><strong>Ortoedro:</strong> Sus caras son rectángulos. ¡Como una caja de zapatos! 📦</li>
                 </ul>
                 <div data-exercise-index="0"></div>
-            </div>
-
-            <div class="bg-orange-50 dark:bg-orange-900/30 p-4 rounded-lg mb-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-orange-800 dark:text-orange-300">Esfera, Cilindro y Cono 🏀🥤🍦</h4>
-                <p>Estos cuerpos tienen partes curvas y ¡pueden rodar! 🏎️💨</p>
-                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
-                    <li><strong>Esfera:</strong> Es redonda por todos lados. Como una pelota de béisbol ⚾.</li>
-                    <li><strong>Cilindro:</strong> Tiene dos bases circulares planas y es curvo por los lados. Como una lata de refresco 🥤.</li>
-                    <li><strong>Cono:</strong> Tiene una base circular y termina en punta. Como un barquillo de helado 🍦.</li>
-                </ul>
-                <div data-exercise-index="1"></div>
-            </div>
-
-            <div class="bg-cyan-50 dark:bg-cyan-900/30 p-4 rounded-lg shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-cyan-800 dark:text-cyan-300">Aristas y Caras 🧱📐</h4>
-                <p>En los cuerpos geométricos hablamos de:</p>
-                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
-                    <li><strong>Caras:</strong> Son las superficies planas del cuerpo.</li>
-                    <li><strong>Aristas:</strong> Son las líneas donde se unen dos caras.</li>
-                </ul>
-                <div data-exercise-index="2"></div>
             </div>
         `,
         interactiveExercises: [
             {
-                type: 'fill-in-the-text',
-                title: '¿Rueda o no Rueda?',
-                textWithInputs: 'Un cubo __INPUT__ rueda, pero una esfera __INPUT__ puede rodar perfectamente.',
-                correctAnswers: ['no', 'sí']
-            },
-            {
-                type: 'match-pairs',
-                title: 'Cita en la Cocina 👩‍🍳',
-                pairs: [
-                    { term: 'Lata de tomate', definition: 'Cilindro' },
-                    { term: 'Naranja', definition: 'Esfera' },
-                    { term: 'Caja de galletas', definition: 'Prisma' },
-                    { term: 'Helado de barquillo', definition: 'Cono' },
+                type: 'fill-in-the-blanks',
+                title: 'Caras y Vértices',
+                textWithBlanks: 'Un cubo tiene __BLANK__ caras. Las esquinas de un prisma se llaman __BLANK__.',
+                blanks: [
+                    { correctAnswer: '6', options: ['4', '6', '8'] },
+                    { correctAnswer: 'vértices', options: ['lados', 'caras', 'vértices'] }
                 ]
-            },
-            {
-                type: 'fill-in-the-text',
-                title: 'Partes del Cuerpo',
-                textWithInputs: 'Las superficies planas de un cuerpo se llaman __INPUT__ y las líneas donde se unen son las __INPUT__.',
-                correctAnswers: ['caras', 'aristas']
             }
         ],
-        practice: getQuestionsForLesson('geometria_cuerpos'),
+        practice: getQuestionsForLesson('geometria_p2_2'),
+    },
+    {
+        id: 'geometria_p3',
+        title: 'Círculo, Circunferencia y Cilindro ⏺️🥫',
+        period: 3,
+        categoryId: 'geometria',
+        theory: `
+            <h3 class="text-2xl font-bold mb-4 text-pink-600 dark:text-pink-400">¡Todo es Redondo! ⏺️🥫💫</h3>
+            <p class="mb-4">Las figuras redondas tienen partes especiales como el radio y el diámetro. ¡Y el cilindro es su versión en 3D! 🥫✨</p>
+            
+            <div class="bg-pink-50 dark:bg-pink-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-pink-800 dark:text-pink-300">Círculo y Circunferencia ⏺️</h4>
+                <p>La <strong>circunferencia</strong> es solo la línea exterior, y el <strong>círculo</strong> es todo lo de adentro. ¡Como un anillo vs una moneda! 🪙</p>
+                <div data-exercise-index="0"></div>
+            </div>
+
+            <div class="bg-cyan-50 dark:bg-cyan-900/30 p-4 rounded-lg shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-cyan-800 dark:text-cyan-300">Radio y Diámetro 📏</h4>
+                <p>El <strong>diámetro</strong> cruza todo el círculo por el centro. EL <strong>radio</strong> es la mitad del diámetro. ¡Como el radio de una bicicleta! 🚲</p>
+                <div data-exercise-index="1"></div>
+            </div>
+        `,
+        interactiveExercises: [
+            {
+                type: 'fill-in-the-blanks',
+                title: 'Mediendo Redondeces',
+                textWithBlanks: 'Si el radio mide 5 cm, el diámetro mide __BLANK__ cm. El borde del círculo se llama __BLANK__.',
+                blanks: [
+                    { correctAnswer: '10', options: ['5', '10', '15'] },
+                    { correctAnswer: 'circunferencia', options: ['radio', 'diámetro', 'circunferencia'] }
+                ]
+            }
+        ],
+        practice: getQuestionsForLesson('geometria_p3'),
     },
 ];

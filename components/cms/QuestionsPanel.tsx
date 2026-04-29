@@ -51,8 +51,13 @@ export const QuestionsPanel: React.FC<QuestionsPanelProps> = ({ questions, taxon
         if(confirm("¿Seguro que deseas eliminar esta pregunta?")) {
             const newQuestions = currentQuestions.filter((_, i) => i !== index);
             const updatedData = { ...questions };
-            updatedData[selectedCategory][selectedLevel] = newQuestions;
-            onChange(updatedData);
+            
+            // Deep clone the path to the modified list
+            if (updatedData[selectedCategory]) {
+                updatedData[selectedCategory] = { ...updatedData[selectedCategory] };
+                updatedData[selectedCategory][selectedLevel] = newQuestions;
+                onChange(updatedData);
+            }
         }
     };
 

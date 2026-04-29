@@ -55,10 +55,13 @@ export const fraccionesLessons: LessonContent[] = [
         `,
         interactiveExercises: [
             {
-                type: 'fill-in-the-text',
+                type: 'fill-in-the-blanks',
                 title: 'Partes de la Fracción',
-                textWithInputs: 'En 3/4, el número 3 se llama __INPUT__ y el número 4 se llama __INPUT__.',
-                correctAnswers: ['numerador', 'denominador']
+                textWithBlanks: 'En 3/4, el número 3 se llama __BLANK__ y el número 4 se llama __BLANK__.',
+                blanks: [
+                    { correctAnswer: 'numerador', options: ['numerador', 'denominador', 'total'] },
+                    { correctAnswer: 'denominador', options: ['numerador', 'denominador', 'mitad'] }
+                ]
             },
             {
                 type: 'match-pairs',
@@ -71,10 +74,13 @@ export const fraccionesLessons: LessonContent[] = [
                 ]
             },
             {
-                type: 'fill-in-the-text',
+                type: 'fill-in-the-blanks',
                 title: '¡En la Bodega!',
-                textWithInputs: 'Si pides la mitad de una libra, estás pidiendo __INPUT__/2 libra. Si pides un cuarto, es 1/__INPUT__ libra.',
-                correctAnswers: ['1', '4']
+                textWithBlanks: 'Si pides la mitad de una libra, estás pidiendo __BLANK__/2 libra. Si pides un cuarto, es 1/__BLANK__ libra.',
+                blanks: [
+                    { correctAnswer: '1', options: ['1', '2', '3'] },
+                    { correctAnswer: '4', options: ['4', '2', '8'] }
+                ]
             }
         ],
         practice: getQuestionsForLesson('fracciones_intro'),
@@ -114,10 +120,13 @@ export const fraccionesLessons: LessonContent[] = [
         `,
         interactiveExercises: [
             {
-                type: 'fill-in-the-text',
+                type: 'fill-in-the-blanks',
                 title: 'Encontrando Gemelas 👯‍♂️',
-                textWithInputs: 'Si multiplico 1/2 por 3 arriba y abajo, obtengo __INPUT__/__INPUT__, que es equivalente.',
-                correctAnswers: ['3', '6']
+                textWithBlanks: 'Si multiplico 1/2 por 3 arriba y abajo, obtengo __BLANK__/__BLANK__, que es equivalente.',
+                blanks: [
+                    { correctAnswer: '3', options: ['1', '2', '3'] },
+                    { correctAnswer: '6', options: ['5', '6', '8'] }
+                ]
             },
             {
                 type: 'match-pairs',
@@ -130,10 +139,13 @@ export const fraccionesLessons: LessonContent[] = [
                 ]
             },
             {
-                type: 'fill-in-the-text',
+                type: 'fill-in-the-blanks',
                 title: '¿Cuál es mayor? ⚖️',
-                textWithInputs: 'Entre 1/2 y 1/4, la fracción mayor es __INPUT__/2. Entre 3/4 y 1/4, la mayor es __INPUT__/4.',
-                correctAnswers: ['1', '3']
+                textWithBlanks: 'Entre 1/2 y 1/4, la fracción mayor es __BLANK__/2. Entre 3/4 y 1/4, la mayor es __BLANK__/4.',
+                blanks: [
+                    { correctAnswer: '1', options: ['1', '2', '4'] },
+                    { correctAnswer: '3', options: ['1', '3', '4'] }
+                ]
             }
         ],
         practice: getQuestionsForLesson('fracciones_equivalentes'),

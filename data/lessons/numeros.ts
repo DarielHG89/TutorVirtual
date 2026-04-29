@@ -61,10 +61,14 @@ export const numerosLessons: LessonContent[] = [
         `,
         interactiveExercises: [
             {
-                type: 'fill-in-the-text',
+                type: 'fill-in-the-blanks',
                 title: '¡A Practicar!: Decenas y Unidades',
-                textWithInputs: 'El número 73 tiene __INPUT__ decenas y __INPUT__ unidades. El número 58 tiene __INPUT__ decenas y __INPUT__ unidades.',
-                correctAnswers: ['7', '3', '5', '8']
+                textWithBlanks: 'El número 73 tiene __BLANK__ decenas y __BLANK__ unidades. Al formar grupos de diez con 50 manzanas obtenemos 5 __BLANK__.',
+                blanks: [
+                    { correctAnswer: '7', options: ['3', '7', '10'] },
+                    { correctAnswer: '3', options: ['3', '7', '0'] },
+                    { correctAnswer: 'decenas', options: ['unidades', 'decenas', 'centenas'] }
+                ]
             },
             {
                 type: 'match-pairs',
@@ -125,6 +129,12 @@ export const numerosLessons: LessonContent[] = [
                 <p class="mt-2">A veces se usa un espacio (1 000) para leer mejor los miles y no perdernos en el mapa.</p>
                 <div data-exercise-index="1"></div>
             </div>
+
+            <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg mt-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-blue-800 dark:text-blue-300">Ubicando números 📍</h4>
+                <p>¡Coloca los números donde van en la recta!</p>
+                <div data-exercise-index="2"></div>
+            </div>
         `,
         interactiveExercises: [
              {
@@ -141,6 +151,17 @@ export const numerosLessons: LessonContent[] = [
                     { term: '1 250', definition: 'mil doscientos cincuenta' },
                     { term: '8 015', definition: 'ocho mil quince' },
                     { term: '5 001', definition: 'cinco mil uno' },
+                ]
+            },
+            {
+                type: 'number-line',
+                title: '¡A Practicar!: Recta Numérica',
+                min: 0,
+                max: 10000,
+                items: [
+                    { value: 5000, label: '5000' },
+                    { value: 2500, label: '2500' },
+                    { value: 8000, label: '8000' },
                 ]
             }
         ],
@@ -186,6 +207,12 @@ export const numerosLessons: LessonContent[] = [
                 <p class="mt-2">¿Y <strong>1 240</strong>? ¿Se parece más a 1 200 o a 1 300? Como 40 está antes de la mitad del camino, se queda con sus amigos del <strong>1 200</strong>.</p>
                 <div data-exercise-index="2"></div>
             </div>
+
+            <div class="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-lg mt-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-indigo-800 dark:text-indigo-300">¿Qué operación usar? 🤔</h4>
+                <p>A veces tenemos que pensar qué operación numérica ("+", "-", "x" o "÷") necesitamos para resolver un problema.</p>
+                <div data-exercise-index="3"></div>
+            </div>
         `,
         interactiveExercises: [
             {
@@ -209,6 +236,14 @@ export const numerosLessons: LessonContent[] = [
                 title: '¡A Practicar!: Redondeo',
                 textWithInputs: 'El número 470 redondeado a la centena más cercana es __INPUT__. El número 1240 redondeado a la centena más cercana es __INPUT__.',
                 correctAnswers: ['500', '1200']
+            },
+            {
+                type: 'choose-the-operation',
+                title: '¡A Practicar!: ¿Qué operación usas?',
+                problems: [
+                    { text: 'Si tengo 40 manzanas y me como 10, ¿para saber cuántas me quedan, qué operación uso?', correctOperation: '-' },
+                    { text: 'Tengo 5 bolsas con 20 canicas cada una. Las quiero contar todas. ¿Qué operación es la más rápida?', correctOperation: 'x' }
+                ]
             }
         ],
         practice: getQuestionsForLesson('numeros_1_3'),

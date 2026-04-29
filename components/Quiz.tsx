@@ -13,6 +13,8 @@ import { FillInTheTextExercise } from './interactive/FillInTheTextExercise';
 import { NumberLineExercise } from './interactive/NumberLineExercise';
 import { ChooseTheOperationExercise } from './interactive/ChooseTheOperationExercise';
 
+import { ContentEditorModal } from './ContentEditorModal';
+
 interface QuizProps {
     quizConfig: QuizConfig;
     onQuizEnd: (results: QuestionResult[]) => void;
@@ -20,11 +22,23 @@ interface QuizProps {
     isAiEnabled: boolean;
     studentProfile: StudentProfile;
     isDebugMode: boolean;
+    isEditorMode?: boolean;
+    onUpdateQuestion?: (updatedQuestion: any, index: number) => Promise<void>;
 }
 
-export const Quiz: React.FC<QuizProps> = ({ quizConfig, onQuizEnd, onBack, isAiEnabled, studentProfile, isDebugMode }) => {
+export const Quiz: React.FC<QuizProps> = ({ 
+    quizConfig, 
+    onQuizEnd, 
+    onBack, 
+    isAiEnabled, 
+    studentProfile, 
+    isDebugMode,
+    isEditorMode,
+    onUpdateQuestion
+}) => {
     const [questionIndex, setQuestionIndex] = useState(0);
     const [score, setScore] = useState(0);
+    const [editorModal, setEditorModal] = useState<{isOpen: boolean; initialValue: string}>({ isOpen: false, initialValue: '' });
     const [userAnswer, setUserAnswer] = useState('');
     const [selectedAnswer, setSelectedAnswer] = useState('');
     const [feedback, setFeedback] = useState<{ text: string; correct: boolean; explanation?: string } | null>(null);
@@ -314,7 +328,17 @@ export const Quiz: React.FC<QuizProps> = ({ quizConfig, onQuizEnd, onBack, isAiE
                 <div className="w-1/3 text-lg font-bold bg-yellow-400 text-white px-4 py-2 rounded-full shadow-md text-center">
                     {score} / {quizConfig.questions.length}
                 </div>
-                <div className="w-1/3"></div>
+                <div className="w-1/3 text-right">
+                    {isEditorMode && (
+                        <button 
+                            onClick={() => setEditorModal({ isOpen: true, initialValue: JSON.stringify(currentQuestion, null, 2) })}
+                            className="bg-indigo-600/10 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-600/30 text-[10px] px-2 py-1 rounded-full transition-all flex items-center gap-1 ml-auto font-black uppercase tracking-tighter"
+                        >
+                            <span>📝</span>
+                            <span className="hidden sm:inline">EDITAR</span>
+                        </button>
+                    )}
+                </div>
             </header>
             
             <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-4 mb-4">
@@ -429,6 +453,24 @@ export const Quiz: React.FC<QuizProps> = ({ quizConfig, onQuizEnd, onBack, isAiE
                     <Button ref={nextButtonRef} onClick={handleNextQuestion} className="mt-4" disabled={isNextDisabled}>Siguiente &rarr;</Button>
                 </div>
             )}
+
+            <ContentEditorModal 
+                isOpen={editorModal.isOpen}
+                onClose={() => setEditorModal(prev => ({ ...prev, isOpen: false }))}
+                title="Editor de Pregunta"
+                initialValue={editorModal.initialValue}
+                type="json"
+                onSave={async (newValue) => {
+                    try {
+                        const updated = JSON.parse(newValue);
+                        if (onUpdateQuestion) {
+                            await onUpdateQuestion(updated, questionIndex);
+                        }
+                    } catch (e) {
+                        throw e;
+                    }
+                }}
+            />
         </div>
     );
 };

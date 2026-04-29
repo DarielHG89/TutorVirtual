@@ -44,10 +44,10 @@ export const MascotStyles: React.FC<MascotStylesProps> = ({
                     50% { transform: scale(1.05); opacity: 0.8; }
                 }
                 
-                .aura-base { transform-origin: 60px 60px; animation: auraPulse 3s ease-in-out infinite; }
-                .aura-ring-slow { transform-origin: 60px 60px; animation: auraSpin 10s linear infinite; }
-                .aura-ring-fast { transform-origin: 60px 60px; animation: auraSpin 3s linear infinite; }
-                .aura-ring-rev { transform-origin: 60px 60px; animation: auraSpin 5s linear infinite reverse; }
+                .aura-base { transform-origin: 60px 65px; animation: auraPulse 3s ease-in-out infinite; }
+                .aura-ring-slow { transform-origin: 60px 65px; animation: auraSpin 10s linear infinite; }
+                .aura-ring-fast { transform-origin: 60px 65px; animation: auraSpin 3s linear infinite; }
+                .aura-ring-rev { transform-origin: 60px 65px; animation: auraSpin 5s linear infinite reverse; }
 
                 /* Reading Animations */
                 @keyframes readingScanVertical {
@@ -171,22 +171,36 @@ export const MascotStyles: React.FC<MascotStylesProps> = ({
                     transform-box: fill-box; 
                 }
 
+                /* Zs animation for Sleeping */
+                @keyframes sleepZFloat {
+                    0% { opacity: 0; transform: translate(0, 0) scale(0.5) rotate(-10deg); }
+                    20% { opacity: 0.8; }
+                    100% { opacity: 0; transform: translate(25px, -45px) scale(1.2) rotate(15deg); }
+                }
+                .sleep-z-1 { animation: sleepZFloat 4s ease-in-out infinite; }
+                .sleep-z-2 { animation: sleepZFloat 4s ease-in-out infinite; animation-delay: 1.3s; }
+                .sleep-z-3 { animation: sleepZFloat 4s ease-in-out infinite; animation-delay: 2.6s; }
+
                 @keyframes voiceBar { 0%, 100% { height: 4px; } 50% { height: 15px; } }
                 @keyframes dizzySpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
                 
-                /* Pupil Jitter Animation */
+                /* Pupil Jitter Animation - More Organic Micro-saccades */
                 @keyframes pupilJitter {
-                    0%, 90% { transform: translate(0, 0); }
-                    92% { transform: translate(0.5px, 0.5px); }
-                    94% { transform: translate(-0.5px, 0.5px); }
-                    96% { transform: translate(-0.5px, -0.5px); }
-                    98% { transform: translate(0.5px, -0.5px); }
-                    100% { transform: translate(0, 0); }
+                    0%, 45% { transform: translate(0, 0); }
+                    46% { transform: translate(0.3px, 0.2px); }
+                    47%, 75% { transform: translate(0.4px, 0.3px); }
+                    76% { transform: translate(-0.2px, -0.1px); }
+                    77%, 95% { transform: translate(-0.3px, 0px); }
+                    96% { transform: translate(0.1px, -0.2px); }
+                    97%, 100% { transform: translate(0, 0); }
                 }
                 .pupil-jitter {
-                    animation: pupilJitter 5s infinite;
+                    animation: pupilJitter 6s infinite;
                     transform-box: fill-box;
                     transform-origin: center;
+                }
+                .is-mouse-moving .pupil-jitter {
+                    animation: none !important;
                 }
 
                 /* Error Hands - Adjusted to sit on top/sides of head */
@@ -293,6 +307,28 @@ export const MascotStyles: React.FC<MascotStylesProps> = ({
                 
                 .hand-idle-l { animation: idleHandBreathL 4s ease-in-out infinite; }
                 .hand-idle-r { animation: idleHandBreathR 4s ease-in-out infinite; }
+
+                /* Accessory Entrances */
+                @keyframes accessoryPopNoRotate {
+                    0% { transform: scale(0); opacity: 0; }
+                    70% { transform: scale(1.1); opacity: 1; }
+                    100% { transform: scale(1); opacity: 1; }
+                }
+                @keyframes accessoryPopRotateNeg5 {
+                    0% { transform: scale(0) rotate(-5deg); opacity: 0; }
+                    70% { transform: scale(1.1) rotate(-5deg); opacity: 1; }
+                    100% { transform: scale(1) rotate(-5deg); opacity: 1; }
+                }
+                .accessory-pop {
+                    animation: accessoryPopNoRotate 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                }
+                .accessory-pop-hat {
+                    animation: accessoryPopNoRotate 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                }
+                
+                .streak-accessory {
+                    transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+                }
 
                 /* Default hand origins for smoother transitions */
                 .robot-hand-l { transform-origin: 15px 75px; }

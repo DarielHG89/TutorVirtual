@@ -25,7 +25,7 @@ import { InteractiveMascot } from './components/common/InteractiveMascot'; // Im
 import { useGameState } from './hooks/useGameState';
 import { useAppReducer } from './hooks/useAppReducer';
 import { useTheme } from './hooks/useTheme';
-import type { Screen, QuizConfig, CategoryId, ConnectionStatus, StudentProfile, VoiceMode, Question, QuestionResult } from './types';
+import type { Screen, QuizConfig, CategoryId, ConnectionStatus, StudentProfile, VoiceMode, Question, QuestionResult, LessonContent } from './types';
 import { contentManager } from './utils/contentManager';
 import { checkGeminiConnection, generatePersonalizedSuggestion } from './services/aiService';
 import { SpeechProvider } from './context/SpeechContext';
@@ -38,6 +38,7 @@ import { AnimatePresence } from 'framer-motion';
 const USER_LIST_KEY = 'maestroDigitalUserList';
 const LAST_SCREEN_KEY_PREFIX = 'maestroDigitalLastScreen_';
 const DEBUG_MODE_KEY = 'maestroDigitalDebugMode';
+const EDITOR_MODE_KEY = 'maestroDigitalEditorMode';
 const MIN_SCORE_TO_UNLOCK = 8;
 
 function usePrevious<T>(value: T): T | undefined {
@@ -57,12 +58,13 @@ export default function App() {
     const scrollPositionsRef = useRef<Record<string, number>>({});
     
     const [state, dispatch] = useAppReducer();
-    const { screen, quizConfig, selectedCategory, finalResults, allUsers, currentUser, isFreeMode, lessonId, activeSubjectId, showPracticeSuggestion, openPeriods, isFeedbackModalOpen, isEditProfileModalOpen } = state;
+    const { screen, quizConfig, selectedCategory, finalResults, allUsers, currentUser, isFreeMode, lessonId, activeSubjectId, showPracticeSuggestion, openPeriods, isFeedbackModalOpen, isEditProfileModalOpen, lessons, questions } = state;
     
     const [theme, toggleTheme] = useTheme();
 
     const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('checking');
     const [isDebugMode, setIsDebugMode] = useState<boolean>(false);
+    const [isEditorMode, setIsEditorMode] = useState<boolean>(false);
     const [dashboardUser, setDashboardUser] = useState<StudentProfile | null>(null);
     const [avatarSelectorProps, setAvatarSelectorProps] = useState<Omit<AvatarSelectorModalProps, 'isOpen'> | null>(null);
     const [isOnboardingVisible, setIsOnboardingVisible] = useState(false);
@@ -82,10 +84,16 @@ export default function App() {
     const [voiceMode, setVoiceMode] = useState<VoiceMode>('local');
     const [newContentNotifications, setNewContentNotifications] = useState<Partial<Record<CategoryId, boolean>>>({});
 
-    const lessonIdToNameMap = useMemo(() => new Map(contentManager.getLessons().map(l => [l.id, l.title])), []);
+    const lessonIdToNameMap = useMemo(() => new Map(lessons.map(l => [l.id, l.title])), [lessons]);
 
     const { gameState, recordPracticeResult, addSkillRecord, unlockNextLevel, resetProgressForKey, recordUsedQuestions, clearUsedQuestions, unlockAllLevels, resetAllProgress, resetPracticeCategoryProgress, recordInteractiveExerciseState } = useGameState(currentUser?.id || null);
     const prevGameState = usePrevious(gameState);
+
+    // Initial content load
+    useEffect(() => {
+        dispatch({ type: 'SET_LESSONS', payload: contentManager.getLessons() });
+        dispatch({ type: 'SET_QUESTIONS', payload: contentManager.getQuestions() });
+    }, [dispatch]);
 
     // --- Dynamic Theme Logic ---
     const activeTheme: BackgroundTheme = useMemo(() => {
@@ -97,14 +105,14 @@ export default function App() {
         } 
         // 2. If in a lesson, find the lesson's category
         else if (lessonId) {
-            const lesson = contentManager.getLessons().find(l => l.id === lessonId);
+            const lesson = lessons.find(l => l.id === lessonId);
             if (lesson) category = lesson.categoryId;
         }
         // 3. If in a quiz (e.g. exam), try to infer or default
         else if (quizConfig) {
              if (quizConfig.categoryId) category = quizConfig.categoryId;
              else if (quizConfig.lessonId) {
-                 const lesson = contentManager.getLessons().find(l => l.id === quizConfig.lessonId);
+                 const lesson = lessons.find(l => l.id === quizConfig.lessonId);
                  if (lesson) category = lesson.categoryId;
              }
         }
@@ -211,6 +219,13 @@ export default function App() {
             setIsDebugMode(false);
         }
 
+        try {
+            const savedEditor = localStorage.getItem(EDITOR_MODE_KEY);
+            setIsEditorMode(savedEditor ? JSON.parse(savedEditor) : false);
+        } catch {
+            setIsEditorMode(false);
+        }
+
         return () => {
             window.removeEventListener('ai-config-updated', handleAiConfigUpdated);
         };
@@ -221,20 +236,49 @@ export default function App() {
     }, [isDebugMode]);
 
     useEffect(() => {
+        localStorage.setItem(EDITOR_MODE_KEY, JSON.stringify(isEditorMode));
+    }, [isEditorMode]);
+
+    useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'd') {
+            // Support Ctrl (Windows), Meta (Mac) and Alt
+            const hasModifier = event.ctrlKey || event.metaKey;
+            const hasAlt = event.altKey;
+            
+            if (!hasModifier || !hasAlt) return;
+
+            const key = event.key.toLowerCase();
+            const code = event.code;
+            
+            const isD = key === 'd' || code === 'KeyD';
+            const isE = key === 'e' || code === 'KeyE';
+            
+            if (isD) {
                 event.preventDefault();
+                event.stopPropagation();
                 setIsDebugMode(prev => {
                     const newState = !prev;
-                    console.log(`%c[Maestro Digital Debug] Modo de depuración ${newState ? 'ACTIVADO' : 'DESACTIVADO'}.`, `color: ${newState ? 'green' : 'red'}; font-weight: bold;`);
+                    console.log(`%c[Maestro Digital Debug] ${newState ? 'ON' : 'OFF'}`, "color: green; font-weight: bold; font-size: 14px;");
+                    return newState;
+                });
+            } else if (isE) {
+                event.preventDefault();
+                event.stopPropagation();
+                setIsEditorMode(prev => {
+                    const newState = !prev;
+                    console.log(`%c[Maestro Digital Editor] ${newState ? 'ON' : 'OFF'}`, "color: blue; font-weight: bold; font-size: 14px;");
                     return newState;
                 });
             }
         };
 
-        window.addEventListener('keydown', handleKeyDown);
+        // Listen on both to be absolutely sure
+        window.addEventListener('keydown', handleKeyDown, { capture: true });
+        document.addEventListener('keydown', handleKeyDown, { capture: true });
+        
         return () => {
-            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keydown', handleKeyDown, { capture: true });
+            document.removeEventListener('keydown', handleKeyDown, { capture: true });
         };
     }, []);
 
@@ -496,9 +540,10 @@ export default function App() {
             scrollPositionsRef.current[key] = mainContentRef.current.scrollTop;
         }
 
-        const fullQuestionPool = (contentManager.getQuestions()[categoryId][level] || []).map((q, index) => ({ question: q, originalIndex: index }));
+        const categoryPool = questions[categoryId] || {};
+        const fullQuestionPool: { question: Question; originalIndex: number }[] = (categoryPool[level] || []).map((q: Question, index: number) => ({ question: q, originalIndex: index }));
 
-        const completedLessonIds = contentManager.getLessons()
+        const completedLessonIds = lessons
             .filter(l => l.categoryId === categoryId && (gameState[l.id]?.highScores?.[1] || 0) >= MIN_SCORE_TO_UNLOCK)
             .map(l => l.id);
         
@@ -519,7 +564,7 @@ export default function App() {
         let usedIndices = gameState[categoryId]?.usedQuestions?.[level] || [];
         let availablePool = unlockedPool.filter(item => !usedIndices.includes(item.originalIndex));
         
-        if (availablePool.length === 0) {
+        if (availablePool.length === 0 && unlockedPool.length > 0) {
             clearUsedQuestions(categoryId, level);
             availablePool = unlockedPool;
         }
@@ -541,17 +586,17 @@ export default function App() {
             }
         });
         navigateTo('quiz');
-    }, [gameState, clearUsedQuestions, dispatch, navigateTo, selectedCategory]);
+    }, [gameState, clearUsedQuestions, dispatch, navigateTo, selectedCategory, questions, lessons]);
 
     const handleStartLessonPractice = useCallback((lessonId: string, level: number) => {
         if (mainContentRef.current && lessonId) {
             const key = `lesson-${lessonId}`;
             scrollPositionsRef.current[key] = mainContentRef.current.scrollTop;
         }
-        const lesson = contentManager.getLessons().find(l => l.id === lessonId);
+        const lesson = lessons.find(l => l.id === lessonId);
         if (!lesson || !lesson.practice[level]) return;
     
-        const fullQuestionPool = (lesson.practice[level] || []).map((q, index) => ({ question: q, originalIndex: index }));
+        const fullQuestionPool: { question: Question; originalIndex: number }[] = (lesson.practice[level] || []).map((q: Question, index: number) => ({ question: q, originalIndex: index }));
     
         let usedIndices = gameState[lessonId]?.usedQuestions?.[level] || [];
         let availablePool = fullQuestionPool.filter(item => !usedIndices.includes(item.originalIndex));
@@ -578,14 +623,17 @@ export default function App() {
             }
         });
         navigateTo('quiz');
-    }, [gameState, clearUsedQuestions, dispatch, navigateTo]);
+    }, [gameState, clearUsedQuestions, dispatch, navigateTo, lessons]);
 
     const handleStartWeeklyExam = useCallback(() => {
         if (!areExamsEnabled) {
             alert("¡Aún no has aprendido suficiente contenido para un examen!");
             return;
         }
-        const examQuestions = shuffleArray(learnedQuestionsPool).slice(0, 10);
+        const mappedPool = learnedQuestionsPool.map((q, idx) => ({ question: q, originalIndex: idx }));
+        const examItems = shuffleArray(mappedPool).slice(0, 10);
+        const examQuestions = (examItems as { question: Question; originalIndex: number }[]).map(i => i.question);
+        
         dispatch({
             type: 'START_QUIZ',
             payload: {
@@ -634,6 +682,58 @@ export default function App() {
         navigateTo('quiz');
     }, [areExamsEnabled, learnedQuestionsPool, dispatch, navigateTo]);
 
+
+    const handleUpdateLessons = useCallback((updatedLessons: LessonContent[]) => {
+        dispatch({ type: 'SET_LESSONS', payload: updatedLessons });
+    }, [dispatch]);
+
+    const handleUpdateQuestionsPool = useCallback((updatedQuestions: Record<CategoryId, Record<number, Question[]>>) => {
+        dispatch({ type: 'SET_QUESTIONS', payload: updatedQuestions });
+    }, [dispatch]);
+
+    const handleUpdateQuestion = useCallback(async (updatedQuestion: Question, index: number) => {
+        if (!quizConfig) return;
+        
+        let originalIndex = -1;
+        if (quizConfig.questionIndices && quizConfig.questionIndices[index] !== undefined) {
+            originalIndex = quizConfig.questionIndices[index];
+        }
+
+        if (originalIndex === -1) {
+            alert("No se pudo identificar el índice original de la pregunta.");
+            return;
+        }
+
+        if (quizConfig.type === 'lesson' && quizConfig.lessonId && quizConfig.level) {
+            const updatedLessons = lessons.map(l => {
+                if (l.id === quizConfig.lessonId) {
+                    const levelPractice = [...(l.practice[quizConfig.level!] || [])];
+                    levelPractice[originalIndex] = updatedQuestion;
+                    return { ...l, practice: { ...l.practice, [quizConfig.level!]: levelPractice } };
+                }
+                return l;
+            });
+            await contentManager.saveLessons(updatedLessons);
+            handleUpdateLessons(updatedLessons);
+        } else if (quizConfig.type === 'practice' && quizConfig.categoryId && quizConfig.level) {
+            const updatedQuestions = { ...questions };
+            const categoryPool = { ...updatedQuestions[quizConfig.categoryId] };
+            if (categoryPool && categoryPool[quizConfig.level]) {
+                const levelQuestions = [...categoryPool[quizConfig.level]];
+                levelQuestions[originalIndex] = updatedQuestion;
+                categoryPool[quizConfig.level] = levelQuestions;
+                updatedQuestions[quizConfig.categoryId] = categoryPool;
+                await contentManager.saveQuestions(updatedQuestions);
+                handleUpdateQuestionsPool(updatedQuestions);
+            }
+        }
+        
+        // Update local quiz state for immediate reflection in the CURRENT quiz session
+        dispatch({
+            type: 'UPDATE_QUIZ_QUESTION',
+            payload: { question: updatedQuestion, index }
+        });
+    }, [quizConfig, dispatch, lessons, questions, handleUpdateLessons, handleUpdateQuestionsPool]);
 
     const handleQuizEnd = useCallback((results: QuestionResult[]) => {
         if (!currentUser || !quizConfig) return;
@@ -808,7 +908,7 @@ export default function App() {
         }
     }, [quizConfig, handleStartPractice, handleStartLessonPractice]);
     
-    const currentLesson = useMemo(() => lessonId ? contentManager.getLessons().find(l => l.id === lessonId) || null : null, [lessonId]);
+    const currentLesson = useMemo(() => lessonId ? lessons.find(l => l.id === lessonId) || null : null, [lessonId, lessons]);
 
     const screenConfig = useMemo(() => {
         const backFromResults = () => {
@@ -831,13 +931,13 @@ export default function App() {
                 return { component: <StudyAreaMenu onSelectSubmodule={handleSelectSubmodule} gameState={gameState} openPeriods={openPeriods} onTogglePeriod={handleTogglePeriod} subjectId={activeSubjectId} studentProfile={currentUser} />, title: 'Área de Estudio', onBack: handleBackToMenu, showHeader: true };
             case 'lesson':
                 if (!currentLesson || !currentUser) return { component: null, showHeader: false };
-                return { component: <LessonScreen lesson={currentLesson} onStartPractice={handleStartLessonPractice} gameState={gameState} isAiEnabled={isAiEnabled} studentProfile={currentUser} recordInteractiveExerciseState={recordInteractiveExerciseState} isDebugMode={isDebugMode} />, title: currentLesson.title, onBack: handleBackToStudyArea, showHeader: true };
+                return { component: <LessonScreen lesson={currentLesson} onStartPractice={handleStartLessonPractice} gameState={gameState} isAiEnabled={isAiEnabled} studentProfile={currentUser} recordInteractiveExerciseState={recordInteractiveExerciseState} isDebugMode={isDebugMode} isEditorMode={isEditorMode} onUpdateLessons={handleUpdateLessons} />, title: currentLesson.title, onBack: handleBackToStudyArea, showHeader: true };
             case 'level-selection':
                 if (!selectedCategory) return { component: null, showHeader: false };
-                return { component: <LevelSelection categoryId={selectedCategory} gameState={gameState} onStartPractice={handleStartPractice} isFreeMode={isFreeMode} />, title: categoryNames[selectedCategory], onBack: isFreeMode ? handleBackToFreePracticeMenu : handleBackToMenu, showHeader: true };
+                return { component: <LevelSelection categoryId={selectedCategory} gameState={gameState} onStartPractice={handleStartPractice} isFreeMode={isFreeMode} isEditorMode={isEditorMode} questionsPool={questions} onUpdateQuestionsPool={handleUpdateQuestionsPool} />, title: categoryNames[selectedCategory], onBack: isFreeMode ? handleBackToFreePracticeMenu : handleBackToMenu, showHeader: true };
             case 'quiz':
                 if (!quizConfig || !currentUser) return { component: null, showHeader: false };
-                return { component: <Quiz quizConfig={quizConfig} onQuizEnd={handleQuizEnd} onBack={backFromQuiz} isAiEnabled={isAiEnabled} studentProfile={currentUser} isDebugMode={isDebugMode} />, title: quizConfig.name, onBack: backFromQuiz, showHeader: true };
+                return { component: <Quiz quizConfig={quizConfig} onQuizEnd={handleQuizEnd} onBack={backFromQuiz} isAiEnabled={isAiEnabled} studentProfile={currentUser} isDebugMode={isDebugMode} isEditorMode={isEditorMode} onUpdateQuestion={handleUpdateQuestion} />, title: quizConfig.name, onBack: backFromQuiz, showHeader: true };
             case 'results':
                 if (!finalResults) return { component: null, showHeader: false };
                 return { component: <Results results={finalResults} onBack={backFromResults} onRetry={handleRetryQuiz} practiceSuggestion={showPracticeSuggestion} onGoToPractice={handleGoToPracticeFromSuggestion} onGoToMainMenu={handleBackToMenu} onGoToStudyArea={handleBackToStudyArea} quizConfig={quizConfig} onStartNextLevel={handleStartNextLevel} />, title: 'Resultados', onBack: backFromResults, showHeader: true };
@@ -860,7 +960,7 @@ export default function App() {
             default:
                  return { component: null, showHeader: false };
         }
-    }, [screen, allUsers, currentUser, gameState, unlockedPracticeCategories, newContentNotifications, areExamsEnabled, openPeriods, activeSubjectId, handleSelectCategory, handleStartWeeklyExam, handleStartRefreshExam, handleStartQuickChallenge, handleStartLiveConversation, handleStartFreePractice, handleStartStudyArea, connectionStatus, isAiEnabled, handleCreateProfile, handleSelectCategoryForFreePractice, handleBackToMenu, selectedCategory, handleStartPractice, isFreeMode, quizConfig, handleQuizEnd, finalResults, currentLesson, handleSelectSubmodule, handleStartLessonPractice, handleBackToStudyArea, handleBackToLesson, handleGoToParentDashboard, unlockNextLevel, resetProgressForKey, unlockAllLevels, resetAllProgress, handleViewPracticeHistory, handleTogglePeriod, isDebugMode, showPracticeSuggestion, handleGoToPracticeFromSuggestion, lessonIdToNameMap, navigateTo, handleBackToFreePracticeMenu, handleSwitchUser, handleAddNewUser, handleSelectUser, showModal, handleStartNextLevel, handleBackToLevelSelection, aiSuggestion, handleGenerateSuggestion, dispatch, theme, toggleTheme, recordInteractiveExerciseState, handleGoToDashboard, handleOpenDashboard, setAvatarSelectorProps]);
+    }, [screen, allUsers, currentUser, gameState, unlockedPracticeCategories, newContentNotifications, areExamsEnabled, openPeriods, activeSubjectId, handleSelectCategory, handleStartWeeklyExam, handleStartRefreshExam, handleStartQuickChallenge, handleStartLiveConversation, handleStartFreePractice, handleStartStudyArea, connectionStatus, isAiEnabled, handleCreateProfile, handleSelectCategoryForFreePractice, handleBackToMenu, selectedCategory, handleStartPractice, isFreeMode, quizConfig, handleQuizEnd, finalResults, currentLesson, handleSelectSubmodule, handleStartLessonPractice, handleBackToStudyArea, handleBackToLesson, handleGoToParentDashboard, unlockNextLevel, resetProgressForKey, unlockAllLevels, resetAllProgress, handleViewPracticeHistory, handleTogglePeriod, isDebugMode, isEditorMode, showPracticeSuggestion, handleGoToPracticeFromSuggestion, lessonIdToNameMap, navigateTo, handleBackToFreePracticeMenu, handleSwitchUser, handleAddNewUser, handleSelectUser, showModal, handleStartNextLevel, handleBackToLevelSelection, aiSuggestion, handleGenerateSuggestion, dispatch, theme, toggleTheme, recordInteractiveExerciseState, handleGoToDashboard, handleOpenDashboard, setAvatarSelectorProps, handleUpdateQuestion]);
     
     return (
         <SpeechProvider voiceMode={voiceMode}>
@@ -882,6 +982,7 @@ export default function App() {
                             onOpenEditProfile={() => dispatch({ type: 'OPEN_EDIT_PROFILE_MODAL' })}
                             onOpenAiConfig={() => setIsAiConfigModalOpen(true)}
                             isDebugMode={isDebugMode}
+                            isEditorMode={isEditorMode}
                             theme={theme}
                             onToggleTheme={toggleTheme}
                         />

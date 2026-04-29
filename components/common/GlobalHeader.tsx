@@ -18,6 +18,7 @@ interface GlobalHeaderProps {
     theme: 'light' | 'dark';
     onToggleTheme: () => void;
     onOpenAiConfig: () => void;
+    isEditorMode?: boolean;
 }
 
 const ConnectionIndicator: React.FC<{ status: ConnectionStatus, onOpenAiConfig: () => void }> = ({ status, onOpenAiConfig }) => {
@@ -105,10 +106,11 @@ const VoiceControl: React.FC<{ voiceMode: VoiceMode, onVoiceModeChange: (mode: V
 
     if (!isSupported) return null;
 
-    const modes: { key: VoiceMode, label: string }[] = [
+    const modes: { key: VoiceMode; label: string }[] = [
         { key: 'auto', label: 'Auto' },
         { key: 'local', label: 'Local' },
-        { key: 'online', label: 'Online (IA)' }
+        { key: 'local-wasm', label: 'Piper (Local WASM)' },
+        { key: 'online', label: 'Online (IA)' },
     ];
 
     const currentModeLabel = modes.find(m => m.key === voiceMode)?.label || 'Voz';
@@ -170,7 +172,7 @@ const AvatarDisplay: React.FC<{ profile: StudentProfile | null | undefined }> = 
 };
 
 
-export const GlobalHeader: React.FC<GlobalHeaderProps> = ({ onBack, title, connectionStatus, isAiEnabled, onToggleAi, voiceMode, onVoiceModeChange, studentProfile, onSwitchUser, onOpenEditProfile, isDebugMode, theme, onToggleTheme, onOpenAiConfig }) => {
+export const GlobalHeader: React.FC<GlobalHeaderProps> = ({ onBack, title, connectionStatus, isAiEnabled, onToggleAi, voiceMode, onVoiceModeChange, studentProfile, onSwitchUser, onOpenEditProfile, isDebugMode, isEditorMode, theme, onToggleTheme, onOpenAiConfig }) => {
     const [isSettingsVisible, setIsSettingsVisible] = useState(false);
     const settingsRef = useRef<HTMLDivElement>(null);
     const hideTimeoutRef = useRef<number | null>(null);
@@ -229,7 +231,8 @@ export const GlobalHeader: React.FC<GlobalHeaderProps> = ({ onBack, title, conne
                         &larr;
                     </button>
                 )}
-                 {isDebugMode && <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-md select-none">DEBUG</span>}
+                {isDebugMode && <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md select-none">DEBUG</span>}
+                {isEditorMode && <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md select-none">EDITOR</span>}
                 {studentProfile && (
                      <button 
                         onClick={() => { onOpenEditProfile && playClickSound(); onOpenEditProfile?.(); }} 

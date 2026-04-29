@@ -45,6 +45,14 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
 
     // Debug State
     const [showDebug, setShowDebug] = useState(false);
+    const [debugTrackingDisabled, setDebugTrackingDisabled] = useState(false);
+    const [debugIdleDisabled, setDebugIdleDisabled] = useState(false);
+    const [debugStreak, setDebugStreak] = useState(streak);
+
+    // Sync debug streak with context streak initially
+    useEffect(() => {
+        setDebugStreak(streak);
+    }, [streak]);
 
     // Action Bag for Shuffle Logic
     const availableActionsRef = useRef<IdleActionType[]>([...PLAYFUL_ACTIONS]);
@@ -57,6 +65,7 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
     const lastTapTime = useRef(0);
     const isPointerDown = useRef(false);
     const lastMouseRef = useRef({ x: 0, y: 0 });
+    const lastMouseMoveTimeRef = useRef(0);
     
     // Eye Movement Logic Refs
     const isSaccadingRef = useRef(false); 
@@ -116,9 +125,9 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
         const eyeGroupY = Math.max(-maxEyeGroupMoveYUp, Math.min(maxEyeGroupMoveYDown, deltaY / 35));
         
         // Slightly reduced head movement to keep face composition tighter (was 7)
-        const maxHeadMove = 5;
-        const headX = Math.max(-maxHeadMove, Math.min(maxHeadMove, deltaX / 55));
-        const headY = Math.max(-maxHeadMove, Math.min(maxHeadMove, deltaY / 55));
+        const maxHeadMove = 3;
+        const headX = Math.max(-maxHeadMove, Math.min(maxHeadMove, deltaX / 85));
+        const headY = Math.max(-maxHeadMove, Math.min(maxHeadMove, deltaY / 85));
 
         // Reduced pupil range to keep them inside sclera at edges (was 6.5)
         const maxPupilMove = 5;
@@ -201,15 +210,21 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
     // Blink Logic
     useEffect(() => {
         if (blinkTimerRef.current) clearTimeout(blinkTimerRef.current);
-        if (emotion === 'sleeping' || emotion === 'dizzy' || idleAction === 'yawning' || idleAction === 'music') {
+        
+        // Suppress idle blinking during any active emotion or action
+        // We only blink naturally when fully idle
+        if (emotion !== 'idle' || idleAction !== 'none' || isSpeaking || debugIdleDisabled) {
             setIsBlinking(false);
             return; 
         }
+
         const scheduleBlink = () => {
+            if (emotion !== 'idle' || idleAction !== 'none' || isSpeaking || debugIdleDisabled) return;
+
             const nextBlinkTime = 2500 + Math.random() * 4500;
             blinkTimerRef.current = window.setTimeout(() => {
                 const isDoubleBlink = Math.random() < 0.3;
-                const blinkDuration = 150;
+                const blinkDuration = 250;
                 const performBlink = (onComplete?: () => void) => {
                     setIsBlinking(true);
                     setTimeout(() => {
@@ -230,7 +245,7 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
         };
         scheduleBlink();
         return () => { if (blinkTimerRef.current) clearTimeout(blinkTimerRef.current); };
-    }, [emotion, idleAction]);
+    }, [emotion, idleAction, isSpeaking, debugIdleDisabled]);
 
     // --- EYE MOVEMENT LOGIC (SACCADES VS TRACKING) ---
     
@@ -247,9 +262,15 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
         isSaccadingRef.current = false;
     }, []);
 
-    const performNaturalAnimation = useCallback(() => {
+    const performNaturalAnimation = useCallback((force: boolean = false) => {
         if (!containerRef.current) return;
         
+        // Block natural eye movements if performing an action/emotion
+        if (!force && (emotion !== 'idle' || idleAction !== 'none' || isSpeaking || debugIdleDisabled)) return;
+
+        // Block if mouse was recently moved (wait ~3 seconds after mouse stops)
+        if (!force && (Date.now() - lastMouseMoveTimeRef.current < 3000)) return;
+
         // Mark as animating to block mouse tracking override
         isSaccadingRef.current = true;
 
@@ -264,36 +285,42 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
         } else {
             // --- IDLE/MOUSE TRACKING MODE ---
             // Behavior: "Natural Saccades" (Glancing around)
-            // Look in a random direction (Up, Down, Left, Right, Diagonals)
             
-            // Decreased movement range for subtlety (was ~8px)
-            const range = 4.5; 
-            // Random point within the range
-            const x = (Math.random() * range * 2) - range;
-            const y = (Math.random() * range * 2) - range;
+            // Random angle and radius for a natural glance
+            const angle = Math.random() * Math.PI * 2;
+            const r = (Math.random() * 2) + 1.5; // radius between 1.5 and 3.5
+            
+            const x = Math.cos(angle) * r;
+            const y = Math.sin(angle) * r;
+            
+            // Slight head movement in the same direction to make it organic
+            const hx = targetEyeStateRef.current.headX + (x * 0.2);
+            const hy = targetEyeStateRef.current.headY + (y * 0.2);
 
             containerRef.current.style.setProperty('--pupil-x', `${x}px`);
             containerRef.current.style.setProperty('--pupil-y', `${y}px`);
+            containerRef.current.style.setProperty('--head-x', `${hx}px`);
+            containerRef.current.style.setProperty('--head-y', `${hy}px`);
 
             setTimeout(() => {
                 // Return to tracking after a short glance
                 restoreEyeState();
-            }, 300);
+            }, Math.random() * 600 + 300); // 300-900ms glance
         }
-    }, [restoreEyeState]);
+    }, [restoreEyeState, emotion, idleAction, isSpeaking, debugIdleDisabled]);
 
     // Scheduler for Animations
     useEffect(() => {
         if (saccadeTimerRef.current) clearTimeout(saccadeTimerRef.current);
         
-        // Do not perform extra eye animations if sleeping, dizzy, or doing full-body actions
-        // Exception: Yoyo is allowed to have saccades
-        if (emotion !== 'idle' || (idleAction !== 'none' && idleAction !== 'yoyo')) {
+        // Do not perform extra eye animations if emotion != idle or action active
+        if (emotion !== 'idle' || idleAction !== 'none' || isSpeaking || debugIdleDisabled) {
             isSaccadingRef.current = false; 
             return;
         }
 
         const scheduleAnimation = () => {
+            if (emotion !== 'idle' || idleAction !== 'none' || isSpeaking || debugIdleDisabled) return;
             // Random interval between 3 and 7 seconds
             const nextTime = Math.random() * 4000 + 3000; 
             
@@ -309,19 +336,18 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
 
         scheduleAnimation();
         return () => { if (saccadeTimerRef.current) clearTimeout(saccadeTimerRef.current); };
-    }, [emotion, idleAction, performNaturalAnimation, isDragging]);
+    }, [emotion, idleAction, performNaturalAnimation, isDragging, debugIdleDisabled]);
 
 
     // --- IDLE STATE MANAGEMENT ---
     const handleUserActivity = useCallback(() => {
-        // If debug menu forced an action, don't clear it automatically on activity
-        // unless we want user activity to interrupt debug actions. 
-        // For now, we will let user activity interrupt normal idle flow but maybe respect debug?
-        // The original logic clears it. We'll keep it consistent: user activity wakes up the robot.
-        setIdleAction(prev => {
-            if (prev !== 'none') return 'none';
-            return prev;
-        });
+        // If debugger is open, we are more lenient with idle actions to allow testing them
+        if (!showDebug) {
+            setIdleAction(prev => {
+                if (prev !== 'none') return 'none';
+                return prev;
+            });
+        }
         
         if (emotionRef.current === 'sleeping') {
             setEmotion('idle');
@@ -330,6 +356,8 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
         if (actionTimerRef.current) clearTimeout(actionTimerRef.current);
         if (yawnTimerRef.current) clearTimeout(yawnTimerRef.current);
         if (sleepTimerRef.current) clearTimeout(sleepTimerRef.current);
+
+        if (debugIdleDisabled) return;
 
         actionTimerRef.current = window.setTimeout(() => {
             if (containerRef.current) {
@@ -354,18 +382,25 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
             setEmotion('sleeping');
         }, 25000);
 
-    }, [setEmotion]); 
+    }, [setEmotion, debugIdleDisabled, showDebug]); 
 
     useEffect(() => {
-        handleUserActivity();
-        return () => {
+        if (debugIdleDisabled) {
             if (actionTimerRef.current) clearTimeout(actionTimerRef.current);
             if (yawnTimerRef.current) clearTimeout(yawnTimerRef.current);
             if (sleepTimerRef.current) clearTimeout(sleepTimerRef.current);
-        };
-    }, [handleUserActivity]);
+            if (saccadeTimerRef.current) clearTimeout(saccadeTimerRef.current);
+            if (blinkTimerRef.current) clearTimeout(blinkTimerRef.current);
+            setEmotion('idle');
+            setIdleAction('none');
+            setIsBlinking(false);
+        } else {
+            handleUserActivity();
+        }
+    }, [debugIdleDisabled, handleUserActivity, setEmotion]);
 
     const trackTarget = useCallback((targetX: number, targetY: number) => {
+        if (debugTrackingDisabled) return;
         if (containerRef.current) {
             const rectMascot = containerRef.current.getBoundingClientRect();
             const centerX = rectMascot.left + rectMascot.width / 2;
@@ -374,7 +409,7 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
             handleUserActivity(); // Wake up if idle
             updateEyePosition(targetX - centerX, targetY - centerY);
         }
-    }, [handleUserActivity, updateEyePosition]);
+    }, [handleUserActivity, updateEyePosition, debugTrackingDisabled]);
 
     // Input Tracking Listeners
     useEffect(() => {
@@ -410,6 +445,8 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
         };
     }, [trackTarget]);
 
+    const mouseMoveStopTimerRef = useRef<number | null>(null);
+
     // Mouse Tracking
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -418,9 +455,20 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
             if (dx < 2 && dy < 2) return; 
             
             lastMouseRef.current = { x: e.clientX, y: e.clientY };
+            lastMouseMoveTimeRef.current = Date.now();
+
+            if (containerRef.current) {
+                containerRef.current.classList.add('is-mouse-moving');
+                if (mouseMoveStopTimerRef.current) window.clearTimeout(mouseMoveStopTimerRef.current);
+                mouseMoveStopTimerRef.current = window.setTimeout(() => {
+                    if (containerRef.current) {
+                        containerRef.current.classList.remove('is-mouse-moving');
+                    }
+                }, 3000);
+            }
 
             if (isDragging || !containerRef.current || emotion === 'dizzy' || idleAction !== 'none') return;
-            if (isTrackingInputRef.current) return;
+            if (isTrackingInputRef.current || debugTrackingDisabled) return;
 
             handleUserActivity();
 
@@ -432,7 +480,7 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
         
         window.addEventListener('mousemove', handleMouseMove);
         return () => window.removeEventListener('mousemove', handleMouseMove);
-    }, [handleUserActivity, isDragging, emotion, idleAction, updateEyePosition]);
+    }, [handleUserActivity, isDragging, emotion, idleAction, updateEyePosition, debugTrackingDisabled]);
 
     const calculateMenuPosition = () => {
         if (!containerRef.current) return;
@@ -462,11 +510,16 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
         handleUserActivity();
 
         const now = Date.now();
-        if (now - lastTapTime.current < 500) tapCount.current++;
+        if (now - lastTapTime.current < 400) tapCount.current++;
         else tapCount.current = 1;
         lastTapTime.current = now;
 
-        if (tapCount.current >= 3) {
+        if (tapCount.current === 2) {
+            calculateMenuPosition();
+            setShowMenu(true);
+            playClickSound();
+            tapCount.current = 0; // Reset after opening menu
+        } else if (tapCount.current >= 3) {
             triggerReaction('happy');
             playCorrectSound();
             tapCount.current = 0;
@@ -486,13 +539,7 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
         }
 
         if (longPressTimer.current) clearTimeout(longPressTimer.current);
-        longPressTimer.current = window.setTimeout(() => {
-            if (isPointerDown.current && !isDragging) {
-                calculateMenuPosition();
-                setShowMenu(true);
-                playClickSound();
-            }
-        }, 600);
+        // Long press method removed as requested to be replaced by double tap
     };
 
     const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -570,6 +617,20 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
                     </div>
                     
                     <div className="mb-3">
+                        <div className="text-slate-400 mb-1 font-semibold">Streak Control</div>
+                        <div className="flex items-center gap-2">
+                            <button onClick={() => setDebugStreak(prev => Math.max(0, prev - 1))} className="bg-slate-800 p-1 px-2 rounded hover:bg-slate-700">-</button>
+                            <span className="font-bold text-yellow-400 w-8 text-center">{debugStreak}</span>
+                            <button onClick={() => setDebugStreak(prev => prev + 1)} className="bg-slate-800 p-1 px-2 rounded hover:bg-slate-700">+</button>
+                            <div className="flex gap-1 ml-2">
+                                <button onClick={() => setDebugStreak(5)} className="bg-blue-900/50 px-1 rounded text-[10px]">Lvl 1 (5)</button>
+                                <button onClick={() => setDebugStreak(8)} className="bg-purple-900/50 px-1 rounded text-[10px]">Lvl 2 (8)</button>
+                                <button onClick={() => setDebugStreak(10)} className="bg-yellow-900/50 px-1 rounded text-[10px]">Lvl 3 (10)</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mb-3">
                         <div className="text-slate-400 mb-1 font-semibold">Set Emotion</div>
                         <div className="flex flex-wrap gap-1">
                             {DEBUG_EMOTIONS.map((e) => (
@@ -587,7 +648,7 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
                         </div>
                     </div>
 
-                    <div>
+                    <div className="mb-3">
                         <div className="text-slate-400 mb-1 font-semibold">Set Action</div>
                         <div className="flex flex-wrap gap-1">
                             {DEBUG_ACTIONS.map((a) => (
@@ -602,6 +663,125 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
                                     {a}
                                 </button>
                             ))}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div className="text-slate-400 mb-1 font-semibold">Animations & Toggles</div>
+                        <div className="flex flex-wrap gap-1 mb-2">
+                            <button 
+                                onClick={() => {
+                                    setIsBlinking(true);
+                                    setTimeout(() => setIsBlinking(false), 250);
+                                }}
+                                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-amber-400 border border-amber-900/50"
+                            >
+                                ✨ Blink
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    setIsBouncing(true);
+                                    setTimeout(() => setIsBouncing(false), 1000);
+                                }}
+                                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-blue-400 border border-blue-900/50"
+                            >
+                                ↕️ Bounce
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    setIsInterested(!isInterested);
+                                }}
+                                className={`px-2 py-1 rounded border ${isInterested ? 'bg-orange-600 border-orange-400' : 'bg-slate-800 border-slate-700 text-slate-400'}`}
+                            >
+                                👀 Interested
+                            </button>
+                            <button 
+                                onClick={() => setIsVisible(!isVisible)}
+                                className={`px-2 py-1 rounded border ${isVisible ? 'bg-green-600 border-green-400' : 'bg-red-900/50 border-red-900 text-red-400'}`}
+                            >
+                                {isVisible ? '👁️ Visible' : '👻 Hidden'}
+                            </button>
+                            <button 
+                                onClick={() => performNaturalAnimation(true)}
+                                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-cyan-400 border border-cyan-900/50"
+                            >
+                                👀 Natural Glance
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    if (containerRef.current) {
+                                        const pupils = containerRef.current.querySelectorAll('.pupil');
+                                        pupils.forEach(p => {
+                                            (p as HTMLElement).animate([
+                                                { transform: 'translate(0, 0)' },
+                                                { transform: 'translate(0.5px, 0.4px)' },
+                                                { transform: 'translate(-0.3px, 0.2px)' },
+                                                { transform: 'translate(-0.4px, -0.2px)' },
+                                                { transform: 'translate(0.4px, -0.3px)' },
+                                                { transform: 'translate(0, 0)' }
+                                            ], { duration: 350, iterations: 1, easing: 'ease-in-out' });
+                                        });
+                                    }
+                                }}
+                                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-pink-400 border border-pink-900/50"
+                            >
+                                ⚡ Pupil Jitter
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    if (containerRef.current) {
+                                        const vars = ['--eye-group-x', '--eye-group-y', '--pupil-x', '--pupil-y', '--head-x', '--head-y'];
+                                        vars.forEach(v => containerRef.current?.style.setProperty(v, '0px'));
+                                    }
+                                }}
+                                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-slate-400 border border-slate-700"
+                                title="Reset all custom CSS offsets"
+                            >
+                                🎯 Reset Pos
+                            </button>
+                            <button 
+                                onClick={() => setDebugTrackingDisabled(!debugTrackingDisabled)}
+                                className={`px-2 py-1 rounded border ${debugTrackingDisabled ? 'bg-red-900/50 border-red-900 text-red-400' : 'bg-slate-800 border-slate-700 text-slate-400'}`}
+                                title="Toggle Mouse Tracking"
+                            >
+                                {debugTrackingDisabled ? 'Tracking: OFF' : 'Tracking: ON'}
+                            </button>
+                            <button 
+                                onClick={() => setDebugIdleDisabled(!debugIdleDisabled)}
+                                className={`px-2 py-1 rounded border ${debugIdleDisabled ? 'bg-red-900/50 border-red-900 text-red-400' : 'bg-slate-800 border-slate-700 text-slate-400'}`}
+                                title="Toggle Random Idle Actions & Blinking"
+                            >
+                                {debugIdleDisabled ? 'Idle: OFF' : 'Idle: ON'}
+                            </button>
+                        </div>
+                        <div className="flex flex-wrap gap-1 mb-2">
+                             <button 
+                                onClick={() => {
+                                    playClickSound();
+                                    setEmotion('success');
+                                    setDebugStreak(prev => prev + 1);
+                                }}
+                                className="px-2 py-1 bg-green-900/30 hover:bg-green-800/50 rounded text-green-400 border border-green-700/50 text-[10px]"
+                            >
+                                ✅ Simulate Correct
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    playMascotSound('chirp');
+                                    setEmotion('error');
+                                    setDebugStreak(0);
+                                }}
+                                className="px-2 py-1 bg-red-900/30 hover:bg-red-800/50 rounded text-red-400 border border-red-700/50 text-[10px]"
+                            >
+                                ❌ Simulate Incorrect
+                            </button>
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] text-slate-500 italic">
+                            <span>Status:</span>
+                            <span className={isBlinking ? 'text-amber-400' : ''}>[Blink: {isBlinking ? 'YES' : 'no'}]</span>
+                            <span className={isSpeaking ? 'text-blue-400' : ''}>[Talk: {isSpeaking ? 'YES' : 'no'}]</span>
+                            <span className={isInterested ? 'text-orange-400' : ''}>[Int: {isInterested ? 'YES' : 'no'}]</span>
+                            <span className={isDragging ? 'text-purple-400' : ''}>[Drag: {isDragging ? 'YES' : 'no'}]</span>
                         </div>
                     </div>
                 </div>
@@ -642,7 +822,7 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
             >
                 <MascotDisplay
                     emotion={emotion}
-                    streak={streak}
+                    streak={showDebug ? debugStreak : streak}
                     idleAction={idleAction}
                     isSpeaking={isSpeaking}
                     isDragging={isDragging}
@@ -652,6 +832,7 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
                     isDizzy={emotion === 'dizzy'}
                     isHidden={!isVisible}
                     activeTheme={activeTheme}
+                    debugIdleDisabled={debugIdleDisabled}
                 />
             </div>
         </>

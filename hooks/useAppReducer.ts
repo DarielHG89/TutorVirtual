@@ -1,5 +1,5 @@
 import React, { useReducer } from 'react';
-import type { Screen, QuizConfig, CategoryId, StudentProfile, QuestionResult } from '../types';
+import type { Screen, QuizConfig, CategoryId, StudentProfile, QuestionResult, Question, LessonContent } from '../types';
 
 // State shape
 interface AppState {
@@ -12,6 +12,8 @@ interface AppState {
     isFreeMode: boolean;
     lessonId: string | null;
     activeSubjectId: string | undefined;
+    lessons: LessonContent[];
+    questions: Record<CategoryId, Record<number, Question[]>>;
     showPracticeSuggestion: { categoryId: CategoryId; categoryName: string } | null;
     openPeriods: Record<number, boolean>;
     isFeedbackModalOpen: boolean;
@@ -23,6 +25,8 @@ type AppAction =
     | { type: 'SET_SCREEN'; payload: Screen }
     | { type: 'SET_ALL_USERS'; payload: StudentProfile[] }
     | { type: 'SET_CURRENT_USER'; payload: StudentProfile | null }
+    | { type: 'SET_LESSONS'; payload: LessonContent[] }
+    | { type: 'SET_QUESTIONS'; payload: Record<CategoryId, Record<number, Question[]>> }
     | { type: 'START_QUIZ'; payload: QuizConfig }
     | { type: 'END_QUIZ'; payload: QuestionResult[] }
     | { type: 'SELECT_CATEGORY'; payload: { categoryId: CategoryId; isFreeMode: boolean } }
@@ -37,6 +41,7 @@ type AppAction =
     | { type: 'CLOSE_FEEDBACK_MODAL' }
     | { type: 'OPEN_EDIT_PROFILE_MODAL' }
     | { type: 'CLOSE_EDIT_PROFILE_MODAL' }
+    | { type: 'UPDATE_QUIZ_QUESTION'; payload: { question: Question; index: number } }
     | { type: 'SET_ACTIVE_SUBJECT'; payload: string | undefined };
 
 const initialState: AppState = {
@@ -49,6 +54,8 @@ const initialState: AppState = {
     isFreeMode: false,
     lessonId: null,
     activeSubjectId: undefined,
+    lessons: [],
+    questions: {} as any,
     showPracticeSuggestion: null,
     openPeriods: {},
     isFeedbackModalOpen: false,
@@ -67,8 +74,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
             return { ...state, allUsers: action.payload };
         case 'SET_CURRENT_USER':
             return { ...state, currentUser: action.payload };
+        case 'SET_LESSONS':
+            return { ...state, lessons: action.payload };
+        case 'SET_QUESTIONS':
+            return { ...state, questions: action.payload };
         case 'START_QUIZ':
-            return { ...state, quizConfig: action.payload, screen: 'quiz' };
+            return { ...state, quizConfig: action.payload, screen: 'quiz', finalResults: null, showPracticeSuggestion: null };
         case 'END_QUIZ':
             return { ...state, finalResults: action.payload, screen: 'results' };
         case 'SELECT_CATEGORY':
@@ -96,6 +107,17 @@ function appReducer(state: AppState, action: AppAction): AppState {
             return { ...state, isEditProfileModalOpen: true };
         case 'CLOSE_EDIT_PROFILE_MODAL':
             return { ...state, isEditProfileModalOpen: false };
+        case 'UPDATE_QUIZ_QUESTION':
+            if (!state.quizConfig) return state;
+            const updatedQuizQuestions = [...state.quizConfig.questions];
+            updatedQuizQuestions[action.payload.index] = action.payload.question;
+            return {
+                ...state,
+                quizConfig: {
+                    ...state.quizConfig,
+                    questions: updatedQuizQuestions
+                }
+            };
         case 'SET_ACTIVE_SUBJECT':
             return { ...state, activeSubjectId: action.payload };
         default:

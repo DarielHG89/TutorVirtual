@@ -8,6 +8,8 @@ import { FillInTheTextExercise } from './interactive/FillInTheTextExercise';
 import { playClickSound } from '../utils/sounds';
 import { NumberLineExercise } from './interactive/NumberLineExercise';
 import { ChooseTheOperationExercise } from './interactive/ChooseTheOperationExercise';
+import { ContentEditorModal } from './ContentEditorModal';
+import { contentManager } from '../utils/contentManager';
 
 interface LessonScreenProps {
     lesson: LessonContent;
@@ -17,6 +19,8 @@ interface LessonScreenProps {
     studentProfile: StudentProfile;
     recordInteractiveExerciseState: (lessonId: string, exerciseIndex: number, state: any) => void;
     isDebugMode: boolean;
+    isEditorMode?: boolean;
+    onUpdateLessons?: (updatedLessons: LessonContent[]) => void;
 }
 
 const practiceLevels = [
@@ -29,13 +33,59 @@ const practiceLevels = [
 const QUIZ_LENGTH = 10;
 const MIN_SCORE_TO_UNLOCK = 8;
 
-export const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onStartPractice, gameState, isAiEnabled, studentProfile, recordInteractiveExerciseState, isDebugMode }) => {
+export const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onStartPractice, gameState, isAiEnabled, studentProfile, recordInteractiveExerciseState, isDebugMode, isEditorMode, onUpdateLessons }) => {
     
     const { speak } = useSpeech();
     const theoryRef = useRef<HTMLDivElement>(null);
     const [openExerciseIndex, setOpenExerciseIndex] = useState<number | null>(null);
     const [completedExercises, setCompletedExercises] = useState<Set<number>>(new Set());
     
+    // Editor state
+    const [editorModal, setEditorModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        initialValue: string;
+        onSave: (newValue: string) => void | Promise<void>;
+        type: 'text' | 'html' | 'json';
+    }>({ isOpen: false, title: '', initialValue: '', onSave: () => {}, type: 'text' });
+    
+    const handleSaveLessonPart = async (field: keyof LessonContent, value: any) => {
+        const allLessons = contentManager.getLessons();
+        const updatedLessons = allLessons.map(l => l.id === lesson.id ? { ...l, [field]: value } : l);
+        await contentManager.saveLessons(updatedLessons);
+        if (onUpdateLessons) {
+            onUpdateLessons(updatedLessons);
+        } else {
+            window.location.reload(); 
+        }
+    };
+
+    const handleSaveQuestionPool = async (level: number, jsonValue: string) => {
+        try {
+            const newQuestions = JSON.parse(jsonValue);
+            const allLessons = contentManager.getLessons();
+            const updatedLessons = allLessons.map(l => {
+                if (l.id === lesson.id) {
+                    return {
+                        ...l,
+                        practice: {
+                            ...l.practice,
+                            [level]: newQuestions
+                        }
+                    };
+                }
+                return l;
+            });
+            await contentManager.saveLessons(updatedLessons);
+            if (onUpdateLessons) {
+                onUpdateLessons(updatedLessons);
+            } else {
+                window.location.reload();
+            }
+        } catch (e) {
+            throw e;
+        }
+    };
     const numInteractiveExercises = lesson.interactiveExercises?.length || 0;
     const allInteractiveComplete = numInteractiveExercises === 0 || completedExercises.size === numInteractiveExercises;
 
@@ -219,20 +269,56 @@ export const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onStartPract
                     renderedElements.push(
                         <div key={`exercise-wrapper-${exerciseIndex}`} className="my-4 not-prose">
                             <div className={`${selectedTheme.bg} rounded-lg border ${selectedTheme.border} overflow-hidden transition-shadow hover:shadow-md`}>
-                                <button
+                                <div
                                     onClick={() => {
                                         playClickSound();
                                         setOpenExerciseIndex(isOpen ? null : exerciseIndex);
                                     }}
-                                    className={`w-full text-left p-4 flex justify-between items-center ${selectedTheme.headerBg} ${selectedTheme.hover}`}
+                                    className={`w-full text-left p-4 flex justify-between items-center cursor-pointer ${selectedTheme.headerBg} ${selectedTheme.hover}`}
                                     aria-expanded={isOpen}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            playClickSound();
+                                            setOpenExerciseIndex(isOpen ? null : exerciseIndex);
+                                        }
+                                    }}
                                 >
                                     <h4 className={`text-xl font-bold ${selectedTheme.buttonText} flex items-center gap-3`}>
                                         {isCompleted && <span className="text-green-500 text-2xl" role="img" aria-label="Completado">✅</span>}
                                         <span className="text-lg">🎯 {exercise.title}</span>
                                     </h4>
-                                    <span className={`transform transition-transform duration-300 text-2xl ${selectedTheme.buttonIcon} ${isOpen ? 'rotate-180' : ''}`}>▾</span>
-                                </button>
+                                    <div className="flex items-center gap-2">
+                                        {isEditorMode && (
+                                            <button 
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    setEditorModal({
+                                                        isOpen: true,
+                                                        title: `Editar Ejercicio: ${exercise.title}`,
+                                                        initialValue: JSON.stringify(exercise, null, 2),
+                                                        type: 'json',
+                                                        onSave: async (val) => {
+                                                            try {
+                                                                const updated = JSON.parse(val);
+                                                                const newExercises = [...(lesson.interactiveExercises || [])];
+                                                                newExercises[exerciseIndex] = updated;
+                                                                await handleSaveLessonPart('interactiveExercises', newExercises);
+                                                            } catch (err) {
+                                                                throw err;
+                                                            }
+                                                        }
+                                                    });
+                                                }}
+                                                className="p-1.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-[10px] font-black transition-all shadow-sm active:scale-95 flex items-center gap-1"
+                                            >
+                                                <span>📝</span> EDITAR
+                                            </button>
+                                        )}
+                                        <span className={`transform transition-transform duration-300 text-2xl ${selectedTheme.buttonIcon} ${isOpen ? 'rotate-180' : ''}`}>▾</span>
+                                    </div>
+                                </div>
                                 <div className={`grid transition-[grid-template-rows] duration-500 ease-in-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
                                     <div className="overflow-hidden">
                                         <div className={`p-4 border-t ${selectedTheme.border}`}>
@@ -276,12 +362,44 @@ export const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onStartPract
 
     return (
         <div className="animate-fade-in">
-            <h1 className="text-4xl font-black text-slate-800 dark:text-slate-200 text-center mb-6">{lesson.title}</h1>
+                    <h1 className="text-4xl font-black text-slate-800 dark:text-slate-200 text-center mb-6">
+                        {lesson.title}
+                        {isEditorMode && (
+                            <button 
+                                onClick={() => setEditorModal({
+                                    isOpen: true,
+                                    title: 'Título de la Lección',
+                                    initialValue: lesson.title,
+                                    type: 'text',
+                                    onSave: (val) => handleSaveLessonPart('title', val)
+                                })}
+                                className="ml-3 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-[10px] font-black transition-all shadow-md active:scale-95 align-middle"
+                            >
+                                EDITAR TÍTULO
+                            </button>
+                        )}
+                    </h1>
             
             <div className="space-y-8">
                 {/* Theory Section with Integrated Exercises */}
                 <div className="bg-white/80 dark:bg-slate-800/50 p-6 rounded-lg shadow-md border dark:border-slate-700">
-                    <h2 className="text-3xl font-bold text-slate-700 dark:text-slate-200 mb-4 border-b-2 dark:border-slate-600 pb-2">🧠 ¡Aprende!</h2>
+                    <div className="flex justify-between items-center mb-4 border-b-2 dark:border-slate-600 pb-2">
+                        <h2 className="text-3xl font-bold text-slate-700 dark:text-slate-200">🧠 ¡Aprende!</h2>
+                        {isEditorMode && (
+                            <button 
+                                onClick={() => setEditorModal({
+                                    isOpen: true,
+                                    title: 'Teoría (HTML)',
+                                    initialValue: lesson.theory,
+                                    type: 'html',
+                                    onSave: (val) => handleSaveLessonPart('theory', val)
+                                })}
+                                className="px-2 py-0.5 bg-indigo-600/10 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-600/30 rounded-full text-[9px] font-black tracking-widest transition-all"
+                            >
+                                EDITAR TEORÍA
+                            </button>
+                        )}
+                    </div>
                     <div ref={theoryRef} className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300">
                         {renderTheoryWithExercises()}
                     </div>
@@ -317,25 +435,43 @@ export const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onStartPract
 
                            return (
                                 <div key={levelInfo.level} className="relative">
-                                    <Card
-                                        onClick={!isLocked ? () => onStartPractice(lesson.id, levelInfo.level) : undefined}
-                                        className={`!p-0 overflow-hidden ${isLocked ? 'filter grayscale' : ''}`}
-                                    >
-                                        <div className={`w-full p-2 text-center ${levelInfo.bg} ${levelInfo.border} ${levelInfo.darkBg} ${levelInfo.darkBorder} border-b-2`}>
-                                            <h4 className={`text-lg font-bold ${levelInfo.color} ${levelInfo.darkColor}`}>Nivel {levelInfo.level}: {levelInfo.name}</h4>
-                                            <p className={`text-xs font-semibold ${levelInfo.color} ${levelInfo.darkColor} opacity-80`}>Criterio: {levelInfo.criteria}</p>
+                                    <div className="flex gap-2 mb-2">
+                                        <div className="flex-1">
+                                            <Card
+                                                onClick={!isLocked ? () => onStartPractice(lesson.id, levelInfo.level) : undefined}
+                                                className={`!p-0 overflow-hidden ${isLocked ? 'filter grayscale' : ''}`}
+                                            >
+                                                <div className={`w-full p-2 text-center ${levelInfo.bg} ${levelInfo.border} ${levelInfo.darkBg} ${levelInfo.darkBorder} border-b-2`}>
+                                                    <h4 className={`text-lg font-bold ${levelInfo.color} ${levelInfo.darkColor}`}>Nivel {levelInfo.level}: {levelInfo.name}</h4>
+                                                    <p className={`text-xs font-semibold ${levelInfo.color} ${levelInfo.darkColor} opacity-80`}>Criterio: {levelInfo.criteria}</p>
+                                                </div>
+                                                <div className={`p-3 flex items-center justify-between transition-colors ${statusClass}`}>
+                                                    <div className="text-2xl">
+                                                        <span className="text-yellow-400 won-reward">{'★'.repeat(stars)}</span>
+                                                        <span className="text-slate-400 dark:text-slate-500">{'☆'.repeat(3 - stars)}</span>
+                                                    </div>
+                                                    <div className="font-semibold text-slate-500 dark:text-slate-400 text-sm">
+                                                        Mejor: {highScore}/{QUIZ_LENGTH}
+                                                    </div>
+                                                </div>
+                                            </Card>
                                         </div>
-                                        <div className={`p-3 flex items-center justify-between transition-colors ${statusClass}`}>
-                                            <div className="text-2xl">
-                                                <span className="text-yellow-400 won-reward">{'★'.repeat(stars)}</span>
-                                                <span className="text-slate-400 dark:text-slate-500">{'☆'.repeat(3 - stars)}</span>
-                                            </div>
-                                            <div className="font-semibold text-slate-500 dark:text-slate-400 text-sm">
-                                                Mejor: {highScore}/{QUIZ_LENGTH}
-                                            </div>
-                                        </div>
-                                    </Card>
-                                    {isLocked && (
+                                        {isEditorMode && (
+                                            <button 
+                                                onClick={() => setEditorModal({
+                                                    isOpen: true,
+                                                    title: `Pool de Preguntas - Nivel ${levelInfo.level}`,
+                                                    initialValue: JSON.stringify(lesson.practice[levelInfo.level], null, 4),
+                                                    type: 'json',
+                                                    onSave: (val) => handleSaveQuestionPool(levelInfo.level, val)
+                                                })}
+                                                className="px-2 py-1 bg-indigo-600/10 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-600/30 rounded-full text-[9px] font-black tracking-widest transition-all self-center ml-1"
+                                            >
+                                                POOL
+                                            </button>
+                                        )}
+                                    </div>
+                                    {isLocked && !isEditorMode && (
                                         <div className="absolute inset-0 bg-slate-800/60 rounded-xl flex items-center justify-center text-white cursor-not-allowed">
                                             <span className="text-4xl" role="img" aria-label="Bloqueado">🔒</span>
                                         </div>
@@ -346,6 +482,15 @@ export const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onStartPract
                     </div>
                 </div>
             </div>
+
+            <ContentEditorModal 
+                isOpen={editorModal.isOpen}
+                onClose={() => setEditorModal(prev => ({ ...prev, isOpen: false }))}
+                title={editorModal.title}
+                initialValue={editorModal.initialValue}
+                onSave={editorModal.onSave}
+                type={editorModal.type}
+            />
         </div>
     );
 };

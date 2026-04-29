@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import type { VoiceMode } from '../types';
 import { generateSpeech } from '../services/aiService';
 import { decode, decodeAudioData } from '../utils/audio';
+import { initLocalTts, synthesizeLocal, isLocalTtsReady } from '../services/localTtsService';
 
 interface SpeechContextType {
     isMuted: boolean;
@@ -116,6 +117,17 @@ export const SpeechProvider: React.FC<{ children: ReactNode; voiceMode: VoiceMod
     }, []);
 
     useEffect(() => {
+        const envModelUrl = import.meta.env.VITE_TTS_MODEL_URL;
+        const envConfigUrl = import.meta.env.VITE_TTS_CONFIG_URL;
+        
+        const ttsModelUrl = (envModelUrl && envModelUrl.startsWith('http')) 
+            ? envModelUrl 
+            : 'https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_MX/claude/high/es_MX-claude-high.onnx';
+            
+        const ttsConfigUrl = (envConfigUrl && envConfigUrl.startsWith('http')) 
+            ? envConfigUrl 
+            : 'https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_MX/claude/high/es_MX-claude-high.onnx.json';
+        
         const defaultSpanishVoice = availableLocalVoices.find(v => v.lang.startsWith('es-ES')) || availableLocalVoices.find(v => v.lang.startsWith('es-MX')) || availableLocalVoices[0];
         logicRef.current = {
             isMuted,
@@ -127,6 +139,8 @@ export const SpeechProvider: React.FC<{ children: ReactNode; voiceMode: VoiceMod
             setIsSpeaking,
             audioContextRef,
             currentAudioSourceRef,
+            ttsModelUrl,
+            ttsConfigUrl,
             async playOnline(text: string) {
                 if (!audioContextRef.current) {
                     console.error("AudioContext not available.");
@@ -156,7 +170,7 @@ export const SpeechProvider: React.FC<{ children: ReactNode; voiceMode: VoiceMod
     }, [isMuted, isSupported, availableLocalVoices, selectedVoiceURI, voiceMode]);
 
 
-    const speak = useCallback((text: string) => {
+    const speak = useCallback(async (text: string) => {
         const logic = logicRef.current;
         if (!logic || logic.isMuted || !logic.isSupported) return;
 
@@ -168,8 +182,45 @@ export const SpeechProvider: React.FC<{ children: ReactNode; voiceMode: VoiceMod
         logic.setIsSpeaking(true);
 
         const useLocal = logic.voiceMode === 'local' || (logic.voiceMode === 'auto' && logic.availableLocalVoices.length > 0);
+        const useWasm = logic.voiceMode === 'local-wasm';
         
-        if (useLocal) {
+        if (useWasm) {
+            try {
+                if (!isLocalTtsReady()) {
+                    await initLocalTts({
+                        modelUrl: logic.ttsModelUrl,
+                        configUrl: logic.ttsConfigUrl
+                    });
+                }
+                
+                console.log("Synthesizing with Local WASM model...");
+                const ctx = logic.audioContextRef.current;
+                if (!ctx) throw new Error("AudioContext missing");
+                
+                const audioBuffer = await synthesizeLocal(sanitizedText, ctx);
+                
+                if (audioBuffer) {
+                    if (ctx.state === 'suspended') await ctx.resume();
+
+                    const source = ctx.createBufferSource();
+                    source.buffer = audioBuffer;
+                    source.connect(ctx.destination);
+                    
+                    source.onended = () => {
+                        logic.setIsSpeaking(false);
+                        logic.currentAudioSourceRef.current = null;
+                    };
+                    
+                    logic.currentAudioSourceRef.current = source;
+                    source.start();
+                } else {
+                    throw new Error("Synthesis produced no audio buffer or AudioContext missing");
+                }
+            } catch (error) {
+                console.error("Local WASM TTS error, falling back to online:", error);
+                logic.playOnline(sanitizedText);
+            }
+        } else if (useLocal) {
             const utterance = new SpeechSynthesisUtterance(sanitizedText);
             utteranceRef.current = utterance;
 
