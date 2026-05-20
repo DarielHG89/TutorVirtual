@@ -31,7 +31,7 @@ import { checkGeminiConnection, generatePersonalizedSuggestion } from './service
 import { SpeechProvider } from './context/SpeechContext';
 import { MascotProvider } from './context/MascotContext'; // Import Provider
 import { categoryNames } from './utils/constants';
-import { shuffleArray } from './utils/array';
+import { shuffleArray, selectDistributedQuestions } from './utils/array';
 import { ContentManagerScreen } from './components/ContentManagerScreen';
 import { AnimatePresence } from 'framer-motion';
 
@@ -575,7 +575,7 @@ export default function App() {
             availablePool = unlockedPool;
         }
         
-        const quizItems = shuffleArray(availablePool).slice(0, 10);
+        const quizItems = selectDistributedQuestions(availablePool, 10);
         const practiceQuestions = quizItems.map(item => item.question);
         const questionIndices = quizItems.map(item => item.originalIndex);
 
@@ -612,7 +612,7 @@ export default function App() {
             availablePool = fullQuestionPool;
         }
     
-        const quizItems = shuffleArray(availablePool).slice(0, 10);
+        const quizItems = selectDistributedQuestions(availablePool, 10);
         const practiceQuestions = quizItems.map(item => item.question);
         const questionIndices = quizItems.map(item => item.originalIndex);
     
@@ -637,8 +637,8 @@ export default function App() {
             return;
         }
         const mappedPool = learnedQuestionsPool.map((q, idx) => ({ question: q, originalIndex: idx }));
-        const examItems = shuffleArray(mappedPool).slice(0, 10);
-        const examQuestions = (examItems as { question: Question; originalIndex: number }[]).map(i => i.question);
+        const examItems = selectDistributedQuestions(mappedPool, 10);
+        const examQuestions = examItems.map(i => i.question);
         
         dispatch({
             type: 'START_QUIZ',
@@ -657,7 +657,9 @@ export default function App() {
             alert("¡Completa al menos una lección para poder refrescar la memoria!");
             return;
         }
-        const examQuestions = shuffleArray(learnedQuestionsPool).slice(0, 5);
+        const mappedPool = learnedQuestionsPool.map((q, idx) => ({ question: q, originalIndex: idx }));
+        const examItems = selectDistributedQuestions(mappedPool, 5);
+        const examQuestions = examItems.map(i => i.question);
         dispatch({
             type: 'START_QUIZ',
             payload: {
@@ -675,7 +677,9 @@ export default function App() {
              alert("¡Completa al menos una lección para poder jugar al Desafío Rápido!");
             return;
         }
-        const challengeQuestions = shuffleArray(learnedQuestionsPool).slice(0, 5);
+        const mappedPool = learnedQuestionsPool.map((q, idx) => ({ question: q, originalIndex: idx }));
+        const examItems = selectDistributedQuestions(mappedPool, 5);
+        const challengeQuestions = examItems.map(i => i.question);
         dispatch({
             type: 'START_QUIZ',
             payload: {
