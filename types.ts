@@ -1,6 +1,16 @@
 import type { LiveServerMessage } from '@google/genai';
 
-export type Screen = 'main-menu' | 'level-selection' | 'quiz' | 'results' | 'live-conversation' | 'name-entry' | 'free-practice-menu' | 'study-area' | 'lesson' | 'parent-dashboard' | 'practice-history' | 'user-selection' | 'student-dashboard' | 'content-manager';
+export interface Achievement {
+    id: string;
+    title: string;
+    description: string;
+    icon: string;
+    unlockedAt?: number;
+    progress?: number;
+    maxProgress?: number;
+}
+
+export type Screen = 'main-menu' | 'level-selection' | 'quiz' | 'results' | 'live-conversation' | 'name-entry' | 'free-practice-menu' | 'study-area' | 'lesson' | 'parent-dashboard' | 'practice-history' | 'user-selection' | 'student-dashboard' | 'content-manager' | 'achievements' | 'quick-games' | 'story-mode';
 
 export type CategoryId = string;
 
@@ -168,6 +178,7 @@ export interface StudentProfile {
     avatar?: string;
     hasCompletedOnboarding?: boolean;
     gradeId?: string;
+    achievements?: Achievement[];
 }
 
 // Types for Study Plan

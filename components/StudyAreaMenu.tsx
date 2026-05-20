@@ -18,6 +18,8 @@ const MIN_SCORE_TO_UNLOCK = 8;
 const PERFECT_SCORE = 10;
 
 export const StudyAreaMenu: React.FC<StudyAreaMenuProps> = ({ onSelectSubmodule, gameState, openPeriods, onTogglePeriod, subjectId, studentProfile }) => {
+    
+    const [viewMode, setViewMode] = React.useState<'map' | 'list'>('map');
 
     const { processedStudyPlan, currentSubmoduleId, subjectName, gradeName } = useMemo(() => {
         const taxonomy = contentManager.getTaxonomy();
@@ -132,15 +134,74 @@ export const StudyAreaMenu: React.FC<StudyAreaMenuProps> = ({ onSelectSubmodule,
     }, [processedStudyPlan]);
 
     return (
-        <div className="animate-fade-in">
+        <div className="animate-fade-in max-w-4xl mx-auto px-4 pb-16">
             <h1 className="text-4xl font-black text-slate-800 dark:text-slate-200 text-center mb-2">Área de Estudio: {subjectName} ({gradeName})</h1>
-            <p className="text-slate-600 dark:text-slate-300 mb-8 text-center">Sigue el programa oficial. ¡Supera cada lección para desbloquear la siguiente!</p>
+            <p className="text-slate-600 dark:text-slate-300 mb-6 text-center">Sigue el programa oficial. ¡Supera cada lección para desbloquear la siguiente!</p>
+            
+            <div className="flex justify-center mb-8">
+                <div className="bg-slate-200 dark:bg-slate-700 p-1 rounded-full flex gap-1 shadow-inner">
+                    <button onClick={() => setViewMode('map')} className={`px-6 py-2 rounded-full font-bold text-sm transition-colors flex items-center gap-2 ${viewMode === 'map' ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}><span>🗺️</span> Mapa</button>
+                    <button onClick={() => setViewMode('list')} className={`px-6 py-2 rounded-full font-bold text-sm transition-colors flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}><span>📋</span> Lista</button>
+                </div>
+            </div>
 
             {processedStudyPlan.length === 0 && (
                  <p className="text-slate-500 dark:text-slate-400 mb-8 border-2 border-dashed border-slate-300 dark:border-slate-700 p-8 rounded-xl font-bold text-center">No hay lecciones configuradas para esta asignatura todavía.</p>
             )}
 
-            {processedStudyPlan.map((period: any) => {
+            {viewMode === 'map' ? (
+                <div className="relative py-8 px-4 sm:px-0">
+                    <div className="absolute left-1/2 top-4 bottom-4 w-3 bg-gradient-to-b from-blue-200 via-purple-200 to-indigo-200 dark:from-blue-900/50 dark:via-purple-900/50 dark:to-indigo-900/50 transform -translate-x-1/2 rounded-full z-0 pointer-events-none hidden sm:block"></div>
+                    
+                    {processedStudyPlan.flatMap(p => p.modules.flatMap(m => m.submodules)).map((submodule, index) => {
+                        const isLeftSide = index % 2 === 0;
+                        const isCurrent = submodule.id === currentSubmoduleId;
+                        
+                        const cardStyles = submodule.isLocked
+                            ? 'bg-slate-100 dark:bg-slate-800/80 text-slate-400 grayscale opacity-80 cursor-not-allowed border-slate-200 dark:border-slate-700'
+                            : submodule.isMastered
+                            ? 'bg-yellow-50 border-yellow-400 dark:bg-yellow-900/40 shadow-lg scale-105'
+                            : submodule.isCompleted
+                            ? 'bg-green-50 border-green-400 dark:bg-green-900/40 shadow-md transform hover:scale-105'
+                            : isCurrent
+                            ? 'bg-blue-50 border-blue-400 dark:bg-blue-900/50 shadow-xl transform scale-110 ring-4 ring-blue-300 dark:ring-blue-600'
+                            : 'bg-white dark:bg-slate-700 hover:bg-slate-50 shadow-md border-slate-200 dark:border-slate-600 transform hover:scale-105';
+
+                        const pinColor = isCurrent ? 'bg-blue-500 border-white' : submodule.isCompleted ? 'bg-green-500 border-white' : submodule.isLocked ? 'bg-slate-300 border-slate-100 dark:bg-slate-700 dark:border-slate-600' : 'bg-slate-100 border-slate-400';
+
+                        return (
+                            <div key={submodule.id} className={`relative z-10 flex flex-col sm:flex-row items-center justify-center mb-10 w-full`}>
+                                <div className={`w-full sm:w-1/2 flex ${isLeftSide ? 'sm:justify-end sm:pr-12' : 'sm:justify-start sm:pl-12 sm:order-2'} justify-center relative`}>
+                                    <button
+                                        onClick={() => { if (!submodule.isLocked) { playClickSound(); onSelectSubmodule(submodule.id); } }}
+                                        disabled={submodule.isLocked}
+                                        className={`p-5 rounded-2xl border-2 transition-all duration-300 w-full max-w-sm ${cardStyles}`}
+                                    >
+                                        <div className="flex justify-between items-start mb-3">
+                                            <span className="font-bold text-lg text-left text-slate-800 dark:text-slate-100 leading-tight pr-4">{submodule.title}</span>
+                                            {submodule.isLocked && <span className="text-2xl mt-1">🔒</span>}
+                                        </div>
+                                        <div className="flex justify-between items-end mt-4">
+                                            <div className="text-xl">
+                                                {submodule.levelProgress?.map((completed: boolean, i: number) => (
+                                                    <span key={i} className={completed ? 'text-yellow-400 won-reward' : 'text-slate-300 dark:text-slate-600'}>
+                                                        {completed ? '★' : '☆'}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            {submodule.isMastered ? <span className="text-4xl won-reward drop-shadow-sm">🏆</span> : <span className="text-3xl opacity-40 grayscale">🏆</span>}
+                                        </div>
+                                    </button>
+                                </div>
+                                <div className={`hidden sm:flex absolute left-1/2 transform -translate-x-1/2 w-14 h-14 rounded-full border-4 items-center justify-center shadow-md z-20 ${pinColor} transition-colors duration-500`}>
+                                    <span className={`text-xl font-bold ${submodule.isLocked ? 'text-slate-400 dark:text-slate-500' : 'text-white'}`}>{index + 1}</span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                processedStudyPlan.map((period: any) => {
                 const isCurrent = period.period === currentPeriodNumber;
                 
                 let periodColorClass = 'bg-white/60 border-slate-200/80 dark:bg-slate-700/30 dark:border-slate-600/50';
@@ -241,7 +302,8 @@ export const StudyAreaMenu: React.FC<StudyAreaMenuProps> = ({ onSelectSubmodule,
                         </div>
                     </div>
                 );
-            })}
+            })
+            )}
         </div>
     );
 };

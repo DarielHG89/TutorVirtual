@@ -32,7 +32,10 @@ import { SpeechProvider } from './context/SpeechContext';
 import { MascotProvider } from './context/MascotContext'; // Import Provider
 import { categoryNames } from './utils/constants';
 import { shuffleArray, selectDistributedQuestions } from './utils/array';
+import { checkAchievements } from './utils/achievements';
 import { ContentManagerScreen } from './components/ContentManagerScreen';
+import { AchievementsScreen } from './components/AchievementsScreen';
+import { QuickGamesScreen } from './components/QuickGamesScreen';
 import { AnimatePresence } from 'framer-motion';
 
 const USER_LIST_KEY = 'maestroDigitalUserList';
@@ -853,9 +856,12 @@ export default function App() {
             }
         }
 
+        const newAchievements = checkAchievements(currentUser, gameState, results, quizConfig.type === 'lesson' ? 'lesson_complete' : undefined);
+        handleUpdateProfile({ achievements: newAchievements });
+
         dispatch({ type: 'END_QUIZ', payload: results });
         navigateTo('results');
-    }, [currentUser, quizConfig, recordPracticeResult, addSkillRecord, recordUsedQuestions, gameState, isFreeMode, resetPracticeCategoryProgress, dispatch, navigateTo]);
+    }, [currentUser, quizConfig, recordPracticeResult, addSkillRecord, recordUsedQuestions, gameState, isFreeMode, resetPracticeCategoryProgress, dispatch, navigateTo, handleUpdateProfile]);
 
     const handleGenerateSuggestion = useCallback(async () => {
         if (!currentUser) return;
@@ -981,7 +987,11 @@ export default function App() {
             case 'name-entry':
                 return { component: <NameEntry onProfileSubmit={handleCreateProfile} onBack={handleSwitchUser} showBackButton={allUsers.length > 0} theme={theme} onToggleTheme={toggleTheme} setAvatarSelectorProps={setAvatarSelectorProps} />, showHeader: false, allowScroll: true };
             case 'main-menu':
-                 return { component: <MainMenu studentProfile={currentUser} gameState={gameState} onSelectCategory={handleSelectCategory} onStartWeeklyExam={handleStartWeeklyExam} onStartRefreshExam={handleStartRefreshExam} onStartQuickChallenge={handleStartQuickChallenge} onStartAiReview={handleStartAiReview} onStartLiveConversation={handleStartLiveConversation} onStartFreePractice={handleStartFreePractice} onStartStudyArea={handleStartStudyArea} onGoToParentDashboard={handleGoToParentDashboard} onViewHistory={handleViewPracticeHistory} connectionStatus={connectionStatus} isAiEnabled={isAiEnabled} unlockedPracticeCategories={unlockedPracticeCategories} newContentNotifications={newContentNotifications} areExamsEnabled={areExamsEnabled} aiSuggestion={aiSuggestion} onGenerateSuggestion={handleGenerateSuggestion} onGoToDashboard={handleGoToDashboard} onOpenAiConfig={() => setIsAiConfigModalOpen(true)} activeSubjectId={activeSubjectId} onSubjectChange={(sid) => dispatch({ type: 'SET_ACTIVE_SUBJECT', payload: sid })} />, showHeader: true };
+                 return { component: <MainMenu studentProfile={currentUser} gameState={gameState} onSelectCategory={handleSelectCategory} onStartWeeklyExam={handleStartWeeklyExam} onStartRefreshExam={handleStartRefreshExam} onStartQuickChallenge={handleStartQuickChallenge} onStartAiReview={handleStartAiReview} onStartLiveConversation={handleStartLiveConversation} onStartFreePractice={handleStartFreePractice} onStartStudyArea={handleStartStudyArea} onGoToParentDashboard={handleGoToParentDashboard} onViewHistory={handleViewPracticeHistory} onGoToAchievements={() => navigateTo('achievements')} onGoToMiniGames={() => navigateTo('quick-games')} connectionStatus={connectionStatus} isAiEnabled={isAiEnabled} unlockedPracticeCategories={unlockedPracticeCategories} newContentNotifications={newContentNotifications} areExamsEnabled={areExamsEnabled} aiSuggestion={aiSuggestion} onGenerateSuggestion={handleGenerateSuggestion} onGoToDashboard={handleGoToDashboard} onOpenAiConfig={() => setIsAiConfigModalOpen(true)} activeSubjectId={activeSubjectId} onSubjectChange={(sid) => dispatch({ type: 'SET_ACTIVE_SUBJECT', payload: sid })} />, showHeader: true };
+            case 'achievements':
+                 return { component: <AchievementsScreen studentProfile={currentUser!} />, title: 'Logros', onBack: handleBackToMenu, showHeader: true };
+            case 'quick-games':
+                 return { component: <QuickGamesScreen onBack={handleBackToMenu} />, title: 'Juegos Rápidos', onBack: handleBackToMenu, showHeader: true };
             case 'free-practice-menu':
                 return { component: <FreePracticeMenu onSelectCategory={handleSelectCategoryForFreePractice} subjectId={activeSubjectId} studentProfile={currentUser} />, title: 'Práctica Libre', onBack: handleBackToMenu, showHeader: true };
             case 'study-area':

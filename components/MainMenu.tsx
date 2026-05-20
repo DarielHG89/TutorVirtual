@@ -6,7 +6,7 @@ import { Button } from './common/Button';
 import { categoryNames } from '../utils/constants';
 import { playClickSound } from '../utils/sounds';
 
-interface MainMenuProps {
+export interface MainMenuProps {
     studentProfile: StudentProfile | null;
     gameState: GameState;
     onSelectCategory: (categoryId: CategoryId) => void;
@@ -19,6 +19,8 @@ interface MainMenuProps {
     onStartStudyArea: (subjectId?: string) => void;
     onGoToParentDashboard: () => void;
     onViewHistory: (categoryId: CategoryId) => void;
+    onGoToAchievements: () => void;
+    onGoToMiniGames: () => void;
     connectionStatus: ConnectionStatus;
     isAiEnabled: boolean;
     unlockedPracticeCategories: Set<CategoryId>;
@@ -42,7 +44,7 @@ const categoryIcons: Record<CategoryId, string> = {
     reloj: '⏰'
 };
 
-export const MainMenu: React.FC<MainMenuProps> = ({ studentProfile, gameState, onSelectCategory, onStartWeeklyExam, onStartRefreshExam, onStartQuickChallenge, onStartAiReview, onStartLiveConversation, onStartFreePractice, onStartStudyArea, onGoToParentDashboard, onViewHistory, connectionStatus, isAiEnabled, unlockedPracticeCategories, newContentNotifications, areExamsEnabled, aiSuggestion, onGenerateSuggestion, onGoToDashboard, onOpenAiConfig, activeSubjectId, onSubjectChange }) => {
+export const MainMenu: React.FC<MainMenuProps> = ({ studentProfile, gameState, onSelectCategory, onStartWeeklyExam, onStartRefreshExam, onStartQuickChallenge, onStartAiReview, onStartLiveConversation, onStartFreePractice, onStartStudyArea, onGoToParentDashboard, onViewHistory, onGoToAchievements, onGoToMiniGames, connectionStatus, isAiEnabled, unlockedPracticeCategories, newContentNotifications, areExamsEnabled, aiSuggestion, onGenerateSuggestion, onGoToDashboard, onOpenAiConfig, activeSubjectId, onSubjectChange }) => {
     
     const [isGeneratingReview, setIsGeneratingReview] = useState(false);
 
@@ -238,23 +240,31 @@ export const MainMenu: React.FC<MainMenuProps> = ({ studentProfile, gameState, o
                 </div>
             </div>
 
-            <div className="my-6">
-                 <Button variant="warning" onClick={() => onStartStudyArea(selectedSubject)} className="w-full sm:w-auto text-2xl py-4 px-8 transform hover:scale-105" disabled={!selectedSubject}>
-                    📘 Área de Estudio ({activeSubjectName})
-                </Button>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-md mx-auto">
-                    Sigue el plan de estudio oficial para aprender y desbloquear nuevo contenido paso a paso.
-                </p>
-            </div>
-            
-            <div className="my-6">
-                 <Button variant="special" onClick={onStartLiveConversation} className="w-full sm:w-auto text-2xl py-4 px-8 transform hover:scale-105" disabled={connectionStatus !== 'online' || !isAiEnabled}>
-                   Charla con el Maestro 🤖
-                </Button>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-md mx-auto">
-                    Conversa con el tutor de IA, practica tu pronunciación y pídele que dibuje para ti.
-                    {(connectionStatus !== 'online' || !isAiEnabled) && <span className="block font-semibold mt-1">La charla en vivo requiere que la IA esté conectada y activada.</span>}
-                </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-8 max-w-6xl mx-auto">
+                 <div className="text-center">
+                     <Button variant="warning" onClick={() => onStartStudyArea(selectedSubject)} className="w-full text-xl py-4 h-full flex flex-col items-center justify-center gap-2 transform hover:scale-105" disabled={!selectedSubject}>
+                        <span className="text-3xl">🗺️</span>
+                        <span>Modo Historia</span>
+                    </Button>
+                 </div>
+                 <div className="text-center">
+                     <Button variant="special" onClick={onGoToMiniGames} className="w-full text-xl py-4 h-full flex flex-col items-center justify-center gap-2 transform hover:scale-105">
+                        <span className="text-3xl">🕹️</span>
+                        <span>Juegos Rápidos</span>
+                    </Button>
+                 </div>
+                 <div className="text-center">
+                     <Button variant="special" onClick={onStartLiveConversation} disabled={connectionStatus !== 'online' || !isAiEnabled} className="w-full text-xl py-4 h-full flex flex-col items-center justify-center gap-2 transform hover:scale-105">
+                        <span className="text-3xl">🤖</span>
+                        <span>Charla IA</span>
+                    </Button>
+                 </div>
+                 <div className="text-center">
+                     <Button variant="primary" onClick={onGoToAchievements} className="w-full text-xl py-4 h-full flex flex-col items-center justify-center gap-2 transform hover:scale-105">
+                        <span className="text-3xl">🏆</span>
+                        <span>Logros</span>
+                    </Button>
+                 </div>
             </div>
 
             <h2 className="text-3xl font-black text-slate-800 dark:text-slate-200 mb-4">Modos de Práctica</h2>
