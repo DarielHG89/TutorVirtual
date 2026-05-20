@@ -3,9 +3,10 @@ import type { Question } from '../../types';
 // IDs de lecciones
 const MULTIPLICACION = 'multiplicacion_3_1';
 const DIVISION = 'division_3_2';
+const DIVISION_ESCRITA = 'division_3_3';
 
 // Helper para crear representaciones visuales de multi y divi
-const createMultiDivSVG = (type: 'multi' | 'div', a: number, b: number): string => {
+const createMultiDivSVG = (type: 'multi' | 'div' | 'galera', a: number, b: number): string => {
     let content = '';
     if (type === 'multi') {
         // Filas y columnas de puntos
@@ -17,7 +18,7 @@ const createMultiDivSVG = (type: 'multi' | 'div', a: number, b: number): string 
             }
         }
         content += `<text x="5" y="95" font-size="8" fill="#B8860B">${a} filas x ${b} columnas</text>`;
-    } else {
+    } else if (type === 'div') {
         // Reparto en cajas
         const total = a;
         const groups = b;
@@ -32,6 +33,12 @@ const createMultiDivSVG = (type: 'multi' | 'div', a: number, b: number): string 
                 content += `<circle cx="${dotX}" cy="${dotY}" r="2" fill="#EA4335" />`;
             }
         }
+    } else if (type === 'galera') {
+        content += `<text x="15" y="45" font-family="monospace" font-size="24" font-weight="bold">${a}</text>`;
+        content += `<line x1="45" y1="20" x2="45" y2="55" stroke="black" stroke-width="2" />`;
+        content += `<line x1="45" y1="55" x2="85" y2="55" stroke="black" stroke-width="2" />`;
+        content += `<text x="55" y="45" font-family="monospace" font-size="24" font-weight="bold">${b}</text>`;
+        content += `<text x="10" y="85" font-size="10" fill="#666">¿Cuál es el cociente?</text>`;
     }
     return `data:image/svg+xml;base64,${btoa(`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${content}</svg>`)}`;
 };
@@ -80,35 +87,63 @@ export const multiDiviQuestions: Record<number, Question[]> = {
         ...(() => {
             const qs: Question[] = [];
             for (let i = 0; i < 40; i++) {
-                const a = 12 + i;
-                const b = 3 + (i % 3);
-                qs.push({
-                    type: 'input',
-                    question: `Calcula: ${a} x ${b}. ¡Hazlo paso a paso! 🧮🚀`,
-                    imageUrl: createMultiDivSVG('multi', Math.floor(a/4), 4),
-                    answer: (a * b).toString(),
-                    hints: [`Multiplica ${b} por las unidades: ${b} x ${a % 10}.`, `Luego multiplica ${b} por las decenas: ${b} x ${Math.floor(a/10)}0.`, `Súmalo todo.`, `Usa la libreta si te ayuda.`, `El resultado es ${a * b}.`],
-                    explanation: `¡Genial! 🎯 Multiplicando por partes (${b}x${a%10} y ${b}x${Math.floor(a/10)}0) y sumando, llegamos a **${a * b}**. ¡Eres un rayo calculando! ⚡✨`,
-                    lessonId: MULTIPLICACION
-                });
+                if (i % 2 === 0) {
+                    // Truco de los ceros: multiplicando por 10 o 100
+                    const a = 12 + i;
+                    const b = i % 4 === 0 ? 10 : 100;
+                    qs.push({
+                        type: 'input',
+                        question: `Calcula: ${a} x ${b}. ¡Usa el truco de los ceros! 🧮🚀`,
+                        answer: (a * b).toString(),
+                        hints: [`Cuando multiplicas por 10 agregas un cero.`, `Cuando multiplicas por 100 agregas dos ceros al final.`, `Escribe de nuevo el ${a}.`, `Añádele los ceros del ${b}.`, `El resultado es ${a * b}.`],
+                        explanation: `¡Fácil y rápido! ⚡ Al multiplicar un número por ${b}, simplemente agregamos los ceros al final para obtener **${a * b}**. ¡El poder de los ceros! ✨`,
+                        lessonId: MULTIPLICACION
+                    });
+                } else {
+                    const a = 12 + i;
+                    const b = 3 + (i % 3);
+                    qs.push({
+                        type: 'input',
+                        question: `Calcula: ${a} x ${b}. ¡Hazlo paso a paso! 🧮🚀`,
+                        imageUrl: createMultiDivSVG('multi', Math.floor(a/4), 4),
+                        answer: (a * b).toString(),
+                        hints: [`Multiplica ${b} por las unidades: ${b} x ${a % 10}.`, `Luego multiplica ${b} por las decenas: ${b} x ${Math.floor(a/10)}0.`, `Súmalo todo.`, `Usa la libreta si te ayuda.`, `El resultado es ${a * b}.`],
+                        explanation: `¡Genial! 🎯 Multiplicando por partes (${b}x${a%10} y ${b}x${Math.floor(a/10)}0) y sumando, llegamos a **${a * b}**. ¡Eres un rayo calculando! ⚡✨`,
+                        lessonId: MULTIPLICACION
+                    });
+                }
             }
             return qs;
         })(),
         ...(() => {
             const qs: Question[] = [];
             for (let i = 0; i < 40; i++) {
-                const perGroup = 11 + i;
-                const groups = 2 + (i % 4);
-                const total = perGroup * groups;
-                qs.push({
-                    type: 'input',
-                    question: `Si repartes ${total} canicas 🔵 entre ${groups} amigos, ¿cuántas le tocan a cada uno?`,
-                    imageUrl: createMultiDivSVG('div', 20, groups),
-                    answer: perGroup.toString(),
-                    hints: [`Divide ${total} entre ${groups}.`, `Empieza dividiendo las decenas.`, `¿Cuántas veces cabe el ${groups} en el ${total}?`, `Es un reparto exacto.`, `La respuesta es ${perGroup}.`],
-                    explanation: `¡Reparto perfecto! 🎯 Cada amigo recibe **${perGroup}** canicas. ¡A jugar a las bolas! 🔵✨`,
-                    lessonId: DIVISION
-                });
+                if (i % 2 === 0) {
+                    const quotient = 10 + i;
+                    const divisor = i % 4 === 0 ? 10 : 100;
+                    const total = quotient * divisor;
+                    qs.push({
+                        type: 'input',
+                        question: `Calcula: ${total} : ${divisor}. ¡Usa el truco de quitar ceros! ✂️0️⃣`,
+                        answer: quotient.toString(),
+                        hints: [`Cuando divides por 10 quitas un cero.`, `Cuando divides por 100 quitas dos ceros.`, `¿Cuántos ceros tiene el ${divisor}?`, `Quítale esos ceros al ${total}.`, `La respuesta es ${quotient}.`],
+                        explanation: `¡Muy astuto! 🎯 Al dividir un número entre ${divisor}, simplemente eliminamos la misma cantidad de ceros del final. El resultado es **${quotient}**. ¡Como por arte de magia! 🪄✨`,
+                        lessonId: DIVISION
+                    });
+                } else {
+                    const perGroup = 11 + i;
+                    const groups = 2 + (i % 4);
+                    const total = perGroup * groups;
+                    qs.push({
+                        type: 'input',
+                        question: `Si repartes ${total} canicas 🔵 entre ${groups} amigos, ¿cuántas le tocan a cada uno?`,
+                        imageUrl: createMultiDivSVG('div', 20, groups),
+                        answer: perGroup.toString(),
+                        hints: [`Divide ${total} entre ${groups}.`, `Empieza dividiendo las decenas.`, `¿Cuántas veces cabe el ${groups} en el ${total}?`, `Es un reparto exacto.`, `La respuesta es ${perGroup}.`],
+                        explanation: `¡Reparto perfecto! 🎯 Cada amigo recibe **${perGroup}** canicas. ¡A jugar a las bolas! 🔵✨`,
+                        lessonId: DIVISION
+                    });
+                }
             }
             return qs;
         })()
@@ -144,6 +179,24 @@ export const multiDiviQuestions: Record<number, Question[]> = {
                     hints: [`Divide ${total} entre ${divisor}.`, `Usa el método de la casita (división larga).`, `¿Cuántas veces cabe el ${divisor} en el ${total}?`, `No sobra ninguna galleta.`, `La respuesta es ${quotient}.`],
                     explanation: `¡Maestro de la división! 🎯 Podrás armar los ${divisor} paquetes con **${quotient}** galletas cada uno. ¡Bien empaquetado! 📦✨`,
                     lessonId: DIVISION
+                });
+            }
+            return qs;
+        })(),
+        ...(() => {
+            const qs: Question[] = [];
+            for (let i = 0; i < 40; i++) {
+                const divisor = 2 + (i % 3);
+                const quotient = 10 + i;
+                const total = divisor * quotient;
+                qs.push({
+                    type: 'input',
+                    question: `Resuelve la siguiente división usando el método de la galera: ${total} ÷ ${divisor} 🏰`,
+                    imageUrl: createMultiDivSVG('galera', total, divisor),
+                    answer: quotient.toString(),
+                    hints: [`Mira el dibujo.`, `¿Cuántas veces cabe el ${divisor} en el primer dígito del ${total}?`, `Es una división sin resto.`, `La respuesta es ${quotient}.`],
+                    explanation: `¡Magnífico! 🏰 Al dividir ${total} entre ${divisor} usando la galera, obtenemos un cociente de **${quotient}**. ¡Has conquistado el castillo de la división! 🏰✨`,
+                    lessonId: DIVISION_ESCRITA
                 });
             }
             return qs;

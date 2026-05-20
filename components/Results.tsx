@@ -5,6 +5,7 @@ import { Button } from './common/Button';
 import { useSpeech } from '../context/SpeechContext';
 import type { QuestionResult, CategoryId, QuizConfig } from '../types';
 import { contentManager } from '../utils/contentManager';
+import { getQualitativeEvaluation } from '../utils/evaluationUtils';
 
 interface ResultsProps {
     results: QuestionResult[];
@@ -98,6 +99,8 @@ export const Confetti: React.FC<ConfettiProps> = ({ onComplete }) => {
 export const Results: React.FC<ResultsProps> = ({ results, onBack, onRetry, practiceSuggestion, onGoToPractice, onGoToMainMenu, onGoToStudyArea, quizConfig, onStartNextLevel }) => {
     const score = results.filter(r => r.correct).length;
     const total = results.length;
+    const percent = total > 0 ? (score / total) * 100 : 0;
+    const evalInfo = getQualitativeEvaluation(percent);
     const totalTime = results.reduce((sum, r) => sum + r.time, 0);
     const isPerfectScore = score === total && total > 0;
     const passed = total > 0 && score / total >= MIN_SCORE_TO_PASS;
@@ -106,12 +109,12 @@ export const Results: React.FC<ResultsProps> = ({ results, onBack, onRetry, prac
     const title = isPerfectScore ? "¡Puntuación Perfecta!" : "¡Aventura Completada!";
 
     useEffect(() => {
-        let resultText = `${title}. Tu resultado final es ${score} de ${total}.`;
+        let resultText = `${title}. Tu resultado final es ${score} de ${total}. Evaluación cualitativa: ${evalInfo.label}.`;
         if (practiceSuggestion) {
             resultText += ` ¡Felicidades, has completado todos los niveles de esta lección!`;
         }
         speak(resultText);
-    }, [score, total, title, speak, practiceSuggestion]);
+    }, [score, total, title, speak, practiceSuggestion, evalInfo.label]);
 
     const showNextLevelButton = useMemo(() => {
         if (!passed || !quizConfig || practiceSuggestion) {
@@ -154,6 +157,14 @@ export const Results: React.FC<ResultsProps> = ({ results, onBack, onRetry, prac
                 <p className="text-xl mb-2 text-slate-600 dark:text-slate-300">Tu resultado final es:</p>
                 <div className={`text-7xl font-black my-4 ${passed ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
                     {score} / {total}
+                </div>
+                
+                <div className="flex flex-col items-center mb-6">
+                    <div className={`px-6 py-2 rounded-2xl ${evalInfo.color} text-white shadow-lg transform rotate-[-2deg] flex flex-col items-center`}>
+                        <span className="text-4xl font-black">{evalInfo.grade}</span>
+                        <span className="text-sm font-bold uppercase tracking-widest">{evalInfo.label}</span>
+                    </div>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 italic max-w-xs">{evalInfo.description}</p>
                 </div>
                 <p className="text-lg text-slate-600 dark:text-slate-400 mb-6">
                     Tiempo Total: <span className="font-bold">{formatTime(totalTime)}</span>

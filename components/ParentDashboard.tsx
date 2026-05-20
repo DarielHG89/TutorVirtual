@@ -5,6 +5,7 @@ import { categoryNames } from '../utils/constants';
 import { Card } from './common/Card';
 import { Button } from './common/Button';
 import { playClickSound } from '../utils/sounds';
+import { getQualitativeEvaluation } from '../utils/evaluationUtils';
 
 interface ParentDashboardProps {
     studentProfile: StudentProfile | null;
@@ -75,23 +76,36 @@ const ProgressItem: React.FC<{
         if (lesson) maxLevel = Object.keys(lesson.practice).length;
     }
     
-    const highScoresText = Object.entries(progress.highScores)
+    const highScoresEntries = Object.entries(progress.highScores);
+    const avgScore = highScoresEntries.length > 0 
+        ? (highScoresEntries.reduce((sum, [_, s]) => sum + (s as number), 0) / highScoresEntries.length) * 10
+        : 0;
+    const evalInfo = getQualitativeEvaluation(avgScore);
+
+    const highScoresText = highScoresEntries
         .map(([level, score]) => `Nivel ${level}: ${score}/10`)
         .join(', ');
 
     return (
         <Card className="!p-4 bg-white dark:bg-slate-700">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
                 <div className="md:col-span-1">
                     <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">{name}</h3>
                 </div>
+                <div className="md:col-span-1 flex flex-col items-center justify-center">
+                    <div className={`px-3 py-1 rounded-lg ${evalInfo.color} text-white shadow-sm flex flex-col items-center`}>
+                        <span className="text-xl font-bold">{evalInfo.grade}</span>
+                        <span className="text-[8px] font-black uppercase tracking-tighter">{evalInfo.label}</span>
+                    </div>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Promedio: {Math.round(avgScore)}%</p>
+                </div>
                 <div className="md:col-span-1">
-                    <p className="dark:text-slate-300"><strong className="font-semibold dark:text-slate-200">Nivel desbloqueado:</strong> {progress.unlockedLevel} / {maxLevel}</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 truncate" title={highScoresText || 'Sin puntuaciones'}>
+                    <p className="text-sm dark:text-slate-300"><strong className="font-semibold dark:text-slate-200">Nivel Desbloqueado:</strong> {progress.unlockedLevel} / {maxLevel}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 truncate" title={highScoresText || 'Sin puntuaciones'}>
                         <strong className="font-semibold dark:text-slate-300">Mejores Puntuaciones:</strong> {highScoresText || 'Aún no hay'}
                     </p>
                 </div>
-                <div className="md:col-span-1 flex flex-col sm:flex-row md:flex-col lg:flex-row gap-2 justify-end">
+                <div className="md:col-span-1 flex flex-col gap-2 justify-end">
                     <Button
                         onClick={() => onUnlockNextLevel(itemKey)}
                         disabled={progress.unlockedLevel >= maxLevel}

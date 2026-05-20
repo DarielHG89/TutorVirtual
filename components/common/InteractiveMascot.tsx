@@ -5,6 +5,9 @@ import { useSpeech } from '../../context/SpeechContext';
 import { BackgroundTheme } from './DynamicBackground';
 import { playClickSound, playCorrectSound, playMascotSound } from '../../utils/sounds';
 import { MascotDisplay } from './mascot/MascotDisplay';
+import { MCDUTable } from '../math/MCDUTable';
+import { X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface InteractiveMascotProps {
     activeTheme?: BackgroundTheme;
@@ -40,6 +43,7 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
     const [isDragging, setIsDragging] = useState(false);
     const [isBouncing, setIsBouncing] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
+    const [showMathTable, setShowMathTable] = useState(false);
     const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
     const [idleAction, setIdleAction] = useState<IdleActionType>('none');
 
@@ -802,8 +806,37 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
                     <button onClick={() => { playClickSound(); setShowMenu(false); triggerReaction('speaking', 3000); }} className="p-2 hover:bg-blue-100 rounded-full text-xl" title="Hablar">🗣️</button>
                     <button onClick={() => { playClickSound(); setShowMenu(false); setIsVisible(false); setTimeout(() => setIsVisible(true), 5000); }} className="p-2 hover:bg-blue-100 rounded-full text-xl" title="Esconder">👻</button>
                     <button onClick={() => { playClickSound(); setShowMenu(false); setEmotion('thinking'); }} className="p-2 hover:bg-blue-100 rounded-full text-xl" title="Pensar">🤔</button>
+                    <button onClick={() => { playClickSound(); setShowMenu(false); setShowMathTable(true); }} className="p-2 hover:bg-blue-100 rounded-full text-xl" title="Tabla MCDU">🔢</button>
                 </div>
             )}
+
+            <AnimatePresence>
+                {showMathTable && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
+                        onClick={() => setShowMathTable(false)}
+                    >
+                        <motion.div 
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button 
+                                onClick={() => setShowMathTable(false)}
+                                className="absolute -top-12 right-0 p-2 bg-slate-800 text-white rounded-full hover:bg-slate-700 transition-colors shadow-lg border border-slate-600"
+                            >
+                                <X size={24} />
+                            </button>
+                            <MCDUTable />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <div 
                 ref={containerRef}

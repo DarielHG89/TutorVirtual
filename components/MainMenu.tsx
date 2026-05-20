@@ -14,6 +14,7 @@ interface MainMenuProps {
     onStartRefreshExam: () => void;
     onStartQuickChallenge: () => void;
     onStartLiveConversation: () => void;
+    onStartAiReview: () => Promise<void>;
     onStartFreePractice: () => void;
     onStartStudyArea: (subjectId?: string) => void;
     onGoToParentDashboard: () => void;
@@ -41,8 +42,20 @@ const categoryIcons: Record<CategoryId, string> = {
     reloj: '⏰'
 };
 
-export const MainMenu: React.FC<MainMenuProps> = ({ studentProfile, gameState, onSelectCategory, onStartWeeklyExam, onStartRefreshExam, onStartQuickChallenge, onStartLiveConversation, onStartFreePractice, onStartStudyArea, onGoToParentDashboard, onViewHistory, connectionStatus, isAiEnabled, unlockedPracticeCategories, newContentNotifications, areExamsEnabled, aiSuggestion, onGenerateSuggestion, onGoToDashboard, onOpenAiConfig, activeSubjectId, onSubjectChange }) => {
+export const MainMenu: React.FC<MainMenuProps> = ({ studentProfile, gameState, onSelectCategory, onStartWeeklyExam, onStartRefreshExam, onStartQuickChallenge, onStartAiReview, onStartLiveConversation, onStartFreePractice, onStartStudyArea, onGoToParentDashboard, onViewHistory, connectionStatus, isAiEnabled, unlockedPracticeCategories, newContentNotifications, areExamsEnabled, aiSuggestion, onGenerateSuggestion, onGoToDashboard, onOpenAiConfig, activeSubjectId, onSubjectChange }) => {
     
+    const [isGeneratingReview, setIsGeneratingReview] = useState(false);
+
+    const handleAiReview = async () => {
+        setIsGeneratingReview(true);
+        try {
+            await onStartAiReview();
+        } catch (e) {
+            alert("No se pudieron generar las preguntas de repaso en este momento.");
+        } finally {
+            setIsGeneratingReview(false);
+        }
+    };
     const taxonomy = contentManager.getTaxonomy();
     
     // Default to student's grade or first available
@@ -310,7 +323,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ studentProfile, gameState, o
             <hr className="my-6 border-slate-300 dark:border-slate-600" />
 
             <h2 className="text-3xl font-black text-slate-800 dark:text-slate-200 mb-4">Otros Modos</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 justify-center items-start gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 justify-center items-start gap-6">
                 <div style={{ animationDelay: '0ms' }} className="animate-staggered-fade-in flex flex-col h-full">
                     <Button className="w-full" variant="secondary" onClick={onStartWeeklyExam} disabled={!areExamsEnabled}>🏆 Examen Semanal</Button>
                     <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 flex-grow">Un examen completo de 10 preguntas sobre todo lo que has aprendido.</p>
@@ -318,6 +331,12 @@ export const MainMenu: React.FC<MainMenuProps> = ({ studentProfile, gameState, o
                 <div style={{ animationDelay: '50ms' }} className="animate-staggered-fade-in flex flex-col h-full">
                     <Button className="w-full" variant="primary" onClick={onStartRefreshExam} disabled={!areExamsEnabled}>💡 Refrescar Memoria</Button>
                      <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 flex-grow">Un test corto de 5 preguntas para repasar conceptos clave.</p>
+                </div>
+                <div style={{ animationDelay: '75ms' }} className="animate-staggered-fade-in flex flex-col h-full">
+                    <Button className="w-full" variant="special" onClick={handleAiReview} disabled={!isAiEnabled || connectionStatus !== 'online' || isGeneratingReview}>
+                        {isGeneratingReview ? 'Pensando...' : '🧠 Repaso IA'}
+                    </Button>
+                     <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 flex-grow">5 preguntas creadas por el Maestro según tus áreas más débiles.</p>
                 </div>
                 <div style={{ animationDelay: '100ms' }} className="animate-staggered-fade-in flex flex-col h-full">
                     <Button className="w-full" variant="primary" onClick={onStartFreePractice}>🤸 Práctica Libre</Button>

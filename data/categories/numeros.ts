@@ -6,12 +6,12 @@ const NUMEROS_1_2 = 'numeros_1_2';
 const NUMEROS_1_3 = 'numeros_1_3';
 
 // Helper para crear representaciones visuales de números
-const createNumbersSVG = (type: 'blocks' | 'coins' | 'items', data: any): string => {
+const createNumbersSVG = (type: 'blocks' | 'coins' | 'items' | 'number-line' | 'abacus', data: any): string => {
     let content = '';
     if (type === 'blocks') {
         const { um, h, d, u } = data;
         let x = 5;
-        // Millares (cubos morados)
+        // Unidades de Millar (cubos morados)
         for (let i = 0; i < (um || 0); i++) {
             content += `<rect x="${x}" y="5" width="25" height="25" fill="#A142F4" stroke="white" stroke-width="1" />`;
             x += 27;
@@ -34,10 +34,10 @@ const createNumbersSVG = (type: 'blocks' | 'coins' | 'items', data: any): string
             content += `<rect x="${x + (i%5)*8}" y="${60 + Math.floor(i/5)*8}" width="6" height="6" fill="#FBBC05" stroke="white" stroke-width="1" />`;
         }
     } else if (type === 'coins') {
-        const { val } = data;
+        const { val, label = 'PESOS' } = data;
         content += `<circle cx="50" cy="50" r="35" fill="#FFD700" stroke="#B8860B" stroke-width="2" />`;
         content += `<text x="50" y="58" font-family="Arial" font-size="28" fill="#B8860B" text-anchor="middle" font-weight="bold">${val}</text>`;
-        content += `<text x="50" y="78" font-family="Arial" font-size="10" fill="#B8860B" text-anchor="middle">CUP</text>`;
+        content += `<text x="50" y="78" font-family="Arial" font-size="10" fill="#B8860B" text-anchor="middle">${label}</text>`;
     } else if (type === 'items') {
         const { icon, count } = data;
         for (let i = 0; i < count; i++) {
@@ -45,6 +45,42 @@ const createNumbersSVG = (type: 'blocks' | 'coins' | 'items', data: any): string
             const col = i % 10;
             content += `<text x="${col * 10 + 2}" y="${row * 12 + 15}" font-size="10">${icon}</text>`;
         }
+    } else if (type === 'number-line') {
+        const { min, max, target, highlights } = data;
+        content += `<line x1="10" y1="50" x2="90" y2="50" stroke="#475569" stroke-width="2" />`;
+        content += `<line x1="10" y1="45" x2="10" y2="55" stroke="#475569" stroke-width="2" />`;
+        content += `<text x="10" y="65" font-size="8" text-anchor="middle">${min}</text>`;
+        content += `<line x1="50" y1="45" x2="50" y2="55" stroke="#475569" stroke-width="2" />`;
+        content += `<text x="50" y="65" font-size="8" text-anchor="middle">${(min+max)/2}</text>`;
+        content += `<line x1="90" y1="45" x2="90" y2="55" stroke="#475569" stroke-width="2" />`;
+        content += `<text x="90" y="65" font-size="8" text-anchor="middle">${max}</text>`;
+        if (target) {
+            const targetX = 10 + ((target - min) / (max - min)) * 80;
+            content += `<line x1="${targetX}" y1="40" x2="${targetX}" y2="60" stroke="#ef4444" stroke-width="2" />`;
+            content += `<text x="${targetX}" y="35" font-size="10" font-weight="bold" fill="#ef4444" text-anchor="middle">${target}</text>`;
+        }
+        if (highlights) {
+            highlights.forEach((h: any) => {
+                const hlX = 10 + ((h.val - min) / (max - min)) * 80;
+                content += `<circle cx="${hlX}" cy="50" r="3" fill="#3b82f6" />`;
+                content += `<text x="${hlX}" y="35" font-size="8" fill="#3b82f6" text-anchor="middle">${h.label || h.val}</text>`;
+            });
+        }
+    } else if (type === 'abacus') {
+        const { h, d, u } = data;
+        content += `<rect x="10" y="80" width="80" height="10" fill="#8B4513" />`;
+        // Centenas
+        content += `<line x1="25" y1="20" x2="25" y2="80" stroke="#475569" stroke-width="2" />`;
+        for (let i = 0; i < h; i++) content += `<ellipse cx="25" cy="${75 - i*8}" rx="10" ry="4" fill="#3b82f6" stroke="white" />`;
+        content += `<text x="25" y="98" font-size="8" font-weight="bold" text-anchor="middle">C</text>`;
+        // Decenas
+        content += `<line x1="50" y1="20" x2="50" y2="80" stroke="#475569" stroke-width="2" />`;
+        for (let i = 0; i < d; i++) content += `<ellipse cx="50" cy="${75 - i*8}" rx="10" ry="4" fill="#ef4444" stroke="white" />`;
+        content += `<text x="50" y="98" font-size="8" font-weight="bold" text-anchor="middle">D</text>`;
+        // Unidades
+        content += `<line x1="75" y1="20" x2="75" y2="80" stroke="#475569" stroke-width="2" />`;
+        for (let i = 0; i < u; i++) content += `<ellipse cx="75" cy="${75 - i*8}" rx="10" ry="4" fill="#eab308" stroke="white" />`;
+        content += `<text x="75" y="98" font-size="8" font-weight="bold" text-anchor="middle">U</text>`;
     }
     return `data:image/svg+xml;base64,${btoa(`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${content}</svg>`)}`;
 };
@@ -54,7 +90,7 @@ export const numerosQuestions: Record<number, Question[]> = {
         // === NIVEL 1: 120 preguntas (40 por lección) ===
         
         // --- NUMEROS_1_1 (40) ---
-        { type: 'mcq', question: '¿Qué número es "ochenta y siete"? 🧐🔢', options: ['78', '87', '807'], answer: '87', imageUrl: createNumbersSVG('blocks', { d: 8, u: 7 }), hints: ['"Ochenta" significa 8 decenas.', 'Luego viene "y siete" unidades.', 'Busca el 8 y el 7 juntos.', 'Ochenta y siete.', '87.'], explanation: '¡Correcto! 🎯 8 decenas and 7 unidades forman el **87**. ¡Fácil como un helado de Copelia! 🍨✨', lessonId: NUMEROS_1_1 },
+        { type: 'mcq', question: '¿Qué número es "ochenta y siete"? 🧐🔢', options: ['78', '87', '807'], answer: '87', imageUrl: createNumbersSVG('blocks', { d: 8, u: 7 }), hints: ['"Ochenta" significa 8 decenas.', 'Luego viene "y siete" unidades.', 'Busca el 8 y el 7 juntos.', 'Ochenta y siete.', '87.'], explanation: '¡Correcto! 🎯 8 decenas y 7 unidades forman el **87**. ¡En la tabla de posiciones sería D=8, U=7! 🌟✨', lessonId: NUMEROS_1_1 },
         ...(() => {
             const qs: Question[] = [];
             for (let i = 0; i < 39; i++) {
@@ -73,11 +109,11 @@ export const numerosQuestions: Record<number, Question[]> = {
                 } else if (type === 1) {
                     qs.push({
                         type: 'mcq',
-                        question: `En el número ${num}, ¿cuántas DECENAS hay? 🔟`,
+                        question: `En el número ${num}, ¿qué cifra ocupa el lugar de las DECENAS? 🔟`,
                         options: [Math.floor(num/10).toString(), (num%10).toString(), '0'].sort(() => Math.random() - 0.5),
                         answer: Math.floor(num/10).toString(),
-                        hints: [`La decena es la cifra de la izquierda en un número de dos cifras.`, `¿Cuál es el primer número en ${num}?`, `Representa grupos de 10.`, `Hay ${Math.floor(num/10)} decenas.`, `Marca la opción correcta.`],
-                        explanation: `¡Exacto! 🎯 En el número **${num}**, la cifra **${Math.floor(num/10)}** indica las decenas. ¡Dominas el valor posicional! 🔢🚀`,
+                        hints: [`Busca la cifra en la Tabla de Posiciones.`, `¿Cuál es el primer número en ${num}?`, `Representa grupos de 10.`, `Hay ${Math.floor(num/10)} decenas.`, `Marca la opción correcta.`],
+                        explanation: `¡Exacto! 🎯 En el número **${num}**, la cifra **${Math.floor(num/10)}** indica las decenas. ¡Dominas el Sistema de Posición Decimal! 🔢🚀`,
                         lessonId: NUMEROS_1_1
                     });
                 } else {
@@ -95,7 +131,7 @@ export const numerosQuestions: Record<number, Question[]> = {
         })(),
 
         // --- NUMEROS_1_2 (40) ---
-        { type: 'input', question: 'Escribe con cifras: "quinientos sesenta y dos" ✍️📦', answer: '562', imageUrl: createNumbersSVG('blocks', { h: 5, d: 6, u: 2 }), hints:['"Quinientos" es el 500.', '"Sesenta" es el 60.', 'El 2 va al final.', 'Escribe 5, 6, 2.', '562.'], explanation: '¡Perfecto! 🌟 5 centenas, 6 decenas y 2 unidades forman el **562**. ¡Un número bien grande! 📦✨', lessonId: NUMEROS_1_2},
+        { type: 'input', question: 'Ubica en cifras: "quinientos sesenta y dos" ✍️📦', answer: '562', imageUrl: createNumbersSVG('blocks', { h: 5, d: 6, u: 2 }), hints:['"Quinientos" es el 500.', '"Sesenta" es el 60.', 'El 2 va al final.', 'Escribe 5, 6, 2.', '562.'], explanation: '¡Perfecto! 🌟 5 centenas, 6 decenas y 2 unidades forman el **562**. ¡Cabe perfecto en la tabla MCDU! 📦✨', lessonId: NUMEROS_1_2},
         ...(() => {
             const qs: Question[] = [];
             for (let i = 0; i < 39; i++) {
@@ -104,11 +140,11 @@ export const numerosQuestions: Record<number, Question[]> = {
                 if (type === 0) {
                     qs.push({
                         type: 'input',
-                        question: `¿Qué número forman ${Math.floor(num/100)} centenas y ${Math.floor((num%100)/10)} decenas? 🧩🔢`,
-                        imageUrl: createNumbersSVG('blocks', { h: Math.floor(num/100), d: Math.floor((num%100)/10) }),
+                        question: `¿Qué número forman ${Math.floor(num/100)} centenas y ${Math.floor((num%100)/10)} decenas en el ábaco (o tabla de posiciones)? 🧩🔢`,
+                        imageUrl: createNumbersSVG('abacus', { h: Math.floor(num/100), d: Math.floor((num%100)/10), u: 0 }),
                         answer: num.toString(),
-                        hints: [`${Math.floor(num/100)} centenas son ${Math.floor(num/100) * 100}.`, `${Math.floor((num%100)/10)} decenas son ${Math.floor((num%100)/10) * 10}.`, `Súmalos.`, `No hay unidades sueltas.`, `La respuesta es ${num}.`],
-                        explanation: `¡Exacto! 🎯 Es el número **${num}**. ¡Has dominado las centenas! 🏆✨`,
+                        hints: [`Cuenta las cuentas azules de la Centena (C).`, `Cuenta las cuentas rojas en la columna Decena (D).`, `Súmalos.`, `No hay unidades en el ábaco.`, `La respuesta es ${num}.`],
+                        explanation: `¡Exacto! 🎯 Es el número **${num}**. ¡Has dominado el ábaco por completo! 🏆✨`,
                         lessonId: NUMEROS_1_2
                     });
                 } else {
@@ -129,7 +165,7 @@ export const numerosQuestions: Record<number, Question[]> = {
         })(),
 
         // --- NUMEROS_1_3 (40) ---
-        { type: 'mcq', question: '¿Cuál es mayor: 1899 o 1901? ⚖️🚀', options: ['1899', '1901'], answer: '1901', imageUrl: createNumbersSVG('blocks', { h: 9, d: 0, u: 1 }), hints: ['Mira los miles... son iguales (1000).', 'Mira las centenas: 800 contra 900.', 'El que tiene 9 centenas es mayor.', 'Piensa en los años.', '1901.'], explanation: '¡Muy bien! 🎯 **1901** es mayor porque tiene más centenas que 1899. ¡Gran comparación! ⚖️✨', lessonId: NUMEROS_1_3 },
+        { type: 'mcq', question: '¿Cuál es mayor: 1899 o 1901? ⚖️🚀', options: ['1899', '1901'], answer: '1901', imageUrl: createNumbersSVG('blocks', { h: 9, d: 0, u: 1 }), hints: ['Mira las Unidades de Millar... son iguales.', 'Mira las Centenas: 8 contra 9.', 'El que tiene 9 centenas es el sucesor de otros muchos números.', '1901.'], explanation: '¡Muy bien! 🎯 **1901** es mayor porque tiene más centenas en la tabla MCDU. ¡Gran comparación! ⚖️✨', lessonId: NUMEROS_1_3 },
         ...(() => {
             const qs: Question[] = [];
             for (let i = 0; i < 39; i++) {
@@ -174,10 +210,10 @@ export const numerosQuestions: Record<number, Question[]> = {
                     qs.push({
                         type: 'input',
                         question: `¿A qué decena se redondea el número ${num}? 🎯🏹`,
-                        imageUrl: createNumbersSVG('blocks', { d: Math.floor(num/10), u: num % 10 }),
+                        imageUrl: createNumbersSVG('number-line', { min: Math.floor(num/10)*10, max: Math.ceil(num/10)*10, target: num }),
                         answer: target.toString(),
-                        hints: [`Mira la última cifra (la unidad).`, `Si es 5 o más, subimos.`, `Si es menos de 5, bajamos.`, `La decena más cercana es...`, `Termina en cero.`],
-                        explanation: `¡Bingo! 🌟 El número ${num} se redondea a **${target}**. ¡Tienes una puntería matemática excelente! 🏹✨`,
+                        hints: [`Mira la recta numérica.`, `¿El número rojo ${num} está más cerca del ${Math.floor(num/10)*10} o del ${Math.ceil(num/10)*10}?`, `Si termina en 5 o más, redondeamos hacia arriba.`, `Termina en cero.`],
+                        explanation: `¡Bingo! 🌟 El número ${num} se redondea a **${target}**. ¡Tienes una puntería matemática excelente en la recta numérica! 🏹✨`,
                         lessonId: NUMEROS_1_1
                     });
                 } else {
@@ -203,14 +239,35 @@ export const numerosQuestions: Record<number, Question[]> = {
                 const type = i % 2;
                 if (type === 0) {
                     const h = Math.floor(num / 100);
-                    qs.push({
-                        type: 'input',
-                        question: `¿Cuántas centenas completas hay en el número ${num}? 📦💯`,
-                        answer: h.toString(),
-                        hints: [`Una centena son 100 unidades.`, `Divide ${num} entre 100.`, `Tapa las dos últimas cifras.`, `Necesitas ${h} billetes de 100.`, `La respuesta es ${h}.`],
-                        explanation: `¡Genial! 🎯 El número ${num} tiene **${h}** centenas completas. ¡Casi llenas un camión! 🚚✨`,
-                        lessonId: NUMEROS_1_2
-                    });
+                    if (i % 4 === 0) {
+                        qs.push({
+                            type: 'input',
+                            question: `Si Pedro tiene $${h}.00 CUP y quiere saber cuántos centavos (¢) tiene en total, ¿cuántos centavos son? 🇨🇺🪙`,
+                            imageUrl: createNumbersSVG('coins', { val: h, label: 'CUP' }),
+                            answer: (h * 100).toString(),
+                            hints: [`Recuerda que 1 peso cubano (CUP) son 100 centavos.`, `Multiplica los ${h} pesos por 100.`, `Simplemente agrega dos ceros al número de pesos.`, `Son ${h * 100} centavos.`, `No le pongas punto o coma.`],
+                            explanation: `¡Asere, muy bien! 🇨🇺 **$${h}.00 = ${h * 100}¢**. Al igual que las centenas, para pasar de pesos a centavos multiplicamos por 100. 💰✨`,
+                            lessonId: NUMEROS_1_2
+                        });
+                    } else if (i % 4 === 2) {
+                        qs.push({
+                            type: 'input',
+                            question: `Ana tiene en su alcancía ${num}¢ (centavos). ¿Cuántos pesos ($) enteros puede formar con ese dinero? 🐷💰`,
+                            answer: h.toString(),
+                            hints: [`Divide ${num} entre 100.`, `¿Cuántas centenas completas caben en ${num}?`, `Quita los dos últimos lugares (decenas y unidades).`, `Son ${h} pesos enteros.`, `La respuesta es ${h}.`],
+                            explanation: `¡Duro! 🎯 En ${num}¢ hay **$${h}** pesos enteros. Agrupaste todo en pesos cubanos sin problemas. 🚚✨`,
+                            lessonId: NUMEROS_1_2
+                        });
+                    } else {
+                        qs.push({
+                            type: 'input',
+                            question: `¿Cuántas centenas completas hay en el número ${num}? 📦💯`,
+                            answer: h.toString(),
+                            hints: [`Una centena son 100 unidades.`, `Divide ${num} entre 100.`, `Tapa las dos últimas cifras.`, `Necesitas ${h} billetes de 100.`, `La respuesta es ${h}.`],
+                            explanation: `¡Genial! 🎯 El número ${num} tiene **${h}** centenas completas. ¡Casi llenas un camión! 🚚✨`,
+                            lessonId: NUMEROS_1_2
+                        });
+                    }
                 } else {
                     const h = Math.floor((num % 1000) / 100);
                     qs.push({
@@ -290,10 +347,10 @@ export const numerosQuestions: Record<number, Question[]> = {
                 const total = um * 1000 + c * 100;
                 qs.push({
                     type: 'input',
-                    question: `¿A cuántas CENTENAS equivalen ${um} millares y ${c} centenas juntos? 🧮💯`,
+                    question: `¿A cuántas CENTENAS (C) equivalen ${um} unidades de millar (M) y ${c} centenas juntas en la tabla MCDU? 🧮💯`,
                     answer: (total / 100).toString(),
-                    hints: [`Calcula el total: ${um}000 + ${c}00 = ${total}.`, `1 centena = 100.`, `Divide ${total} entre 100.`, `Quita los últimos dos ceros.`, `La respuesta es ${total / 100}.`],
-                    explanation: `¡Brillante! 🌟 ${um} millares (${um*10} centenas) y ${c} centenas más suman un total de **${total / 100}** centenas. ¡Eres un maestro de las conversiones! 🏆✨`,
+                    hints: [`Recuerda: 1 Unidad de Millar = 10 Centenas.`, `Calcula el total: ${um}000 + ${c}00 = ${total}.`, `1 centena = 100.`, `Quita los últimos dos ceros.`, `La respuesta es ${total / 100}.`],
+                    explanation: `¡Brillante! 🌟 ${um} Unidades de Millar (${um*10} centenas) y ${c} centenas más suman un total de **${total / 100}** centenas. ¡Eres un maestro de las equivalencias! 🏆✨`,
                     lessonId: NUMEROS_1_2
                 });
             }

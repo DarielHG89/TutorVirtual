@@ -28,24 +28,20 @@ export const contentManager = {
         return defaultTaxonomy;
     },
 
-    saveTaxonomy: async (taxonomy: AppTaxonomy, destination: 'local' | 'server' = 'local') => {
-        if (destination === 'local') {
+    saveTaxonomy: async (taxonomy: AppTaxonomy, destination: 'local' | 'server' = 'server') => {
+        // Save to server
+        try {
+            const res = await fetch('/api/save-content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'taxonomy', data: taxonomy })
+            });
+            if (!res.ok) throw new Error("Servidor respondió con error");
+            // Update local cache
             localStorage.setItem(TAXONOMY_KEY, JSON.stringify(taxonomy));
-        } else {
-            // Save to server
-            try {
-                const res = await fetch('/api/save-content', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'taxonomy', data: taxonomy })
-                });
-                if (!res.ok) throw new Error("Servidor respondió con error");
-                // Clear local on successful server save
-                localStorage.removeItem(TAXONOMY_KEY);
-            } catch (e) {
-                console.error("Failed to save taxonomy to source", e);
-                throw e;
-            }
+        } catch (e) {
+            console.error("Failed to save taxonomy to source", e);
+            throw e;
         }
     },
 
@@ -85,46 +81,38 @@ export const contentManager = {
         }
     },
 
-    saveLessons: async (lessons: LessonContent[], destination: 'local' | 'server' = 'local') => {
-        if (destination === 'local') {
+    saveLessons: async (lessons: LessonContent[], destination: 'local' | 'server' = 'server') => {
+        // Save to server
+        try {
+            const res = await fetch('/api/save-content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'lessons', data: lessons })
+            });
+            if (!res.ok) throw new Error("Servidor respondió con error");
+            // Update local cache
             localStorage.setItem(LESSONS_KEY, JSON.stringify(lessons));
-        } else {
-            // Save to server
-            try {
-                const res = await fetch('/api/save-content', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'lessons', data: lessons })
-                });
-                if (!res.ok) throw new Error("Servidor respondió con error");
-                // Clear local if we successfully save to server to avoid confusion
-                localStorage.removeItem(LESSONS_KEY);
-            } catch (e) {
-                console.error("Failed to save lessons to source", e);
-                throw e;
-            }
+        } catch (e) {
+            console.error("Failed to save lessons to source", e);
+            throw e;
         }
     },
 
-    saveQuestions: async (questions: Record<CategoryId, Record<number, Question[]>>, destination: 'local' | 'server' = 'local') => {
-        if (destination === 'local') {
+    saveQuestions: async (questions: Record<CategoryId, Record<number, Question[]>>, destination: 'local' | 'server' = 'server') => {
+        // Save to server
+        try {
+            const res = await fetch('/api/save-content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'questions', data: questions })
+            });
+            if (!res.ok) throw new Error("Servidor respondió con error");
+            // Update local cache
             localStorage.setItem(QUESTIONS_KEY, JSON.stringify(questions));
-        } else {
-            // Save to server
-            try {
-                const res = await fetch('/api/save-content', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'questions', data: questions })
-                });
-                if (!res.ok) throw new Error("Servidor respondió con error");
-                // Clear local if we successfully save to server
-                localStorage.removeItem(QUESTIONS_KEY);
-                console.log("Questions saved to server and local cleared.");
-            } catch (e) {
-                console.error("Failed to save questions to source", e);
-                throw e;
-            }
+            console.log("Questions saved to server and cache updated.");
+        } catch (e) {
+            console.error("Failed to save questions to source", e);
+            throw e;
         }
     },
 
@@ -159,5 +147,54 @@ export const contentManager = {
             questions: JSON.parse(JSON.stringify(defaultQuestions)),
             taxonomy: JSON.parse(JSON.stringify(defaultTaxonomy))
         };
+    },
+
+    syncContentWithServer: async (): Promise<boolean> => {
+        try {
+            console.log("Checking server for latest content...");
+            const res = await fetch('/api/content');
+            if (res.ok) {
+                const serverData = await res.json();
+                let updated = false;
+
+                if (serverData.taxonomy) {
+                    const localTax = localStorage.getItem(TAXONOMY_KEY);
+                    const serverTaxStr = JSON.stringify(serverData.taxonomy);
+                    if (localTax !== serverTaxStr) {
+                        localStorage.setItem(TAXONOMY_KEY, serverTaxStr);
+                        updated = true;
+                    }
+                }
+
+                if (serverData.lessons) {
+                    const localLessons = localStorage.getItem(LESSONS_KEY);
+                    const serverLessonsStr = JSON.stringify(serverData.lessons);
+                    if (localLessons !== serverLessonsStr) {
+                        localStorage.setItem(LESSONS_KEY, serverLessonsStr);
+                        updated = true;
+                    }
+                }
+
+                if (serverData.questions) {
+                    const localQuestions = localStorage.getItem(QUESTIONS_KEY);
+                    const serverQuestionsStr = JSON.stringify(serverData.questions);
+                    if (localQuestions !== serverQuestionsStr) {
+                        localStorage.setItem(QUESTIONS_KEY, serverQuestionsStr);
+                        updated = true;
+                    }
+                }
+                
+                if (updated) {
+                    console.log("Local content was outdated and has been updated from the server.");
+                } else {
+                    console.log("Local content is up-to-date with the server.");
+                }
+                
+                return updated;
+            }
+        } catch (e) {
+            console.error("Failed to sync content with server", e);
+        }
+        return false;
     }
 };

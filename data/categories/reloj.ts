@@ -220,8 +220,8 @@ export const relojQuestions: Record<number, Question[]> = {
                     question: `${theme.activity} a las ${h}:${startMins.toString().padStart(2, '0')} y terminaste a las ${h}:${endMins.toString().padStart(2, '0')}. ¿Cuántos minutos pasaron? ⏰`,
                     options: isMcq ? [dur.toString(), (dur + 5).toString(), (dur - 5).toString()].sort(() => Math.random() - 0.5) : undefined,
                     answer: dur.toString(),
-                    hints: [`Calcula la diferencia entre los minutos finales y los iniciales.`, `${endMins} - ${startMins} = ?`, `Es una resta simple de minutos.`, `Pasaron ${dur} minutos.`],
-                    explanation: `¡Muy bien! 🌟 Restamos el tiempo final del inicial: ${endMins} - ${startMins} = **${dur}** minutos. ¡El tiempo pasa volando! ✨`,
+                    hints: [`Calcula la diferencia entre los minutos finales y los iniciales.`, `${endMins} - ${startMins} = ?`, `Es una sustracción simple de minutos.`, `Pasaron ${dur} minutos.`],
+                    explanation: `¡Muy bien! 🌟 Hallamos la diferencia entre el tiempo final y el inicial: ${endMins} - ${startMins} = **${dur}** minutos. ¡El tiempo pasa volando! ✨`,
                     lessonId: RELOJ_PROBLEMAS
                 });
             }

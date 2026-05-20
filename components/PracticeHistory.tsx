@@ -5,6 +5,7 @@ import { Button } from './common/Button';
 import { SkillChart } from './common/SkillChart';
 import { categoryNames } from '../utils/constants';
 import { playClickSound } from '../utils/sounds';
+import { getQualitativeEvaluation } from '../utils/evaluationUtils';
 
 interface PracticeHistoryProps {
     categoryId: CategoryId;
@@ -99,6 +100,8 @@ export const PracticeHistory: React.FC<PracticeHistoryProps> = ({ categoryId, ga
                             const hasAdditionalContent = entry.contentVersion && entry.contentVersion > 1;
                             const correctAnswers = entry.results?.filter(r => r.correct).length || 0;
                             const totalQuestions = entry.results?.length || 0;
+                            const accuracy = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+                            const evalInfo = getQualitativeEvaluation(accuracy);
                             const lessonName = entry.lessonId ? lessonIdToNameMap.get(entry.lessonId) : null;
                             
                             return (
@@ -108,15 +111,23 @@ export const PracticeHistory: React.FC<PracticeHistoryProps> = ({ categoryId, ga
                                     style={{ animationDelay: `${index * 50}ms` }}
                                 >
                                     <div className="flex justify-between items-center">
-                                        <div>
-                                            <p className="font-bold text-slate-800 dark:text-slate-200">Puntuación: <span className="text-blue-600 dark:text-blue-400">{Math.round(entry.score)}</span> | Correctas: <span className="text-green-600 dark:text-green-400">{correctAnswers}/{totalQuestions}</span></p>
-                                            <div className="text-sm text-slate-500 dark:text-slate-400">
-                                                <p>
-                                                    {practiceTypeNames[entry.type] || 'Práctica'} - Nivel: {entry.level}
-                                                    {entry.totalTime && <span> - Tiempo: <span className="font-bold">{formatTime(entry.totalTime)}</span></span>}
-                                                    {hasAdditionalContent && <span className="text-blue-500 font-bold" title="Este intento incluye contenido adicional desbloqueado."> ✨</span>}
+                                        <div className="flex gap-4">
+                                            <div className={`flex flex-col items-center justify-center w-12 h-12 rounded-lg ${evalInfo.color} text-white shadow-sm flex-shrink-0`}>
+                                                <span className="text-xl font-black">{evalInfo.grade}</span>
+                                                <span className="text-[7px] font-black uppercase tracking-tighter">{evalInfo.label}</span>
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-slate-800 dark:text-slate-200 text-base">
+                                                    Puntos: <span className="text-blue-600 dark:text-blue-400">{Math.round(entry.score)}</span> | Correctas: <span className="text-green-600 dark:text-green-400">{correctAnswers}/{totalQuestions}</span>
                                                 </p>
-                                                {lessonName && <p className="font-semibold text-purple-700 dark:text-purple-400">Lección: {lessonName}</p>}
+                                                <div className="text-sm text-slate-500 dark:text-slate-400">
+                                                    <p>
+                                                        {practiceTypeNames[entry.type] || 'Práctica'} - Nivel: {entry.level}
+                                                        {entry.totalTime && <span> - Tiempo: <span className="font-bold">{formatTime(entry.totalTime)}</span></span>}
+                                                        {hasAdditionalContent && <span className="text-blue-500 font-bold" title="Este intento incluye contenido adicional desbloqueado."> ✨</span>}
+                                                    </p>
+                                                    {lessonName && <p className="font-semibold text-purple-700 dark:text-purple-400">Lección: {lessonName}</p>}
+                                                </div>
                                             </div>
                                         </div>
                                         <div className="text-right">

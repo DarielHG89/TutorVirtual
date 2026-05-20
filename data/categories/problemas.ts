@@ -49,12 +49,12 @@ export const problemasQuestions: Record<number, Question[]> = {
                 const isMcq = i % 2 === 0;
                 qs.push({
                     type: isMcq ? 'mcq' : 'input',
-                    question: `Si en la tienda ${theme.verb} ${theme.item} por ${precio1} CUP y ${theme.ext} por ${precio2} CUP, ¿cuánto dinero gasté en total? 🛍️`,
+                    question: `Si en la tienda compras ${theme.item} por $${precio1},00 y ${theme.ext} por $${precio2},00, ¿cuánto dinero gastaste en total? 🛍️`,
                     imageUrl: createProblemSVG('🛍️', `${precio1} + ${precio2}`),
                     options: isMcq ? [total.toString(), (total - 5).toString(), (total + 5).toString()].sort(() => Math.random() - 0.5) : undefined,
                     answer: total.toString(),
-                    hints: [`"Total" significa sumar ambas cantidades.`, `Los números son: ${precio1} y ${precio2}.`, `Suma: ${precio1} + ${precio2}.`, `El resultado final es ${total}.`],
-                    explanation: `¡Muy bien, detective! 🕵️ Para saber el gasto total, sumamos ${precio1} CUP más ${precio2} CUP. La operación es: **${precio1} + ${precio2} = ${total}**. ¡En total gastaste ${total} pesos cubanos! 💸✨`,
+                    hints: [`Para saber el total, debemos realizar una adición de ambos precios.`, `${precio1} + ${precio2} = ?`, `Calcula con cuidado.`, `La respuesta es ${total}.`],
+                    explanation: `¡Muy bien, detective! 🕵️ Para saber el gasto total, sumamos $${precio1},00 más $${precio2},00. La operación es: **${precio1} + ${precio2} = ${total}**. ¡En total gastaste ${total} pesos! 💸✨`,
                     lessonId: PASO_1
                 });
             }
@@ -62,9 +62,9 @@ export const problemasQuestions: Record<number, Question[]> = {
         })(),
 
         // === PASO_2 (40) ===
-        { type: 'input', question: 'Tenía 50 CUP, mi mamá me dio 20 más y gasté 10 en un pan. ¿Cuánto me queda? 🥖', imageUrl: createProblemSVG('🥖', '(50+20)-10'), answer: '60', hints:['1. Primero suma lo que tienes ahora: 50 + 20 = 70.', '2. Luego resta lo que gastaste en el pan.', '70 - 10 = ?', 'Sesenta pesos.', '60.'], explanation: `Este es un problema de dos pasos:
-        1. **Sumamos** lo que tenías y lo que te dieron: 50 + 20 = 70 CUP. 💰
-        2. **Restamos** lo que gastaste: 70 - 10 = 60 CUP. 
+        { type: 'input', question: 'Tenía $50,00, mi mamá me dio $20,00 más y gasté $10,00 en un pan. ¿Cuánto me queda? 🥖', imageUrl: createProblemSVG('🥖', '(50+20)-10'), answer: '60', hints:['1. Primero suma lo que tienes ahora: $50,00 + $20,00 = $70,00.', '2. Luego realiza la sustracción de lo que gastaste en el pan.', '$70,00 - $10,00 = ?', 'Sesenta pesos.', '60.'], explanation: `Este es un problema de dos pasos:
+        1. **Adición** de lo que tenías y lo que te dieron: 50 + 20 = 70 pesos. 💰
+        2. **Sustracción** de lo que gastaste: 70 - 10 = 60 pesos. 
         ¡Te quedan 60 pesos para seguir ahorrando! 🐷🪙`, lessonId: PASO_2 },
         ...(() => {
             const qs: Question[] = [];
@@ -157,23 +157,60 @@ export const problemasQuestions: Record<number, Question[]> = {
         ...(() => {
             const qs: Question[] = [];
             for (let i = 0; i < 40; i++) {
-                const cajas = 40 + i;
-                const lapicesXcaja = 5;
-                const totalLapices = cajas * lapicesXcaja;
-                const regalo = 10 + i;
-                const quedan = totalLapices - regalo;
-                qs.push({
-                    type: 'input',
-                    question: `Un maestro tiene ${cajas} cajas de lápices. Cada caja tiene ${lapicesXcaja} lápices adentro. Si regala ${regalo} lápices a sus alumnos aplicados, ¿cuántos lápices le quedan? ✏️🏫`,
-                    imageUrl: createProblemSVG('📦', `(${cajas}x5)-${regalo}`),
-                    answer: quedan.toString(),
-                    hints: [`Paso 1: Calcula el total de lápices multiplicando las cajas por los lápices de cada una: ${cajas} x 5.`, `Paso 2: A ese total, réstale los lápices que el maestro regaló: - ${regalo}.`, `Es un problema de dos pasos: primero multiplicar y luego restar.`, `Recuerda las tablas de multiplicar.`, `El resultado es ${quedan}.`],
-                    explanation: `¡Magnífico trabajo! 🌟
-                    1. Primero hallamos el total de lápices: **${cajas} cajas x 5 lápices = ${totalLapices}** lápices en total. ✏️
-                    2. Luego restamos los que regaló: **${totalLapices} - ${regalo} = ${quedan}**. 🎁
-                    ¡Al maestro le quedan ${quedan} lápices todavía! 📏📖`,
-                    lessonId: PASO_2
-                });
+                if (i % 3 === 0) {
+                    const hembras = 24 + i;
+                    const varones = 28 + i;
+                    const lleganH = 7 + (i % 5);
+                    const lleganV = 9 + (i % 3);
+                    const totalH = hembras + lleganH;
+                    const totalV = varones + lleganV;
+                    qs.push({
+                        type: 'input',
+                        question: `En el parque juegan ${hembras} niñas y ${varones} niños. Luego de un rato, llegan ${lleganH} niñas y ${lleganV} niños del círculo de interés juvenil. ¿Cuántos niños (varones) juegan ahora en total? 🏞️👧👦`,
+                        imageUrl: createProblemSVG('🏞️', `(${varones}+${lleganV})`),
+                        answer: totalV.toString(),
+                        hints: [`Fíjate bien en la pregunta: solo te piden los niños (varones).`, `Paso 1: Identifica cuántos niños había inicialmente: ${varones}.`, `Paso 2: Suma los niños que llegaron: ${lleganV}.`, `No necesitas calcular las niñas.`, `El resultado es ${totalV}.`],
+                        explanation: `¡Muy agudo! 🕵️‍♂️ En los problemas a veces hay 'datos innecesarios' para la pregunta que te hacen.
+                        Solo nos interesan los varones: **${varones} (que estaban) + ${lleganV} (que llegaron) = ${totalV}**. 
+                        ¡En total hay ${totalV} pioneros jugando! ⚾🧢`,
+                        lessonId: PASO_2
+                    });
+                } else if (i % 3 === 1) {
+                    const kmC = 47 + i;
+                    const kmP = 25 + i;
+                    const masC = 9 + (i % 4);
+                    const masP = 9 + (i % 4);
+                    const totalP = kmP + masP;
+                    qs.push({
+                        type: 'input',
+                        question: `Carlos y Pedro son choferes. El lunes Carlos recorre ${kmC} km y Pedro ${kmP} km. El martes cada uno recorre ${masP} km más que el lunes. ¿Cuántos kilómetros recorre Pedro el martes? 🚚🗺️`,
+                        imageUrl: createProblemSVG('🚚', `${kmP} + ${masP}`),
+                        answer: totalP.toString(),
+                        hints: [`La pregunta es solo sobre Pedro.`, `Pedro recorrió ${kmP} km el lunes.`, `El martes recorrió ${masP} km MÁS que el lunes.`, `Tienes que sumar lo del lunes más el incremento.`, `La operación es ${kmP} + ${masP}.`],
+                        explanation: `¡Exacto! 🚚 Los datos de Carlos son información extra para despistar (¡dato innecesario!).
+                        Si Pedro recorrió ${kmP} km el lunes, el martes hace:
+                        **${kmP} + ${masP} = ${totalP} km**. 🗺️✨`,
+                        lessonId: PASO_2
+                    });
+                } else {
+                    const cajas = 40 + i;
+                    const lapicesXcaja = 5;
+                    const totalLapices = cajas * lapicesXcaja;
+                    const regalo = 10 + i;
+                    const quedan = totalLapices - regalo;
+                    qs.push({
+                        type: 'input',
+                        question: `Un maestro tiene ${cajas} cajas de lápices. Cada caja tiene ${lapicesXcaja} lápices adentro. Si regala ${regalo} lápices a sus alumnos aplicados, ¿cuántos lápices le quedan? ✏️🏫`,
+                        imageUrl: createProblemSVG('📦', `(${cajas}x5)-${regalo}`),
+                        answer: quedan.toString(),
+                        hints: [`Paso 1: Calcula el total de lápices multiplicando las cajas por los lápices de cada una: ${cajas} x ${lapicesXcaja}.`, `Paso 2: A ese total, réstale los lápices que el maestro regaló: - ${regalo}.`, `Es un problema de dos pasos: primero multiplicar y luego restar.`, `Recuerda las tablas de multiplicar.`, `El resultado es ${quedan}.`],
+                        explanation: `¡Magnífico trabajo! 🌟
+                        1. Primero hallamos el total de lápices: **${cajas} cajas x ${lapicesXcaja} lápices = ${totalLapices}** lápices en total. ✏️
+                        2. Luego restamos los que regaló: **${totalLapices} - ${regalo} = ${quedan}**. 🎁
+                        ¡Al maestro le quedan ${quedan} lápices todavía! 📏📖`,
+                        lessonId: PASO_2
+                    });
+                }
             }
             return qs;
         })(),

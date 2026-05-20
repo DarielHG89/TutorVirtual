@@ -91,8 +91,14 @@ export default function App() {
 
     // Initial content load
     useEffect(() => {
-        dispatch({ type: 'SET_LESSONS', payload: contentManager.getLessons() });
-        dispatch({ type: 'SET_QUESTIONS', payload: contentManager.getQuestions() });
+        const loadContent = async () => {
+            const updated = await contentManager.syncContentWithServer();
+            if (updated || contentManager.getLessons().length > 0) {
+                dispatch({ type: 'SET_LESSONS', payload: contentManager.getLessons() });
+                dispatch({ type: 'SET_QUESTIONS', payload: contentManager.getQuestions() });
+            }
+        };
+        loadContent();
     }, [dispatch]);
 
     // --- Dynamic Theme Logic ---
@@ -682,6 +688,37 @@ export default function App() {
         navigateTo('quiz');
     }, [areExamsEnabled, learnedQuestionsPool, dispatch, navigateTo]);
 
+    const handleStartAiReview = useCallback(async () => {
+        if (!currentUser) return;
+        const taxonomy = contentManager.getTaxonomy();
+        const activeSubject = activeSubjectId || (taxonomy.subjects.length > 0 ? taxonomy.subjects[0].id : null);
+        const subjectCategoryIds = activeSubject 
+            ? taxonomy.categories.filter(c => c.subjectId === activeSubject).map(c => c.id)
+            : Object.keys(contentManager.getQuestions()) as CategoryId[];
+            
+        try {
+            const { generateAiReviewQuestions } = await import('./services/aiService');
+            const questions = await generateAiReviewQuestions(gameState, currentUser, subjectCategoryIds);
+            
+            if (questions.length === 0) {
+                throw new Error("La IA no generó ninguna pregunta.");
+            }
+
+            dispatch({
+                type: 'START_QUIZ',
+                payload: {
+                    type: 'exam',
+                    name: 'Repaso Inteligente (IA)',
+                    questions: questions,
+                    origin: 'main-menu'
+                }
+            });
+            navigateTo('quiz');
+        } catch (error) {
+            console.error("AI Review Generation Failed", error);
+            throw error;
+        }
+    }, [currentUser, gameState, activeSubjectId, dispatch, navigateTo]);
 
     const handleUpdateLessons = useCallback((updatedLessons: LessonContent[]) => {
         dispatch({ type: 'SET_LESSONS', payload: updatedLessons });
@@ -787,9 +824,10 @@ export default function App() {
             if (quizConfig.type === 'lesson' && quizConfig.lessonId) {
                 const lesson = contentManager.getLessons().find(l => l.id === quizConfig.lessonId);
                 const previousHighScore = gameState[quizConfig.lessonId]?.highScores?.[1] || 0;
+                const normalizedScore = total > 0 ? (score / total) * 10 : 0;
 
                 if (lesson) {
-                     if (quizConfig.level === 1 && previousHighScore < MIN_SCORE_TO_UNLOCK && score >= MIN_SCORE_TO_UNLOCK) {
+                     if (quizConfig.level === 1 && previousHighScore < MIN_SCORE_TO_UNLOCK && normalizedScore >= MIN_SCORE_TO_UNLOCK) {
                         setNewContentNotifications(prev => {
                             const newNotifs = { ...prev, [lesson.categoryId]: true };
                             localStorage.setItem(`maestroDigitalNewContent_${currentUser.id}`, JSON.stringify(newNotifs));
@@ -802,7 +840,7 @@ export default function App() {
                     const lessonProgress = gameState[lesson.id];
                     const areAllLevelsCompleted = allPracticeLevels.every(lvl => {
                         const currentHighScore = lessonProgress?.highScores?.[lvl] || 0;
-                        return (lvl === level) ? Math.max(currentHighScore, score) >= MIN_SCORE_TO_UNLOCK : currentHighScore >= MIN_SCORE_TO_UNLOCK;
+                        return (lvl === level) ? Math.max(currentHighScore, normalizedScore) >= MIN_SCORE_TO_UNLOCK : currentHighScore >= MIN_SCORE_TO_UNLOCK;
                     });
                      if (areAllLevelsCompleted) {
                         dispatch({ type: 'SET_SHOW_PRACTICE_SUGGESTION', payload: { categoryId: lesson.categoryId, categoryName: categoryNames[lesson.categoryId] } });
@@ -836,9 +874,24 @@ export default function App() {
 
     const handleRetryQuiz = useCallback(() => {
         if (!quizConfig) return;
-        dispatch({ type: 'START_QUIZ', payload: quizConfig });
-        navigateTo('quiz');
-    }, [quizConfig, dispatch, navigateTo]);
+        if (quizConfig.type === 'practice' && quizConfig.categoryId && quizConfig.level) {
+            handleStartPractice(quizConfig.categoryId, quizConfig.level);
+        } else if (quizConfig.type === 'lesson' && quizConfig.lessonId && quizConfig.level) {
+            handleStartLessonPractice(quizConfig.lessonId, quizConfig.level);
+        } else if (quizConfig.type === 'exam') {
+            if (quizConfig.name === 'Examen Semanal') handleStartWeeklyExam();
+            else if (quizConfig.name === 'Refrescar Memoria') handleStartRefreshExam();
+            else if (quizConfig.name === 'Desafío Rápido') handleStartQuickChallenge();
+            else if (quizConfig.name === 'Repaso Inteligente (IA)') handleStartAiReview();
+            else {
+                dispatch({ type: 'START_QUIZ', payload: quizConfig });
+                navigateTo('quiz');
+            }
+        } else {
+            dispatch({ type: 'START_QUIZ', payload: quizConfig });
+            navigateTo('quiz');
+        }
+    }, [quizConfig, dispatch, navigateTo, handleStartPractice, handleStartLessonPractice, handleStartWeeklyExam, handleStartRefreshExam, handleStartQuickChallenge, handleStartAiReview]);
 
     const handleBackToMenu = useCallback(() => dispatch({ type: 'GO_TO_MAIN_MENU' }), [dispatch]);
     const handleBackToStudyArea = useCallback(() => navigateTo('study-area'), [navigateTo]);
@@ -924,7 +977,7 @@ export default function App() {
             case 'name-entry':
                 return { component: <NameEntry onProfileSubmit={handleCreateProfile} onBack={handleSwitchUser} showBackButton={allUsers.length > 0} theme={theme} onToggleTheme={toggleTheme} setAvatarSelectorProps={setAvatarSelectorProps} />, showHeader: false, allowScroll: true };
             case 'main-menu':
-                 return { component: <MainMenu studentProfile={currentUser} gameState={gameState} onSelectCategory={handleSelectCategory} onStartWeeklyExam={handleStartWeeklyExam} onStartRefreshExam={handleStartRefreshExam} onStartQuickChallenge={handleStartQuickChallenge} onStartLiveConversation={handleStartLiveConversation} onStartFreePractice={handleStartFreePractice} onStartStudyArea={handleStartStudyArea} onGoToParentDashboard={handleGoToParentDashboard} onViewHistory={handleViewPracticeHistory} connectionStatus={connectionStatus} isAiEnabled={isAiEnabled} unlockedPracticeCategories={unlockedPracticeCategories} newContentNotifications={newContentNotifications} areExamsEnabled={areExamsEnabled} aiSuggestion={aiSuggestion} onGenerateSuggestion={handleGenerateSuggestion} onGoToDashboard={handleGoToDashboard} onOpenAiConfig={() => setIsAiConfigModalOpen(true)} activeSubjectId={activeSubjectId} onSubjectChange={(sid) => dispatch({ type: 'SET_ACTIVE_SUBJECT', payload: sid })} />, showHeader: true };
+                 return { component: <MainMenu studentProfile={currentUser} gameState={gameState} onSelectCategory={handleSelectCategory} onStartWeeklyExam={handleStartWeeklyExam} onStartRefreshExam={handleStartRefreshExam} onStartQuickChallenge={handleStartQuickChallenge} onStartAiReview={handleStartAiReview} onStartLiveConversation={handleStartLiveConversation} onStartFreePractice={handleStartFreePractice} onStartStudyArea={handleStartStudyArea} onGoToParentDashboard={handleGoToParentDashboard} onViewHistory={handleViewPracticeHistory} connectionStatus={connectionStatus} isAiEnabled={isAiEnabled} unlockedPracticeCategories={unlockedPracticeCategories} newContentNotifications={newContentNotifications} areExamsEnabled={areExamsEnabled} aiSuggestion={aiSuggestion} onGenerateSuggestion={handleGenerateSuggestion} onGoToDashboard={handleGoToDashboard} onOpenAiConfig={() => setIsAiConfigModalOpen(true)} activeSubjectId={activeSubjectId} onSubjectChange={(sid) => dispatch({ type: 'SET_ACTIVE_SUBJECT', payload: sid })} />, showHeader: true };
             case 'free-practice-menu':
                 return { component: <FreePracticeMenu onSelectCategory={handleSelectCategoryForFreePractice} subjectId={activeSubjectId} studentProfile={currentUser} />, title: 'Práctica Libre', onBack: handleBackToMenu, showHeader: true };
             case 'study-area':
@@ -960,8 +1013,8 @@ export default function App() {
             default:
                  return { component: null, showHeader: false };
         }
-    }, [screen, allUsers, currentUser, gameState, unlockedPracticeCategories, newContentNotifications, areExamsEnabled, openPeriods, activeSubjectId, handleSelectCategory, handleStartWeeklyExam, handleStartRefreshExam, handleStartQuickChallenge, handleStartLiveConversation, handleStartFreePractice, handleStartStudyArea, connectionStatus, isAiEnabled, handleCreateProfile, handleSelectCategoryForFreePractice, handleBackToMenu, selectedCategory, handleStartPractice, isFreeMode, quizConfig, handleQuizEnd, finalResults, currentLesson, handleSelectSubmodule, handleStartLessonPractice, handleBackToStudyArea, handleBackToLesson, handleGoToParentDashboard, unlockNextLevel, resetProgressForKey, unlockAllLevels, resetAllProgress, handleViewPracticeHistory, handleTogglePeriod, isDebugMode, isEditorMode, showPracticeSuggestion, handleGoToPracticeFromSuggestion, lessonIdToNameMap, navigateTo, handleBackToFreePracticeMenu, handleSwitchUser, handleAddNewUser, handleSelectUser, showModal, handleStartNextLevel, handleBackToLevelSelection, aiSuggestion, handleGenerateSuggestion, dispatch, theme, toggleTheme, recordInteractiveExerciseState, handleGoToDashboard, handleOpenDashboard, setAvatarSelectorProps, handleUpdateQuestion]);
-    
+    }, [screen, allUsers, currentUser, gameState, unlockedPracticeCategories, newContentNotifications, areExamsEnabled, openPeriods, activeSubjectId, handleSelectCategory, handleStartWeeklyExam, handleStartRefreshExam, handleStartQuickChallenge, handleStartAiReview, handleStartLiveConversation, handleStartFreePractice, handleStartStudyArea, connectionStatus, isAiEnabled, handleCreateProfile, handleSelectCategoryForFreePractice, handleBackToMenu, selectedCategory, handleStartPractice, isFreeMode, quizConfig, handleQuizEnd, finalResults, currentLesson, handleSelectSubmodule, handleStartLessonPractice, handleBackToStudyArea, handleBackToLesson, handleGoToParentDashboard, unlockNextLevel, resetProgressForKey, unlockAllLevels, resetAllProgress, handleViewPracticeHistory, handleTogglePeriod, isDebugMode, isEditorMode, showPracticeSuggestion, handleGoToPracticeFromSuggestion, lessonIdToNameMap, navigateTo, handleBackToFreePracticeMenu, handleSwitchUser, handleAddNewUser, handleSelectUser, showModal, handleStartNextLevel, handleBackToLevelSelection, aiSuggestion, handleGenerateSuggestion, dispatch, theme, toggleTheme, recordInteractiveExerciseState, handleGoToDashboard, handleOpenDashboard, setAvatarSelectorProps, handleUpdateQuestion]);
+
     return (
         <SpeechProvider voiceMode={voiceMode}>
         <MascotProvider>

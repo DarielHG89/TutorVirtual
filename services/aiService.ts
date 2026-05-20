@@ -582,7 +582,7 @@ export async function generatePersonalizedSuggestion(gameState: GameState, profi
         1. Empezar mencionando algo que está haciendo bien (una fortaleza).
         2. Sugerir un área específica para practicar, idealmente mencionando el tipo de pregunta o una lección relacionada.
         3. Ser muy alentador y usar emojis.
-        Ejemplo: "¡Hola, ${profile.name}! 🚀 Veo que eres un campeón en 'Multiplicación y División', ¡vas a toda velocidad! He notado que a veces las restas 'pidiendo prestado' nos dan un poco de guerra. ¿Qué tal si practicamos la lección 'Procedimiento escrito de la sustracción' para volvernos invencibles? 💪"
+        Ejemplo: "¡Hola, ${profile.name}! 🚀 Veo que eres un campeón en 'Multiplicación y División', ¡vas a toda velocidad! He notado que a veces la sustracción 'pidiendo prestado' nos da un poco de guerra. ¿Qué tal si practicamos la lección 'Procedimiento escrito de la sustracción' para volvernos invencibles? 💪"
     `;
 
     try {
@@ -612,6 +612,85 @@ export async function generatePersonalizedSuggestion(gameState: GameState, profi
     }
 }
 
+export async function generateAiReviewQuestions(gameState: GameState, profile: StudentProfile, allCategoryIds: string[]): Promise<Question[]> {
+    if (!isApiAvailable) {
+        throw new Error("La generación de preguntas por IA requiere una conexión activa a la IA.");
+    }
+
+    const performanceSummary = summarizePerformance(gameState, allCategoryIds);
+
+    const prompt = `Analiza el resumen de rendimiento del estudiante llamado ${profile.name}:
+${performanceSummary}
+
+Tu tarea es generar 5 preguntas de repaso personalizadas enfocadas en las áreas donde el estudiante cometió errores o tuvo menor puntuación.
+Las preguntas deben estar adaptadas para un niño/a de ${profile.age} años. Siempre en español.
+
+Devuelve estrictamente un JSON con esta estructura:
+{
+  "questions": [
+    {
+      "type": "mcq",
+      "question": "Texto de la pregunta...",
+      "options": ["Opción 1", "Opción 2", "Opción 3", "Opción 4"],
+      "answer": "Respuesta correcta exacta de las opciones",
+      "hints": ["Pista 1", "Pista 2"],
+      "explanation": "Explicación súper amigable y fácil de entender de por qué esa es la respuesta."
+    }
+  ]
+}`;
+
+    try {
+        let resultData: any = null;
+        const systemInstruction = `Eres 'Maestro Digital', y debes devolver únicamente JSON válido con la estructura solicitada. No incluyas markdown. Las "options" deben ser un array de 3 a 4 cadenas. "answer" debe ser una cadena que coincida exactamente con uno de los elementos de "options".`;
+
+        if (currentConfig.mode === 'local') {
+            const responseText = await callLocalAi(prompt, systemInstruction, 'json');
+            resultData = JSON.parse(responseText);
+        } else if (aiInstance) {
+            const response = await aiInstance.models.generateContent({
+                model: 'gemini-1.5-flash',
+                contents: prompt,
+                config: {
+                    systemInstruction,
+                    temperature: 0.8,
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: Type.OBJECT,
+                        properties: {
+                            questions: {
+                                type: Type.ARRAY,
+                                description: "Lista de preguntas generadas.",
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        type: { type: Type.STRING, description: "Siempre 'mcq'" },
+                                        question: { type: Type.STRING },
+                                        options: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                        answer: { type: Type.STRING },
+                                        hints: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                        explanation: { type: Type.STRING }
+                                    },
+                                    required: ["type", "question", "options", "answer"]
+                                }
+                            }
+                        },
+                        required: ["questions"]
+                    }
+                }
+            });
+            resultData = JSON.parse(response.text.trim());
+        }
+
+        if (resultData && resultData.questions && Array.isArray(resultData.questions)) {
+            return resultData.questions as Question[];
+        } else {
+            throw new Error("El formato devuelto no es válido.");
+        }
+    } catch (e) {
+        console.error("Error generating AI review questions:", e);
+        throw new Error("Hubo un problema contactando con la IA para generar el repaso. Inténtalo de nuevo más tarde.");
+    }
+}
 export async function generateNumberLineExercise(
     min: number, 
     max: number, 

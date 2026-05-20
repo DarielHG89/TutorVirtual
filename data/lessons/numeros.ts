@@ -24,13 +24,13 @@ export const numerosLessons: LessonContent[] = [
             <p class="mb-4">¡Hola, campeón/a! Vamos a hacer un viaje rápido para recordar a nuestros amigos, los números hasta 100. ¡Son la base de todas nuestras aventuras matemáticas!</p>
             
             <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg mb-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-blue-800 dark:text-blue-300">Decenas y Unidades 🏗️</h4>
-                <p>Imagina los números como equipos de construcción. El número <strong>23</strong> tiene:</p>
+                <h4 class="text-xl font-bold mb-2 text-blue-800 dark:text-blue-300">Decenas y Unidades en la Tabla de Posición 🏗️</h4>
+                <p>Imagina los números ubicados en la <strong>Tabla MCDU</strong>. El número <strong>23</strong> tiene:</p>
                 <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
-                    <li><strong>2 <span class="pronounceable">decenas</span>:</strong> dos grupos de 10 bloques (¡20 bloques!)</li>
-                    <li><strong>3 <span class="pronounceable">unidades</span>:</strong> tres bloques sueltos.</li>
+                    <li><strong>2 <span class="pronounceable">decenas</span> (D):</strong> dos grupos de 10 bloques (¡20 bloques!)</li>
+                    <li><strong>3 <span class="pronounceable">unidades</span> (U):</strong> tres bloques sueltos.</li>
                 </ul>
-                <p class="mt-2 font-semibold">¡Juntos forman la torre 23! <strong>20 + 3 = 23</strong>.</p>
+                <p class="mt-2 font-semibold">¡Juntos forman el 23! <strong>20 + 3 = 23</strong>.</p>
                 <div data-exercise-index="0"></div>
             </div>
 
@@ -109,11 +109,11 @@ export const numerosLessons: LessonContent[] = [
             <p class="mb-4">Ahora que somos expertos hasta 100, ¡vamos a una nueva galaxia! La galaxia de los números de <strong>tres y cuatro cifras</strong>. ¡Abróchate el cinturón!</p>
             
             <div class="bg-green-50 dark:bg-green-900/30 p-4 rounded-lg mb-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-green-800 dark:text-green-300">Nuevos Superhéroes: Centenas y Millares ⭐</h4>
-                <p>Conocemos las unidades (1) y las decenas (10). Ahora llegan dos nuevos superhéroes al equipo:</p>
+                <h4 class="text-xl font-bold mb-2 text-green-800 dark:text-green-300">Nuevos Superhéroes: Centenas (C) y Unidades de Millar (M) ⭐</h4>
+                <p>Conocemos las unidades (1) y las decenas (10). Ahora llegan dos nuevos superhéroes al equipo de la <strong>Tabla MCDU</strong>:</p>
                 <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
-                    <li><strong>La <span class="pronounceable">Centena</span> (100):</strong> ¡Son 10 decenas juntas! ¡Un escuadrón completo!</li>
-                    <li><strong>La Unidad de <span class="pronounceable">Millar</span> (1 000):</strong> ¡Son 10 centenas juntas! Se lee "mil" y es el capitán del equipo.</li>
+                    <li><strong>La <span class="pronounceable">Centena</span> (C):</strong> ¡Son 10 decenas juntas! (100 unidades).</li>
+                    <li><strong>La <span class="pronounceable">Unidad de Millar</span> (M):</strong> ¡Son 10 centenas juntas! (1 000 unidades). Se lee "mil".</li>
                 </ul>
                 <div data-exercise-index="0"></div>
             </div>
@@ -182,11 +182,11 @@ export const numerosLessons: LessonContent[] = [
             </div>
 
             <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg mb-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-yellow-800 dark:text-yellow-300">Regla 2: ¡El desempate! 🧐</h4>
-                <p>Si tienen las mismas cifras, comparamos de izquierda a derecha, como si leyéramos. En <strong>5<u>2</u>80</strong> y <strong>5<u>1</u>90</strong>:</p>
+                <h4 class="text-xl font-bold mb-2 text-yellow-800 dark:text-yellow-300">Regla 2: ¡El desempate con MCDU! 🧐</h4>
+                <p>Si tienen las mismas cifras, comparamos de izquierda a derecha usando la tabla de posición. En <strong>5<u>2</u>80</strong> y <strong>5<u>1</u>90</strong>:</p>
                 <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
-                    <li>Los millares son iguales (5 y 5). ¡Empate! Pasamos a la siguiente ronda.</li>
-                    <li>Las centenas: 2 es mayor que 1. ¡El juez declara ganador al <strong>5 280</strong>! 🏆</li>
+                    <li>Las <strong>Unidades de Millar (M)</strong> son iguales (5 y 5). ¡Empate!</li>
+                    <li>Las <strong>Centenas (C)</strong>: 2 es mayor que 1. ¡El juez declara ganador al <strong>5 280</strong>! 🏆</li>
                 </ul>
                 <div data-exercise-index="0"></div>
             </div>

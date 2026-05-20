@@ -1,11 +1,10 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@400;700;900&display=swap');
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
-  --font-title: 'Luckiest Guy', cursive;
+  --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-title: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', 'Arial Rounded MT Bold', ui-rounded, sans-serif;
 }
 
 :root {
@@ -201,6 +200,14 @@ html.dark .blank-select.correct, html.dark .blank-input.correct { background-col
 html.dark .blank-select.incorrect, html.dark .blank-input.incorrect { background-color: #991b1b; border-color: #f87171; }
 
 .number-line-item { touch-action: none; }
+.number-line-over {
+    box-shadow: 0 0 10px #60a5fa;
+    background-color: #93c5fd !important;
+}
+html.dark .number-line-over {
+    box-shadow: 0 0 10px #3b82f6;
+    background-color: #2563eb !important;
+}
 .number-line-tick {
     position: absolute;
     top: 50%;
@@ -210,6 +217,29 @@ html.dark .blank-select.incorrect, html.dark .blank-input.incorrect { background
     background-color: #94a3b8;
 }
 html.dark .number-line-tick { background-color: #64748b; }
+
+.number-line-tick-label {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: bold;
+    color: #64748b;
+}
+html.dark .number-line-tick-label { color: #cbd5e1; }
+
+.number-line-placed-item {
+    position: absolute;
+    top: -45px;
+    background-color: #3b82f6;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    white-space: nowrap;
+}
+html.dark .number-line-placed-item { background-color: #2563eb; }
 
 /* Onboarding */
 .onboarding-overlay {

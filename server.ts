@@ -48,6 +48,39 @@ async function startServer() {
     }
   });
 
+  // API Route to fetch latest content
+  app.get("/api/content", (req, res) => {
+    try {
+      const taxonomyStr = fs.readFileSync(path.join(process.cwd(), 'data', 'taxonomy.ts'), 'utf-8');
+      const lessonsStr = fs.readFileSync(path.join(process.cwd(), 'data', 'lessons.ts'), 'utf-8');
+      const questionsStr = fs.readFileSync(path.join(process.cwd(), 'data', 'questions.ts'), 'utf-8');
+
+      // The files are exports in ts, but we can extract the JSON part
+      const extractJSON = (str: string, varName: string) => {
+        const startIdx = str.indexOf('= {') !== -1 ? str.indexOf('= {') + 2 : str.indexOf('= [') + 2;
+        if (startIdx === 1) return null;
+        let endIdx = str.lastIndexOf(';');
+        if (endIdx === -1) endIdx = str.length;
+        const jsonStr = str.substring(startIdx, endIdx).trim();
+        try {
+          return JSON.parse(jsonStr);
+        } catch {
+          // If parsing fails, it might be due to trailing commas or unexpected format, fallback needed
+          // but since save-content writes clean JSON output, it should parse.
+          return null;
+        }
+      };
+
+      res.json({
+        taxonomy: extractJSON(taxonomyStr, 'taxonomyData'),
+        lessons: extractJSON(lessonsStr, 'lessons'),
+        questions: extractJSON(questionsStr, 'questions')
+      });
+    } catch (e) {
+      res.status(500).json({ error: "Failed to read content" });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

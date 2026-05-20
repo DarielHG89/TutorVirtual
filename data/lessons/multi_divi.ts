@@ -159,4 +159,77 @@ export const multiDiviLessons: LessonContent[] = [
         ],
         practice: getQuestionsForLesson('division_3_2'),
     },
+    {
+        id: 'division_3_3',
+        title: 'División Escrita: El método de la Galera 🏰',
+        period: 2,
+        categoryId: 'multi_divi',
+        theory: `
+            <h3 class="text-2xl font-bold mb-4 text-orange-600 dark:text-orange-400">¡División Larga! 📝🔢</h3>
+            <p class="mb-4">Para dividir números más grandes, usamos un dibujo especial que llamamos <strong>galera</strong> (|___). ¡Es como una casita para los números!</p>
+            
+            <div class="bg-orange-50 dark:bg-orange-900/30 p-4 rounded-lg mb-4 shadow-inner text-center">
+                <h4 class="text-xl font-bold mb-2 text-orange-800 dark:text-orange-300">¿Cómo se escribe? ✍️</h4>
+                <div class="font-mono text-2xl border-2 border-orange-300 dark:border-orange-700 p-4 inline-block rounded bg-white dark:bg-slate-800">
+                    <div class="flex items-center justify-center">
+                        <span class="mr-1">36</span>
+                        <div class="border-l-2 border-b-2 border-slate-600 dark:border-slate-400 pl-2">3</div>
+                    </div>
+                </div>
+                <p class="mt-2">El 36 (Dividendo) va fuera, y el 3 (Divisor) va dentro de la galera.</p>
+                <div data-exercise-index="0"></div>
+            </div>
+
+            <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-blue-800 dark:text-blue-300">Paso a Paso 🪜</h4>
+                <ol class="list-decimal list-inside space-y-2">
+                    <li><strong>Mira el primer número:</strong> En 36, el primero es el 3.</li>
+                    <li><strong>Divide:</strong> 3 ÷ 3 = 1. Escribe el 1 debajo del divisor.</li>
+                    <li><strong>Sigue con el próximo:</strong> Ahora el 6. 6 ÷ 3 = 2. Escribe el 2 al lado del 1.</li>
+                    <li><strong>¡Resultado!:</strong> Obtenemos 12.</li>
+                </ol>
+                <div data-exercise-index="1"></div>
+            </div>
+
+            <div class="bg-pink-50 dark:bg-pink-900/30 p-4 rounded-lg shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-pink-800 dark:text-pink-300">¡Comprueba tu trabajo! ✅</h4>
+                <p>Para estar seguros, haz la operación inversa: multiplica el resultado (Cociente) por el Divisor.</p>
+                <p class="mt-2 font-mono font-bold">Cociente x Divisor = Dividendo</p>
+                <p class="italic text-sm mt-1">Ejemplo: 12 x 3 = 36. ¡Correcto! 🎉</p>
+                <div data-exercise-index="2"></div>
+            </div>
+        `,
+        interactiveExercises: [
+            {
+                type: 'fill-in-the-blanks',
+                title: 'Colocando en la Galera',
+                textWithBlanks: 'Si queremos dividir 48 entre 4, escribimos el __BLANK__ a la izquierda y el __BLANK__ dentro de la galera.',
+                blanks: [
+                    { correctAnswer: '48', options: ['4', '48', '12'] },
+                    { correctAnswer: '4', options: ['4', '48', '12'] }
+                ]
+            },
+            {
+                type: 'fill-in-the-blanks',
+                title: 'Dividiendo paso a paso',
+                textWithBlanks: 'Para 84 ÷ 2: Primero, 8 ÷ 2 = __BLANK__. Luego, 4 ÷ 2 = __BLANK__. El resultado es __BLANK__.',
+                blanks: [
+                    { correctAnswer: '4', options: ['2', '4', '8'] },
+                    { correctAnswer: '2', options: ['1', '2', '4'] },
+                    { correctAnswer: '42', options: ['42', '24', '12'] }
+                ]
+            },
+            {
+                type: 'match-pairs',
+                title: '¡Compruébalo!',
+                pairs: [
+                    { term: '22 (Cociente) x 2', definition: '44' },
+                    { term: '11 (Cociente) x 5', definition: '55' },
+                    { term: '31 (Cociente) x 3', definition: '93' },
+                    { term: '12 (Cociente) x 4', definition: '48' },
+                ]
+            }
+        ],
+        practice: getQuestionsForLesson('division_3_3'),
+    },
 ];

@@ -57,12 +57,12 @@ export const sumaRestaQuestions: Record<number, Question[]> = {
                 const isMcq = i % 2 === 0;
                 qs.push({
                     type: isMcq ? 'mcq' : 'input',
-                    question: `Si ${theme.action} ${a} ${theme.item} y luego ${b} más, ¿cuántos tienes en total?`,
+                    question: `Si los sumandos son ${a} y ${b} ${theme.item}, ¿cuál es la suma o total?`,
                     imageUrl: createMathSVG('add', a, b),
                     options: isMcq ? [(a + b).toString(), (a + b + 2).toString(), (a + b - 1).toString()].sort(() => Math.random() - 0.5) : undefined,
                     answer: (a + b).toString(),
-                    hints: [`Tienes que juntar los números.`, `Suma ${a} más ${b}.`, `Cuenta los círculos en la imagen.`, `El resultado es más de ${a}.`],
-                    explanation: `¡Muy bien! 🎯 Si juntas ${a} con otros ${b}, al final tienes **${a + b}**. ¡Riquísimo! ✨`,
+                    hints: [`Une los sumandos.`, `Suma ${a} más ${b}.`, `Cuenta los círculos en la imagen.`, `El resultado es la suma o total.`],
+                    explanation: `¡Muy bien! 🎯 Al unir los sumandos ${a} y ${b}, obtenemos la suma de **${a + b}**. ¡Excelente trabajo! ✨`,
                     lessonId: ADICION
                 });
             }
@@ -83,12 +83,12 @@ export const sumaRestaQuestions: Record<number, Question[]> = {
                 const isMcq = i % 2 !== 0;
                 qs.push({
                     type: isMcq ? 'mcq' : 'input',
-                    question: `Tenías ${a} ${theme.item} y ${theme.action} ${b}. ¿Cuántos te quedan ahora?`,
+                    question: `Si el minuendo es ${a} ${theme.item} y el sustraendo es ${b}, ¿cuál es la diferencia?`,
                     imageUrl: createMathSVG('sub', a, b),
                     options: isMcq ? [(a - b).toString(), (a - b + 2).toString(), (a - b - 1).toString()].sort(() => Math.random() - 0.5) : undefined,
                     answer: (a - b).toString(),
-                    hints: [`Esta acción significa que ahora tienes menos. Es una resta.`, `A ${a} quítale ${b}.`, `¿Cuánto es ${a} - ${b}?`, `Te quedan ${a - b}.`],
-                    explanation: `¡Correcto! ✅ Al restar, nos quedan **${a - b}**. ¡Eres muy inteligente! 🌟`,
+                    hints: [`Recuerda: minuendo - sustraendo = diferencia.`, `A ${a} quítale ${b}.`, `¿Cuánto es ${a} - ${b}?`, `La diferencia es ${a - b}.`],
+                    explanation: `¡Correcto! ✅ Al restar el sustraendo del minuendo, la diferencia es **${a - b}**. ¡Eres muy inteligente! 🌟`,
                     lessonId: SUSTRACCION
                 });
             }
@@ -105,12 +105,12 @@ export const sumaRestaQuestions: Record<number, Question[]> = {
                 const isMcq = i % 2 === 0;
                 qs.push({
                     type: isMcq ? 'mcq' : 'input',
-                    question: `Calcula la suma de ${a} y ${b}. ¡Ojo con la llevada! 🧮🔢`,
+                    question: `Realiza el cálculo en columna: Suma ${a} y ${b}. ¡Controla la llevada! 🧮🔢`,
                     imageUrl: createMathSVG('add', Math.floor(a/10), Math.floor(b/10)),
                     options: isMcq ? [(a + b).toString(), (a + b + 10).toString(), (a + b - 10).toString()].sort(() => Math.random() - 0.5) : undefined,
                     answer: (a + b).toString(),
-                    hints: [`Suma las unidades primero: ${a%10} + ${b%10}.`, `Si te pasas de 9, ¡te llevas una para las decenas! 🎈`, `Ahora suma las decenas.`, `El resultado es ${a + b}.`],
-                    explanation: `¡Excelente cálculo! 🎯 Sumando unidades y decenas correctamente obtenemos **${a + b}**. ¡Eres una calculadora humana! 🧠✨`,
+                    hints: [`Alinea las unidades: ${a%10} + ${b%10}.`, `Si sumas más de 9, ¡te llevas una a las decenas! 🎈`, `Suma las decenas incluyendo la que te llevaste.`, `El total es ${a + b}.`],
+                    explanation: `¡Excelente cálculo! 🎯 Colocando los sumandos en columna y sumando correctamente obtenemos **${a + b}**. ¡Dominas el algoritmo! 🧠✨`,
                     lessonId: ADICION
                 });
             }
@@ -124,12 +124,12 @@ export const sumaRestaQuestions: Record<number, Question[]> = {
                 const isMcq = i % 2 !== 0;
                 qs.push({
                     type: isMcq ? 'mcq' : 'input',
-                    question: `A ${a} le restamos ${b}. ¿Cuál es el resultado? ➖📉`,
+                    question: `Encuentra la diferencia entre ${a} y ${b} usando el cálculo en columna. ➖📉`,
                     imageUrl: createMathSVG('sub', 20, 5), // Representativo
                     options: isMcq ? [(a - b).toString(), (a - b + 10).toString(), (a - b - 10).toString()].sort(() => Math.random() - 0.5) : undefined,
                     answer: (a - b).toString(),
-                    hints: [`Resta las unidades. Si el de arriba es menor, pide prestado al vecino.`, `Resta las decenas: no olvides que si prestaste, ahora tienes una menos.`, `¿Cuánto es ${a} - ${b}?`, `El resultado es ${a - b}.`],
-                    explanation: `¡Muy bien hecho! ✅ La diferencia entre ${a} y ${b} es **${a - b}**. ¡Las restas ya no tienen secretos para ti! 🛡️✨`,
+                    hints: [`Alinea minuendo y sustraendo en la tabla MCDU.`, `Resta unidades. Si el minuendo es menor, pide a la decena vecina.`, `¿Cuánto es ${a} - ${b}?`, `La diferencia es ${a - b}.`],
+                    explanation: `¡Muy bien hecho! ✅ La diferencia entre el minuendo ${a} y el sustraendo ${b} es **${a - b}**. ¡Las restas ya no tienen secretos! 🛡️✨`,
                     lessonId: SUSTRACCION
                 });
             }
@@ -153,11 +153,11 @@ export const sumaRestaQuestions: Record<number, Question[]> = {
                 const isMcq = i % 2 === 0;
                 qs.push({
                     type: isMcq ? 'mcq' : 'input',
-                    question: `El costo ${theme.leg1} es ${a} CUP y ${theme.leg2} es ${b} CUP. ¿Cuánto gastas en total? 💰`,
+                    question: `El costo ${theme.leg1} es $${a},00 y ${theme.leg2} es $${b},00. ¿Cuánto gastas en total? 💰`,
                     options: isMcq ? [(a + b).toString(), (a + b + 50).toString(), (a + b - 50).toString()].sort(() => Math.random() - 0.5) : undefined,
                     answer: (a + b).toString(),
-                    hints: [`Suma los precios de los dos.`, `Cientos con cientos, decenas con decenas...`, `¿Cuánto es ${a} + ${b}?`, `El total es ${a + b}.`],
-                    explanation: `¡Perfecto! 🌍 Sumando los gastos, el total es de **${a + b}** CUP. ¡Muy bien calculado! ✨`,
+                    hints: [`Suma los precios alineándolos en la columna.`, `Cientos con cientos, decenas con decenas...`, `¿Cuánto es ${a} + ${b}?`, `El total es ${a + b}.`],
+                    explanation: `¡Perfecto! 🌍 Sumando los gastos, el total es de **$${a + b},00**. ¡Muy bien calculado! ✨`,
                     lessonId: ADICION
                 });
             }
@@ -178,11 +178,11 @@ export const sumaRestaQuestions: Record<number, Question[]> = {
                 const isMcq = i % 2 !== 0;
                 qs.push({
                     type: isMcq ? 'mcq' : 'input',
-                    question: `Si tenías un billete de ${total} pesos y gastaste ${gasto} ${theme.item}, ¿cuántos pesos te sobraron? 💵`,
+                    question: `Si tenías $${total},00 pesos y gastaste $${gasto},00 ${theme.item}, ¿cuántos pesos te sobraron? 💵`,
                     options: isMcq ? [(total - gasto).toString(), (total - gasto + 100).toString(), (total - gasto - 100).toString()].sort(() => Math.random() - 0.5) : undefined,
                     answer: (total - gasto).toString(),
-                    hints: [`Es una resta: ${total} - ${gasto}.`, `Resta primero los cientos.`, `Ahora resta el resto.`, `La respuesta es ${total - gasto}.`],
-                    explanation: `¡Cálculo exacto! 🎯 Te sobraron **${total - gasto}** pesos. ¡Eres muy bueno administrando el dinero! 💵🧤✨`,
+                    hints: [`Es una sustracción: $${total} - $${gasto}.`, `Halla la diferencia entre los valores.`, `Haz la comprobación sumando el resultado al gasto.`, `La respuesta es ${total - gasto}.`],
+                    explanation: `¡Cálculo exacto! 🎯 Te sobraron **$${total - gasto},00** pesos. ¡Eres muy bueno administrando el ahorro! 💵🧤✨`,
                     lessonId: SUSTRACCION
                 });
             }

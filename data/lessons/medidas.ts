@@ -116,7 +116,7 @@ export const medidasLessons: LessonContent[] = [
         categoryId: 'medidas',
         theory: `
             <h3 class="text-2xl font-bold mb-4 text-emerald-600 dark:text-emerald-400">El dinero en Cuba 🇨🇺💵</h3>
-            <p class="mb-4">Usamos el Peso Cubano (CUP) para comprar cosas. ¡Aprender a contar dinero es muy divertido e importante! 🛍️</p>
+            <p class="mb-4">Usamos el Peso Cubano para comprar cosas. ¡Aprender a contar dinero es muy divertido e importante! 🛍️</p>
             
             <div class="bg-emerald-50 dark:bg-emerald-900/30 p-4 rounded-lg mb-4 shadow-inner">
                 <h4 class="text-xl font-bold mb-2 text-emerald-800 dark:text-emerald-300">Billetes y Monedas 🪙💵</h4>
@@ -128,7 +128,7 @@ export const medidasLessons: LessonContent[] = [
             {
                 type: 'fill-in-the-blanks',
                 title: 'En la Bodega',
-                textWithBlanks: 'Si compro algo de 15 CUP y pago con 20 CUP, mi vuelto es de __BLANK__ pesos.',
+                textWithBlanks: 'Si compro algo de $15,00 y pago con $20,00, mi vuelto es de __BLANK__ pesos.',
                 blanks: [
                     { correctAnswer: '5', options: ['5', '10', '15'] }
                 ]

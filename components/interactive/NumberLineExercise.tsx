@@ -77,10 +77,31 @@ export const NumberLineExercise: React.FC<NumberLineExerciseProps> = ({ exercise
         new Set(Object.values(placedItems).filter((item): item is DraggableItem => item !== null).map(item => item.originalIndex))
     , [placedItems]);
 
+    const intermediateTicks = useMemo(() => {
+        const ticks = [];
+        const steps = 10;
+        for (let i = 1; i < steps; i++) {
+            if (i === 5) continue; // 50% is handled separately
+            ticks.push((i / steps) * 100);
+        }
+        return ticks;
+    }, []);
+
+    const targetMarkers = useMemo(() => {
+        return currentItems.map((item, index) => ({
+            percentage: ((item.value - exercise.min) / (exercise.max - exercise.min)) * 100,
+            originalIndex: index
+        }));
+    }, [currentItems, exercise.min, exercise.max]);
+
     const allCorrect = useMemo(() => {
-        if (savedState) return true;
         return correctlyPlacedOriginalIndexes.size === currentItems.length
-    }, [correctlyPlacedOriginalIndexes, currentItems, savedState]);
+    }, [correctlyPlacedOriginalIndexes, currentItems]);
+
+    const onCompleteRef = useRef(onComplete);
+    useEffect(() => {
+        onCompleteRef.current = onComplete;
+    }, [onComplete]);
 
     useEffect(() => {
         if (allCorrect && !onCompleteCalled.current) {
@@ -88,7 +109,7 @@ export const NumberLineExercise: React.FC<NumberLineExerciseProps> = ({ exercise
             setShowConfetti(true);
             setTimeout(() => {
                  const finalState = { placed: Object.values(placedItems).filter(Boolean) };
-                 onComplete(finalState);
+                 onCompleteRef.current(finalState);
             }, 2000);
 
             const resetTimer = setTimeout(() => {
@@ -96,7 +117,7 @@ export const NumberLineExercise: React.FC<NumberLineExerciseProps> = ({ exercise
             }, 3000);
             return () => clearTimeout(resetTimer);
         }
-    }, [allCorrect, onComplete, placedItems]);
+    }, [allCorrect, placedItems]);
 
     const handleReset = useCallback((newItems?: NumberLineExerciseType['items']) => {
         playClickSound();
@@ -144,7 +165,7 @@ export const NumberLineExercise: React.FC<NumberLineExerciseProps> = ({ exercise
             
             const itemPercentage = (itemData.value - exercise.min) / (exercise.max - exercise.min);
             
-            const tolerance = 0.05; // 5% tolerance on either side
+            const tolerance = 0.08; // 8% tolerance on either side
             if (Math.abs(dropPercentage - itemPercentage) <= tolerance) {
                 // Correct
                 playCorrectSound();
@@ -195,15 +216,17 @@ export const NumberLineExercise: React.FC<NumberLineExerciseProps> = ({ exercise
             </div>
 
             {/* Number Line */}
-            <div className="relative w-full h-16 flex items-center">
+            <div 
+                className="relative w-full h-24 flex items-center mt-6"
+                ref={numberLineRef}
+                onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setIsDraggingOver(true); }}
+                onDragLeave={() => setIsDraggingOver(false)}
+                onDrop={handleDrop}
+            >
                 <div 
-                    ref={numberLineRef}
-                    onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setIsDraggingOver(true); }}
-                    onDragLeave={() => setIsDraggingOver(false)}
-                    onDrop={handleDrop}
                     className={`number-line w-full h-2 bg-slate-300 dark:bg-slate-600 rounded-full transition-all ${isDraggingOver ? 'number-line-over' : ''}`}
                 >
-                     {/* Ticks */}
+                     {/* Primary Ticks & Labels */}
                     <div className="number-line-tick" style={{ left: '0%' }}>
                         <span className="number-line-tick-label">{exercise.min}</span>
                     </div>
@@ -214,19 +237,35 @@ export const NumberLineExercise: React.FC<NumberLineExerciseProps> = ({ exercise
                         <span className="number-line-tick-label">{exercise.max}</span>
                     </div>
 
+                    {/* Intermediate Subdivision Ticks */}
+                    {intermediateTicks.map((pct) => (
+                        <div key={`tick-${pct}`} className="number-line-tick opacity-30 h-2" style={{ left: `${pct}%` }} />
+                    ))}
+
+                    {/* Target Markers where items should be dropped */}
+                    {targetMarkers.map((marker) => {
+                        const isPlaced = correctlyPlacedOriginalIndexes.has(marker.originalIndex);
+                        return (
+                            <div 
+                                key={`target-${marker.originalIndex}`} 
+                                className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2 border-dashed border-slate-400 dark:border-slate-500 transition-opacity ${isPlaced ? 'opacity-0' : 'opacity-40'}`}
+                                style={{ left: `${marker.percentage}%`, transform: 'translate(-50%, -50%)' }}
+                            />
+                        );
+                    })}
+
                     {/* Placed Items */}
                     {Object.values(placedItems)
                         .filter((item): item is DraggableItem => Boolean(item))
                         .map(item => (
                         <div 
                             key={item.originalIndex}
-                            className="number-line-placed-item animate-fade-in"
-                            style={{ left: `calc(${((item.value - exercise.min) / (exercise.max - exercise.min)) * 100}% - 24px)`}}
+                            className="number-line-placed-item animate-fade-in -translate-x-1/2"
+                            style={{ left: `${((item.value - exercise.min) / (exercise.max - exercise.min)) * 100}%`}}
                         >
                             {item.label}
                         </div>
                     ))}
-
                 </div>
             </div>
 

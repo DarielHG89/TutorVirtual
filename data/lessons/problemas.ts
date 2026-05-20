@@ -21,14 +21,14 @@ export const problemasLessons: LessonContent[] = [
         categoryId: 'problemas',
         theory: `
             <h3 class="text-2xl font-bold mb-4 text-emerald-600 dark:text-emerald-400">¿Qué es un Problema de un Paso? 🧐🧩</h3>
-            <p class="mb-4">Son historias cortas donde solo necesitas hacer **una cuenta** (suma, resta, multiplicación o división) para encontrar la respuesta. ¡Es el nivel básico para convertirte en un experto! 🕵️‍♂️🔍</p>
+            <p class="mb-4">Son historias cortas donde solo necesitas realizar **una operación** (adición, sustracción, multiplicación o división) para encontrar la respuesta. ¡Es el nivel básico para convertirte en un experto! 🕵️‍♂️🔍</p>
             
             <div class="bg-emerald-50 dark:bg-emerald-900/30 p-4 rounded-lg mb-4 shadow-inner">
                 <h4 class="text-xl font-bold mb-2 text-emerald-800 dark:text-emerald-300">Paso 1: Identificar la Acción 🏃‍♂️💨</h4>
                 <p>Lee la pregunta y busca estas palabras clave:</p>
                 <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
-                    <li><strong>"¿Cuánto hay en TOTAL?"</strong> -> Casi siempre es una Suma ➕</li>
-                    <li><strong>"¿Cuántos QUEDAN o FALTAN?"</strong> -> Casi siempre es una Resta ➖</li>
+                    <li><strong>"¿Cuánto hay en TOTAL?"</strong> -> Casi siempre es una Adición ➕</li>
+                    <li><strong>"¿Cuántos QUEDAN o FALTAN?"</strong> -> Casi siempre es una Sustracción ➖</li>
                     <li><strong>"Tengo n grupos de x"</strong> -> ¡Multiplicación! ✖️</li>
                 </ul>
                 <div data-exercise-index="0"></div>
@@ -36,8 +36,8 @@ export const problemasLessons: LessonContent[] = [
 
             <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg mb-4 shadow-inner">
                 <h4 class="text-xl font-bold mb-2 text-yellow-800 dark:text-yellow-300">Ejemplo Real en Cuba 🇨🇺</h4>
-                <p>En el agromercado, un mazo de zanahorias cuesta 40 CUP y un mazo de remolachas cuesta 30 CUP. ¿Cuánto gastas en total? 🥕🍅</p>
-                <p class="mt-2 font-bold">¡Sumamos!: 40 + 30 = 70 CUP. ¡Listo en un solo paso! ✅</p>
+                <p>En el agromercado, un mazo de zanahorias cuesta $40,00 pesos y un mazo de remolachas cuesta $30,00 pesos. ¿Cuánto gastas en total? 🥕🍅</p>
+                <p class="mt-2 font-bold">¡Realizamos una adición!: 40 + 30 = 70 pesos. ¡Listo en un solo paso! ✅</p>
                 <div data-exercise-index="1"></div>
             </div>
         `,
@@ -47,7 +47,7 @@ export const problemasLessons: LessonContent[] = [
                 title: 'La Operación Correcta',
                 textWithBlanks: 'Si Juan tiene 10 canicas y pierde 3, tengo que __BLANK__ (operación) para saber cuántas le quedan. El resultado es __BLANK__.',
                 blanks: [
-                    { correctAnswer: 'restar', options: ['sumar', 'restar', 'multiplicar'] },
+                    { correctAnswer: 'sustraer', options: ['adicionar', 'sustraer', 'multiplicar'] },
                     { correctAnswer: '7', options: ['13', '7', '3'] }
                 ]
             },
@@ -55,8 +55,8 @@ export const problemasLessons: LessonContent[] = [
                 type: 'match-pairs',
                 title: 'Detectando Palabras',
                 pairs: [
-                    { term: 'Aumentar', definition: 'Suma ➕' },
-                    { term: 'Disminuir', definition: 'Resta ➖' },
+                    { term: 'Aumentar', definition: 'Adición ➕' },
+                    { term: 'Disminuir', definition: 'Sustracción ➖' },
                     { term: 'Repartir', definition: 'División ➗' },
                 ]
             }
@@ -74,7 +74,7 @@ export const problemasLessons: LessonContent[] = [
             
             <div class="bg-red-50 dark:bg-red-900/30 p-4 rounded-lg mb-4 shadow-inner">
                 <h4 class="text-xl font-bold mb-2 text-red-800 dark:text-red-300">¿Cómo se resuelven? 📝🔍</h4>
-                <p>Imagina que tienes 50 CUP, te dan 20 más pero gastas 10 en un helado 🍦.</p>
+                <p>Imagina que tienes $50,00 pesos, te dan $20,00 más pero gastas $10,00 en un helado 🍦.</p>
                 <ul class="list-decimal list-inside ml-4 mt-2 space-y-1">
                     <li><strong>Paso 1:</strong> ¿Cuánto dinero tienes en total antes de comprar el helado? (50 + 20 = 70)</li>
                     <li><strong>Paso 2:</strong> Ahora restas lo del helado del nuevo total. (70 - 10 = 60)</li>

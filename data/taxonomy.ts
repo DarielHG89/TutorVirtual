@@ -2,7 +2,7 @@ import type { AppTaxonomy } from '../types';
 
 const defaultCategories = {
     numeros: 'Números',
-    suma_resta: 'Suma y Resta',
+    suma_resta: 'Adición y Sustracción',
     multi_divi: 'Multiplicación y División',
     problemas: 'Problemas',
     geometria: 'Geometría',

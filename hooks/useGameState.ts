@@ -46,10 +46,13 @@ export const useGameState = (userId: string | null) => {
             const newState: GameState = JSON.parse(JSON.stringify(prev));
             const stateForKey = newState[key] || { unlockedLevel: 1, highScores: {}, skillHistory: [], usedQuestions: {}, contentVersion: 1 };
             
+            // Normalize score to 0-10 scale
+            const normalizedScore = total > 0 ? (score / total) * 10 : 0;
             const currentHighScore = stateForKey.highScores?.[level] || 0;
-            if (score > currentHighScore) {
+            
+            if (normalizedScore > currentHighScore) {
                 if(!stateForKey.highScores) stateForKey.highScores = {};
-                stateForKey.highScores[level] = score;
+                stateForKey.highScores[level] = normalizedScore;
             }
             
             const isCategory = !!contentManager.getQuestions()[key as CategoryId];

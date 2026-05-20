@@ -24,33 +24,21 @@ export const ContentManagerScreen: React.FC<ContentManagerScreenProps> = ({ onBa
     // UI state
     const [activeTab, setActiveTab] = useState<'taxonomy' | 'lessons' | 'questions' | 'raw_json'>('taxonomy');
     const [rawSubTab, setRawSubTab] = useState<'lessons' | 'questions'>('lessons');
-    
-    const [isTaxonomyCustomized, setIsTaxonomyCustomized] = useState(contentManager.isCustomized('taxonomy'));
-    const [isLessonsCustomized, setIsLessonsCustomized] = useState(contentManager.isCustomized('lessons'));
-    const [isQuestionsCustomized, setIsQuestionsCustomized] = useState(contentManager.isCustomized('questions'));
-    
-    const [viewSource, setViewSource] = useState<'local' | 'server'>(
-        contentManager.isCustomized('taxonomy') || contentManager.isCustomized('lessons') || contentManager.isCustomized('questions') ? 'local' : 'server'
-    );
 
-    const handleSourceToggle = (newSource: 'local' | 'server') => {
-        if (newSource === viewSource) return;
-        
-        if (newSource === 'server') {
-            const defaults = contentManager.getOriginalDefaults();
-            setTaxonomy(defaults.taxonomy);
-            setLessons(defaults.lessons);
-            setQuestions(defaults.questions);
-            setLessonsText(JSON.stringify(defaults.lessons, null, 2));
-            setQuestionsText(JSON.stringify(defaults.questions, null, 2));
-        } else {
-            setTaxonomy(contentManager.getTaxonomy());
-            setLessons(contentManager.getLessons());
-            setQuestions(contentManager.getQuestions());
-            setLessonsText(JSON.stringify(contentManager.getLessons(), null, 2));
-            setQuestionsText(JSON.stringify(contentManager.getQuestions(), null, 2));
+    const handleTabChange = (newTab: typeof activeTab) => {
+        if (activeTab === 'raw_json' && newTab !== 'raw_json') {
+            try {
+                setLessons(JSON.parse(lessonsText));
+                setQuestions(JSON.parse(questionsText));
+            } catch (e) {
+                alert("Error en JSON. Por favor corrígelo antes de cambiar de pestaña.");
+                return;
+            }
+        } else if (activeTab !== 'raw_json' && newTab === 'raw_json') {
+            setLessonsText(JSON.stringify(lessons, null, 2));
+            setQuestionsText(JSON.stringify(questions, null, 2));
         }
-        setViewSource(newSource);
+        setActiveTab(newTab);
     };
 
     const handleSave = async () => {
@@ -66,75 +54,13 @@ export const ContentManagerScreen: React.FC<ContentManagerScreenProps> = ({ onBa
                 setQuestions(toSaveQuestions);
             }
 
-            await contentManager.saveTaxonomy(taxonomy, viewSource);
-            await contentManager.saveLessons(toSaveLessons, viewSource);
-            await contentManager.saveQuestions(toSaveQuestions, viewSource);
+            await contentManager.saveTaxonomy(taxonomy, 'server');
+            await contentManager.saveLessons(toSaveLessons, 'server');
+            await contentManager.saveQuestions(toSaveQuestions, 'server');
             
-            // Update customization status
-            setIsTaxonomyCustomized(contentManager.isCustomized('taxonomy'));
-            setIsLessonsCustomized(contentManager.isCustomized('lessons'));
-            setIsQuestionsCustomized(contentManager.isCustomized('questions'));
-
-            alert(`Contenido guardado correctamente en ${viewSource === 'local' ? 'el almacenamiento LOCAL (Navegador)' : 'el SERVIDOR (Archivos persistentes)'}.`);
+            alert(`Contenido guardado correctamente en el SERVIDOR (Archivos persistentes).`);
         } catch(e: any) {
             alert("Error al guardar. " + e.message);
-        }
-    };
-
-    const handleReset = () => {
-        if(confirm("¿Estás seguro de que quieres eliminar TODOS tus cambios locales y volver a los datos originales del sistema?")) {
-            contentManager.resetToDefault();
-            
-            const defaults = contentManager.getOriginalDefaults();
-            setTaxonomy(defaults.taxonomy);
-            setLessons(defaults.lessons);
-            setQuestions(defaults.questions);
-            setLessonsText(JSON.stringify(defaults.lessons, null, 2));
-            setQuestionsText(JSON.stringify(defaults.questions, null, 2));
-            
-            setIsTaxonomyCustomized(false);
-            setIsLessonsCustomized(false);
-            setIsQuestionsCustomized(false);
-            
-            setViewSource('server');
-            console.log("Reset all local storage and state to server defaults.");
-            alert("Aplicación restablecida a los valores originales.");
-        }
-    };
-
-    const handleResetSection = (section: 'taxonomy' | 'lessons' | 'questions') => {
-        if(confirm(`¿Deseas eliminar tus cambios locales de "${section === 'taxonomy' ? 'Estructura' : section === 'lessons' ? 'Lecciones' : 'Preguntas'}" y volver al original?`)) {
-            contentManager.resetSection(section);
-            
-            const defaults = contentManager.getOriginalDefaults();
-            if (section === 'taxonomy') {
-                setTaxonomy(defaults.taxonomy);
-                setIsTaxonomyCustomized(false);
-                console.log("Taxonomy reset to defaults.");
-            }
-            if (section === 'lessons') {
-                setLessons(defaults.lessons);
-                setLessonsText(JSON.stringify(defaults.lessons, null, 2));
-                setIsLessonsCustomized(false);
-                console.log("Lessons reset to defaults.");
-            }
-            if (section === 'questions') {
-                setQuestions(defaults.questions);
-                setQuestionsText(JSON.stringify(defaults.questions, null, 2));
-                setIsQuestionsCustomized(false);
-                console.log("Questions reset to defaults.");
-            }
-            
-            // Force view source to server if no more local customizations exist
-            const stillCustomized = (section !== 'taxonomy' && contentManager.isCustomized('taxonomy')) ||
-                                  (section !== 'lessons' && contentManager.isCustomized('lessons')) ||
-                                  (section !== 'questions' && contentManager.isCustomized('questions'));
-            
-            if (!stillCustomized) {
-                setViewSource('server');
-            }
-            
-            alert("Los cambios locales de esta sección han sido eliminados.");
         }
     };
 
@@ -148,10 +74,6 @@ export const ContentManagerScreen: React.FC<ContentManagerScreenProps> = ({ onBa
         setQuestions(defQues);
         setLessonsText(JSON.stringify(defLess, null, 2));
         setQuestionsText(JSON.stringify(defQues, null, 2));
-        
-        setIsTaxonomyCustomized(contentManager.isCustomized('taxonomy'));
-        setIsLessonsCustomized(contentManager.isCustomized('lessons'));
-        setIsQuestionsCustomized(contentManager.isCustomized('questions'));
     };
 
     const handleExport = () => {
@@ -224,30 +146,13 @@ export const ContentManagerScreen: React.FC<ContentManagerScreenProps> = ({ onBa
                     <p className="text-slate-600 dark:text-slate-400 text-sm">Gestiona la estructura escolar, lecciones y preguntas de forma óptima.</p>
                 </div>
                 <div className="flex gap-2 flex-wrap items-center">
-                     <div className="flex bg-slate-200 dark:bg-slate-700 p-1 rounded-lg mr-2 border border-slate-300 dark:border-slate-600">
-                        <button 
-                            onClick={() => handleSourceToggle('local')}
-                            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewSource === 'local' ? 'bg-white dark:bg-slate-500 shadow-sm text-blue-600 dark:text-blue-100' : 'text-slate-500 hover:text-slate-700'}`}
-                            title="Editar copia local guardada en el navegador"
-                        >
-                            🏠 Local
-                        </button>
-                        <button 
-                            onClick={() => handleSourceToggle('server')}
-                            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewSource === 'server' ? 'bg-white dark:bg-slate-500 shadow-sm text-blue-600 dark:text-blue-100' : 'text-slate-500 hover:text-slate-700'}`}
-                            title="Editar archivos base del servidor (Persisistentes)"
-                        >
-                            ☁️ Servidor
-                        </button>
-                    </div>
                      <Button variant="secondary" onClick={onBack}>Volver</Button>
-                     <Button variant="warning" onClick={handleReset}>Restaurar Orig.</Button>
                      <Button 
                         variant="primary" 
                         onClick={handleSave}
-                        className={viewSource === 'server' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-lg' : ''}
+                        className="bg-indigo-600 hover:bg-indigo-700 shadow-lg"
                      >
-                        {viewSource === 'local' ? 'Guardar Todo' : 'Persistir en Servidor'}
+                        Persistir en Servidor
                      </Button>
                 </div>
             </div>
@@ -271,7 +176,7 @@ export const ContentManagerScreen: React.FC<ContentManagerScreenProps> = ({ onBa
                 {navItems.map(nav => (
                     <button 
                         key={nav.id}
-                        onClick={() => setActiveTab(nav.id as any)} 
+                        onClick={() => handleTabChange(nav.id as any)} 
                         className={`px-4 py-3 font-bold rounded-lg border flex-shrink-0 flex gap-2 items-center transition-transform active:scale-95 ${activeTab === nav.id ? 'bg-white dark:bg-slate-800 text-blue-600 border border-blue-500 shadow-sm' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-transparent hover:bg-slate-300 dark:hover:bg-slate-600'}`}
                     >
                         <span>{nav.icon}</span> <span>{nav.label}</span>
@@ -281,40 +186,6 @@ export const ContentManagerScreen: React.FC<ContentManagerScreenProps> = ({ onBa
             
             {/* Main Content Area */}
             <div className="bg-slate-200 dark:bg-slate-900 rounded-lg flex-grow flex flex-col min-h-0 overflow-y-auto p-4">
-                {/* Source Indicator Bar */}
-                {activeTab !== 'raw_json' && (
-                    <div className="flex justify-between items-center bg-white/70 dark:bg-slate-800/70 p-2.5 rounded-lg mb-4 border border-slate-300 dark:border-slate-700 shadow-sm">
-                         <div className="flex items-center gap-3">
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Estado de Edición:</span>
-                            {viewSource === 'local' ? (
-                                <span className="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 px-2 py-1 rounded text-[11px] font-black border border-amber-200 dark:border-amber-800 flex items-center gap-1.5">
-                                    <span className="animate-pulse">●</span> EDITANDO LOCAL (Navegador)
-                                </span>
-                            ) : (
-                                <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-1 rounded text-[11px] font-black border border-blue-200 dark:border-blue-800 flex items-center gap-1.5">
-                                    ☁️ EDITANDO SERVIDOR (Directo)
-                                </span>
-                            )}
-                            
-                            {/* Warning if there's a local override while viewing server */}
-                            {viewSource === 'server' && (activeTab === 'taxonomy' ? isTaxonomyCustomized : activeTab === 'lessons' ? isLessonsCustomized : isQuestionsCustomized) && (
-                                <span className="text-[10px] text-red-500 font-bold italic animate-pulse">
-                                    ⚠️ VISUALIZANDO BASE (Existen cambios locales ocultos)
-                                </span>
-                            )}
-                         </div>
-                         {(activeTab === 'taxonomy' ? isTaxonomyCustomized : activeTab === 'lessons' ? isLessonsCustomized : isQuestionsCustomized) && (
-                             <button 
-                                onClick={() => handleResetSection(activeTab as any)}
-                                className="text-[11px] font-bold bg-white dark:bg-slate-700 border-2 border-red-500 text-red-600 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-2 transition-all active:scale-95"
-                                title="Elimina la copia de este navegador y vuelve a los archivos del servidor"
-                             >
-                                 🗑️ Eliminar Local / Restaurar Source
-                             </button>
-                         )}
-                    </div>
-                )}
-
                 {activeTab === 'taxonomy' && (
                     <TaxonomyPanel taxonomy={taxonomy} onChange={setTaxonomy} />
                 )}

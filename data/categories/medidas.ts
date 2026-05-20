@@ -160,9 +160,9 @@ export const medidasQuestions: Record<number, Question[]> = {
         })(),
 
         // --- Lección: Moneda (MEDIDAS_MONEDA_1) ---
-        { type: 'input', question: 'Si tienes un billete de 20 CUP y una moneda de 5 CUP, ¿cuánto dinero tienes?', imageUrl: createMedidasSVG('coins', { val1: 5, val2: 20, unit: 'CUP' }), answer: '25', hints:['Tienes que juntar el valor de ambos.', 'Juntar es sumar.', '20 + 5 = ?', 'Veinticinco.', '25.'], explanation: 'Sumamos el valor del billete y la moneda: 20 + 5 = 25 CUP. ¡Listo para comprar! 🛍️', lessonId: MEDIDAS_MONEDA_1},
-        { type: 'mcq', question: '¿Qué vale más, un billete de 50 CUP o un billete de 100 CUP?', options: ['50 CUP', '100 CUP'], answer: '100 CUP', hints:['Compara los números 50 y 100.', '100 es más grande que 50.', 'El billete de 100 te permite comprar más cosas.', 'Cien es el doble de cincuenta.', 'El billete de 100.'], explanation: 'El billete de 100 CUP tiene más valor que el de 50 CUP. ¡Puedes comprar el doble de cosas! 💰', lessonId: MEDIDAS_MONEDA_1},
-        { type: 'input', question: 'Tienes 3 monedas de 1 CUP. ¿Cuánto dinero es?', imageUrl: createMedidasSVG('coins', { val1: 1, val2: 1, unit: 'CUP' }), answer: '3', hints:['Suma el valor de las tres monedas.', '1 + 1 + 1 = ?', 'También puedes multiplicar: 3 x 1.', 'Tres.', '3.'], explanation: 'Si tienes tres monedas de 1 peso, en total tienes 3 pesos. ¡Así de fácil! 👍', lessonId: MEDIDAS_MONEDA_1},
+        { type: 'input', question: 'Si tienes un billete de $20,00 y una moneda de $5,00, ¿cuánto dinero tienes?', imageUrl: createMedidasSVG('coins', { val1: 5, val2: 20, unit: 'PESOS' }), answer: '25', hints:['Tienes que juntar el valor de ambos.', 'Juntar es sumar.', '20 + 5 = ?', 'Veinticinco.', '25.'], explanation: 'Sumamos el valor del billete y la moneda: 20 + 5 = 25 pesos. ¡Listo para comprar! 🛍️', lessonId: MEDIDAS_MONEDA_1},
+        { type: 'mcq', question: '¿Qué vale más, un billete de $50,00 o un billete de $100,00?', options: ['$50,00', '$100,00'], answer: '$100,00', hints:['Compara los números 50 y 100.', '100 es más grande que 50.', 'El billete de 100 te permite comprar más cosas.', 'Cien es el doble de cincuenta.', 'El billete de 100.'], explanation: 'El billete de $100,00 tiene más valor que el de $50,00. ¡Puedes comprar el doble de cosas! 💰', lessonId: MEDIDAS_MONEDA_1},
+        { type: 'input', question: 'Tienes 3 monedas de $1,00 cada una. ¿Cuánto dinero es?', imageUrl: createMedidasSVG('coins', { val1: 1, val2: 1, unit: 'PESOS' }), answer: '3', hints:['Suma el valor de las tres monedas.', '1 + 1 + 1 = ?', 'También puedes multiplicar: 3 x 1.', 'Tres.', '3.'], explanation: 'Si tienes tres monedas de 1 peso, en total tienes 3 pesos. ¡Así de fácil! 👍', lessonId: MEDIDAS_MONEDA_1},
         ...(() => {
             const qs: Question[] = [];
             for (let i = 0; i < 37; i++) {
@@ -193,45 +193,83 @@ export const medidasQuestions: Record<number, Question[]> = {
         ...(() => {
             const qs: Question[] = [];
             for (let i = 0; i < 37; i++) {
-                const metros = i + 2;
-                const centimetros = metros * 100;
-                qs.push({
-                    type: 'input',
-                    question: `Si un pasillo de tu escuela mide ${metros} metros de largo, ¿cuántos centímetros mide en total? 🏫📏`,
-                    imageUrl: createMedidasSVG('ruler', { val1: metros, val2: metros * 2, unit: 'm' }),
-                    answer: centimetros.toString(),
-                    hints: [`¡Atención!: 1 metro es igual a 100 centímetros.`, `Para pasar de metros a centímetros, debes multiplicar el número por 100.`, `La operación es ${metros} x 100.`, `Un truco rápido: añade dos ceros al final del número ${metros}.`, `El resultado final es ${centimetros}.`],
-                    explanation: `¡Muy bien calculado! 📏 Para convertir de metros a centímetros, multiplicamos por 100:
-                **${metros} m x 100 = ${centimetros} cm**. 
-                ¡El pasillo mide ${centimetros} centímetros de punta a punta! 🏃💨`,
-                    lessonId: MEDIDAS_LONGITUD_1
-                });
+                const val = i + 2;
+                if (i % 4 === 0) {
+                    const centimetros = val * 100;
+                    qs.push({
+                        type: 'input',
+                        question: `Si un pasillo de tu escuela mide ${val} metros (m) de largo, ¿cuántos centímetros (cm) mide en total? 🏫📏`,
+                        imageUrl: createMedidasSVG('ruler', { val1: val, val2: centimetros, unit: 'm' }),
+                        answer: centimetros.toString(),
+                        hints: [`¡Atención!: 1 metro es igual a 100 centímetros.`, `Para pasar de metros a centímetros, debes multiplicar el número por 100.`, `La operación es ${val} x 100.`, `Un truco rápido: añade dos ceros al final del número ${val}.`, `El resultado final es ${centimetros}.`],
+                        explanation: `¡Muy bien calculado! 📏 Para convertir de metros a centímetros, multiplicamos por 100:\n**${val} m x 100 = ${centimetros} cm**. \n¡El pasillo mide ${centimetros} centímetros de punta a punta! 🏃💨`,
+                        lessonId: MEDIDAS_LONGITUD_1
+                    });
+                } else if (i % 4 === 1) {
+                    const metros = val * 1000;
+                    qs.push({
+                        type: 'input',
+                        question: `Para ir a casa de sus abuelos, Carlos recorre ${val} kilómetros (km). ¿Cuántos metros (m) son? 🚲🛣️`,
+                        answer: metros.toString(),
+                        hints: [`Recuerda que 1 km = 1 000 m.`, `Para convertir de kilómetros a metros, multiplicamos por 1000.`, `Calcula ${val} x 1 000.`, `Agrega tres ceros al final.`, `Son ${metros} m.`],
+                        explanation: `¡Exacto! 🚴‍♂️ Para convertir kilómetros a metros multiplicamos por 1000:\n**${val} x 1 000 = ${metros} m**.\n¡Esa es la distancia en metros!`,
+                        lessonId: MEDIDAS_LONGITUD_1
+                    });
+                } else if (i % 4 === 2) {
+                    const milimetros = val * 1000;
+                    qs.push({
+                        type: 'input',
+                        question: `Una soga mide ${val} metros (m) de largo. ¿Cuál es su longitud en milímetros (mm)? 🧵📏`,
+                        answer: milimetros.toString(),
+                        hints: [`Recuerda que 1 m = 1 000 mm.`, `Para convertir metros en milímetros, multiplicamos por 1000.`, `Multiplica ${val} x 1000.`, `Agrega tres ceros.`, `Son ${milimetros} mm.`],
+                        explanation: `¡Bien hecho! 🧵 Igual que con los kilómetros, para pasar de metros a milímetros multiplicamos por 1000:\n**${val} x 1 000 = ${milimetros} mm**.`,
+                        lessonId: MEDIDAS_LONGITUD_1
+                    });
+                } else {
+                    const centimetros = val * 10;
+                    qs.push({
+                        type: 'input',
+                        question: `El libro de Matemáticas mide ${val} decímetros (dm) de ancho. ¿Puedes expresar ese ancho en centímetros (cm)? 📘📏`,
+                        answer: centimetros.toString(),
+                        hints: [`Recuerda el esquema de conversiones: 1 dm = 10 cm.`, `Multiplicamos por 10.`, `¿Cuánto es ${val} x 10?`, `Agrega un cero al final.`, `Son ${centimetros} cm.`],
+                        explanation: `¡Excelente! 📘 El esquema nos dice que al saltar de decímetros a centímetros multiplicamos por 10:\n**${val} x 10 = ${centimetros} cm**.`,
+                        lessonId: MEDIDAS_LONGITUD_1
+                    });
+                }
             }
             return qs;
         })(),
 
         // --- Lección: Masa (MEDIDAS_MASA_1) ---
         { type: 'input', question: '¿Cuántos gramos hay exactamente en 1 kilogramo? ⚖️🔢', answer: '1000', hints:['La palabra "kilo" significa mil.', 'Es una unidad que usamos para pesar cosas como el arroz.', 'En 1 kg caben mil unidades pequeñas llamadas gramos.', 'Un 1 con tres ceros.', 'Mil.'], explanation: '¡Correcto! 💪 1 kilogramo (kg) equivale a **1000 gramos (g)**. ¡Es la medida estándar para los pesos en la cocina y la bodega! ⚖️✨', lessonId: MEDIDAS_MASA_1},
-        { type: 'input', question: 'Un paquete de café cubano pesa 3 kilogramos. ¿Cuántos gramos pesa en total? ☕⚖️', imageUrl: createMedidasSVG('item', {item1: '☕', val1: 3, unit: 'kg'}), answer: '3000', hints:['Sabemos que 1 kg = 1000 g.', 'Para saber cuánto son 3 kg, multiplicamos 3 por 1000.', '3 x 1000 = ?', 'Un 3 con tres ceros.', 'Tres mil.'], explanation: `¡Excelente! ☕ Como cada kilogramo tiene 1000 gramos, multiplicamos:
-        **3 kg x 1000 = 3000 g**. 
-        ¡Ese paquete tiene 3000 gramos de puro aroma! ☕🤤`, lessonId: MEDIDAS_MASA_1},
+        { type: 'input', question: 'Un paquete de café cubano pesa 3 kilogramos. ¿Cuántos gramos pesa en total? ☕⚖️', imageUrl: createMedidasSVG('item', {item1: '☕', val1: 3, unit: 'kg'}), answer: '3000', hints:['Sabemos que 1 kg = 1000 g.', 'Para saber cuánto son 3 kg, multiplicamos 3 por 1000.', '3 x 1000 = ?', 'Un 3 con tres ceros.', 'Tres mil.'], explanation: `¡Excelente! ☕ Como cada kilogramo tiene 1000 gramos, multiplicamos:\n**3 kg x 1000 = 3000 g**. \n¡Ese paquete tiene 3000 gramos de puro aroma! ☕🤤`, lessonId: MEDIDAS_MASA_1},
         { type: 'mcq', question: '¿Qué pesa más: 2 kilogramos de boniato o 2000 gramos de boniato? 🍠⚖️', options: ['2 kilogramos', '2000 gramos', 'Pesan exactamente lo mismo'], answer: 'Pesan exactamente lo mismo', hints:['Primero hagamos la conversión: 1 kg = 1000 g.', 'Entonces, 2 kg son iguales a 2000 g.', 'Compara 2000 g con 2000 g.', 'No hay uno mayor que otro.', 'Son iguales.'], explanation: '¡Justo así! 😉 Como 1 kg es igual a 1000 g, 2000 g es exactamente lo mismo que 2 kg. ¡El mismo peso dicho con palabras diferentes! 🍠✨', lessonId: MEDIDAS_MASA_1},
         ...(() => {
             const qs: Question[] = [];
             for (let i = 0; i < 37; i++) {
-                const kg = i + 2;
-                const gramos = kg * 1000;
-                qs.push({
-                    type: 'input',
-                    question: `Si compras una calabaza que pesa ${kg} kg en el agromercado, ¿cuántos gramos pesa? 🎃⚖️`,
-                    imageUrl: createMedidasSVG('item', {item1: '🎃', val1: kg, unit: 'kg'}),
-                    answer: gramos.toString(),
-                    hints: [`Recuerda la regla: 1 kg = 1000 gramos.`, `Multiplica los kilogramos por 1000.`, `La operación es ${kg} x 1000.`, `Añade tres ceros al final del número ${kg}.`, `El resultado es ${gramos}.`],
-                    explanation: `¡Buen trabajo! 🎃 Para pasar de kilogramos a gramos, multiplicamos por 1000:
-                **${kg} kg x 1000 = ${gramos} g**. 
-                ¡Tu calabaza pesa ${gramos} gramos! 🥧✨`,
-                    lessonId: MEDIDAS_MASA_1
-                });
+                const val = i + 2;
+                if (i % 2 === 0) {
+                    const gramos = val * 1000;
+                    qs.push({
+                        type: 'input',
+                        question: `Si compras una calabaza que pesa ${val} kg en el agromercado, ¿cuántos gramos (g) pesa? 🎃⚖️`,
+                        imageUrl: createMedidasSVG('item', {item1: '🎃', val1: val, unit: 'kg'}),
+                        answer: gramos.toString(),
+                        hints: [`Recuerda la regla: 1 kg = 1000 gramos.`, `Multiplica los kilogramos por 1000.`, `La operación es ${val} x 1000.`, `Añade tres ceros al final del número ${val}.`, `El resultado es ${gramos}.`],
+                        explanation: `¡Buen trabajo! 🎃 Para pasar de kilogramos a gramos, multiplicamos por 1000:\n**${val} kg x 1000 = ${gramos} g**. \n¡Tu calabaza pesa ${gramos} gramos! 🥧✨`,
+                        lessonId: MEDIDAS_MASA_1
+                    });
+                } else {
+                    const kilos = val * 1000;
+                    qs.push({
+                        type: 'input',
+                        question: `Un camión carga ${val} toneladas (t) de azúcar. ¿Cuántos kilogramos (kg) transporta el camión? 🚚🍬`,
+                        answer: kilos.toString(),
+                        hints: [`Recuerda que 1 tonelada (1 t) = 1 000 kg.`, `Para convertir toneladas en kilogramos, multiplicamos por 1000.`, `Multiplica ${val} x 1 000.`, `Agrega tres ceros al final.`, `Son ${kilos} kg.`],
+                        explanation: `¡Duro! 🚚 Al igual que de km a m, y de kg a g, 1 tonelada equivale a 1 000 kilogramos:\n**${val} t x 1 000 = ${kilos} kg**.`,
+                        lessonId: MEDIDAS_MASA_1
+                    });
+                }
             }
             return qs;
         })(),
@@ -263,9 +301,9 @@ export const medidasQuestions: Record<number, Question[]> = {
         })(),
 
         // --- Lección: Moneda (MEDIDAS_MONEDA_1) ---
-        { type: 'input', question: 'Un helado en la barquillera cuesta 18 CUP. Si pagas con un billete de 20 CUP, ¿cuánto dinero te deben devolver de vuelto? 🍦💵', imageUrl: createMedidasSVG('item', {item1: '🍦', val1: 18, unit: 'CUP'}), answer: '2', hints:['El "vuelto" es la diferencia entre lo que diste y lo que costó.', 'Debes hacer una resta.', '20 (billete) - 18 (helado) = ?', 'Solo faltan 2 para llegar a 20.', 'Dos pesos.'], explanation: `¡Muy bien calculado! 🍦 Restamos el precio del dinero entregado: **20 - 18 = 2 CUP**. 
-        ¡Te deben devolver 2 pesos cubanos de vuelto! 💸😉`, lessonId: MEDIDAS_MONEDA_1},
-        { type: 'mcq', question: 'Quieres comprar un juguete que cuesta 80 CUP. ¿Cuál es el billete más pequeño que te alcanza para pagar? 🧸💰', options: ['Un billete de 50', 'Un billete de 100', 'Un billete de 20'], answer: 'Un billete de 100', hints:['Necesitas un billete que sea mayor o igual a 80.', '50 es menor que 80, no te alcanza.', '20 también es menor que 80.', '100 es mayor que 80, así que con ese sí puedes pagar.', 'Te sobraría dinero.'], explanation: '¡Exacto! 🧸 Como el juguete cuesta 80 CUP, el billete de 100 CUP es el único que cubre el precio. ¡Incluso te sobrarán 20 pesos de vuelto! 💵✨', lessonId: MEDIDAS_MONEDA_1},
+        { type: 'input', question: 'Un helado en la barquillera cuesta $18,00. Si pagas con un billete de $20,00, ¿cuánto dinero te deben devolver de vuelto? 🍦💵', imageUrl: createMedidasSVG('item', {item1: '🍦', val1: 18, unit: 'PESOS'}), answer: '2', hints:['El "vuelto" es la diferencia entre lo que entregaste y el precio.', 'Debes realizar una sustracción.', '$20,00 - $18,00 = ?', 'Solo faltan 2 para llegar a 20.', 'Dos pesos.'], explanation: `¡Muy bien calculado! 🍦 Hallamos la diferencia entre el dinero entregado y el precio: **$20,00 - $18,00 = 2 pesos**. 
+        ¡Te deben devolver 2 pesos de vuelto! 💸😉`, lessonId: MEDIDAS_MONEDA_1},
+        { type: 'mcq', question: 'Quieres comprar un juguete que cuesta $80,00. ¿Cuál es el billete más pequeño que te alcanza para pagar? 🧸💰', options: ['Un billete de 50', 'Un billete de 100', 'Un billete de 20'], answer: 'Un billete de 100', hints:['Necesitas un billete que sea mayor o igual a 80.', '50 es menor que 80, no te alcanza.', '20 también es menor que 80.', '100 es mayor que 80, así que con ese sí puedes pagar.', 'Te sobraría dinero.'], explanation: '¡Exacto! 🧸 Como el juguete cuesta $80,00 pesos, el billete de $100,00 pesos es el único que cubre el precio. ¡Incluso te sobrarán 20 pesos de vuelto! 💵✨', lessonId: MEDIDAS_MONEDA_1},
         { type: 'input', question: 'Si tienes 5 monedas de 3 CUP cada una, ¿cuánto dinero tienes en total? 🪙💰', answer: '15', hints:['Tienes 5 veces 3 pesos.', 'Puedes sumar 3+3+3+3+3.', 'O multiplicar 5 x 3.', 'Tabla del 5 o del 3.', 'Quince.'], explanation: `¡Magnífico! 🚀 Multiplicamos la cantidad de monedas por su valor:
         **5 monedas x 3 pesos = 15 CUP**. 
         ¡Ya tienes 15 pesos para tu alcancía! 🐷🪙✨`, lessonId: MEDIDAS_MONEDA_1},
@@ -316,7 +354,7 @@ export const medidasQuestions: Record<number, Question[]> = {
 
         // --- Lección: Masa (MEDIDAS_MASA_1) ---
         { type: 'input', question: 'Compro 1 kg de arroz y 500 g de frijoles. ¿Cuántos kilogramos compré en total?', answer: '1.5', hints:['Primero, convierte todo a la misma unidad. Usemos kilogramos.', '500 gramos es medio kilogramo (0.5 kg).', 'Ahora suma los pesos: 1 kg + 0.5 kg.', 'Uno y medio.', '1.5 kg.'], explanation: 'Convertimos 500 g a 0.5 kg. Luego sumamos: 1 kg + 0.5 kg = 1.5 kg. ¡La compra pesa un kilo y medio! 🛒', lessonId: MEDIDAS_MASA_1},
-        { type: 'mcq', question: 'Un camión puede cargar 2000 kg. Si ya lleva 1200 kg, ¿cuántos kilogramos más puede llevar?', options: ['800 kg', '3200 kg', '1000 kg'], answer: '800 kg', hints:['Es una resta para saber lo que "falta".', '2000 - 1200 = ?', '20 - 12 = 8.', 'Añade los dos ceros.', '800.'], explanation: 'Restamos la carga actual de la capacidad máxima: 2000 - 1200 = 800 kg. ¡Aún queda espacio! 📦', lessonId: MEDIDAS_MASA_1},
+        { type: 'mcq', question: 'Un camión puede cargar 2000 kg. Si ya lleva 1200 kg, ¿cuántos kilogramos más puede llevar?', options: ['800 kg', '3200 kg', '1000 kg'], answer: '800 kg', hints:['Es una sustracción para saber lo que "falta".', '2000 - 1200 = ?', '20 - 12 = 8.', 'Añade los dos ceros.', '800.'], explanation: 'Realizamos la sustracción de la carga actual de la capacidad máxima: 2000 - 1200 = 800 kg. ¡Aún queda espacio! 📦', lessonId: MEDIDAS_MASA_1},
         ...(() => {
             const qs: Question[] = [];
             for (let i = 0; i < 38; i++) {
@@ -354,8 +392,8 @@ export const medidasQuestions: Record<number, Question[]> = {
         })(),
 
         // --- Lección: Moneda (MEDIDAS_MONEDA_1) ---
-        { type: 'input', question: 'Compro 3 panes a 15 CUP cada uno y un refresco de 25 CUP. ¿Cuánto pagué en total?', answer: '70', hints:['Paso 1: Calcula el costo de los panes.', '3 x 15 = 45 CUP.', 'Paso 2: Suma el costo del refresco.', '45 + 25 = ?', 'Setenta.'], explanation: 'Los panes cuestan 3x15=45 CUP. El total es 45 + 25 = 70 CUP. ¡Una buena merienda! 🥖🥤', lessonId: MEDIDAS_MONEDA_1},
-        { type: 'mcq', question: 'Tengo 200 CUP. ¿Cuántos helados de 25 CUP puedo comprar como máximo?', options: ['4', '8', '10'], answer: '8', hints:['Es una división: ¿Cuántas veces cabe 25 en 200?', 'Piensa en las monedas: ¿cuántas monedas de 25 centavos hay en 2 pesos?', 'En 100 CUP caben 4 helados (4x25=100).', 'En 200 CUP cabrá el doble.', 'Ocho.'], explanation: 'Dividimos el dinero total entre el precio de cada helado: 200 ÷ 25 = 8 helados. ¡Invita a tus amigos! 🍦', lessonId: MEDIDAS_MONEDA_1},
+        { type: 'input', question: 'Compro 3 panes a $15,00 cada uno y un refresco de $25,00. ¿Cuánto pagué en total?', answer: '70', hints:['Paso 1: Calcula el costo de los panes.', '3 x 15 = 45 pesos.', 'Paso 2: Suma el costo del refresco.', '45 + 25 = ?', 'Setenta.'], explanation: 'Los panes cuestan 3 x 15 = 45 pesos. El total es 45 + 25 = 70 pesos. ¡Una buena merienda! 🥖🥤', lessonId: MEDIDAS_MONEDA_1},
+        { type: 'mcq', question: 'Tengo $200,00. ¿Cuántos helados de $25,00 puedo comprar como máximo?', options: ['4', '8', '10'], answer: '8', hints:['Es una división: ¿Cuántas veces cabe 25 en 200?', 'Piensa en las monedas: ¿cuántas monedas de 25 centavos hay en 2 pesos?', 'En $100,00 caben 4 helados (4 x 25 = 100).', 'En $200,00 cabrá el doble.', 'Ocho.'], explanation: 'Dividimos el dinero total entre el precio de cada helado: 200 ÷ 25 = 8 helados. ¡Invita a tus amigos! 🍦', lessonId: MEDIDAS_MONEDA_1},
         ...(() => {
             const qs: Question[] = [];
             for (let i = 0; i < 38; i++) {
@@ -366,10 +404,10 @@ export const medidasQuestions: Record<number, Question[]> = {
                 const change = paid - totalCost;
                 qs.push({
                     type: 'input',
-                    question: `Compro ${numItems} dulces a ${itemPrice} CUP cada uno. Si pago con ${paid} CUP, ¿cuánto me devuelven?`,
+                    question: `Compro ${numItems} dulces a $${itemPrice},00 cada uno. Si pago con un billete de $${paid},00, ¿cuánto me devuelven?`,
                     answer: change.toString(),
-                    hints: [`Paso 1: Calcula el costo total de los dulces (multiplicación).`, `${numItems} x ${itemPrice} = ${totalCost}.`, `Paso 2: Calcula el vuelto (resta).`, `${paid} - ${totalCost} = ?`, `La respuesta es ${change}.`],
-                    explanation: `Primero calculamos el costo total: ${numItems} × ${itemPrice} = ${totalCost} CUP. Luego, el vuelto es ${paid} - ${totalCost} = ${change} CUP.`,
+                    hints: [`Paso 1: Calcula el costo total de los dulces.`, `${numItems} x ${itemPrice} = ${totalCost} pesos.`, `Paso 2: Calcula el vuelto (fórmula de sustracción).`, `${paid} - ${totalCost} = ?`, `La respuesta es ${change}.`],
+                    explanation: `Primero calculamos el costo total: ${numItems} × ${itemPrice} = ${totalCost} pesos. Luego, el vuelto es ${paid} - ${totalCost} = ${change} pesos.`,
                     lessonId: MEDIDAS_MONEDA_1
                 });
             }

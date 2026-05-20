@@ -5,6 +5,7 @@ import { contentManager } from '../utils/contentManager';
 import { categoryNames } from '../utils/constants';
 import { SkillChart } from './common/SkillChart';
 import { playClickSound } from '../utils/sounds';
+import { getQualitativeEvaluation } from '../utils/evaluationUtils';
 
 const categoryIcons: Record<CategoryId, string> = {
     numeros: '🔢',
@@ -101,11 +102,13 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ studentProfi
         // Overall Progress (based on lessons for this subject)
         const totalLessons = lessonsForSubject.length;
         const completedLessons = lessonsForSubject.filter(lesson => (gameState[lesson.id]?.highScores?.[1] || 0) >= MIN_SCORE_TO_PASS).length;
+        // Progress Percent stays as a completion metric
         const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
         let allHistory: (GameState[string]['skillHistory'][0] & { categoryId: string })[] = [];
         let totalTime = 0;
         let totalQuestionsAnswered = 0;
+        let totalQuestionsCorrect = 0;
 
         // Mastery & History calculation (filtered by categoryIdsForSubject)
         const relevantCategoryIds = categoryIdsForSubject.length > 0 ? categoryIdsForSubject : (Object.keys(contentManager.getQuestions()) as CategoryId[]);
@@ -119,9 +122,10 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ studentProfi
             const totalCorrectInCategory = history.reduce((sum, session) => sum + (session.results?.filter(r => r.correct).length || 0), 0);
             const totalAttemptedInCategory = history.reduce((sum, session) => sum + (session.results?.length || 0), 0);
             totalQuestionsAnswered += totalAttemptedInCategory;
+            totalQuestionsCorrect += totalCorrectInCategory;
             
             const accuracy = totalAttemptedInCategory > 0 ? Math.round((totalCorrectInCategory / totalAttemptedInCategory) * 100) : 0;
-            const averageScore = history.length > 0 ? history.reduce((sum, s) => sum + s.score, 0) / history.length : 0;
+            const averageScore = history.length > 0 ? (history.reduce((sum, s) => sum + s.score, 0) / history.length) * 10 : 0;
 
             const questionsForCat = contentManager.getQuestions()[categoryId] || {};
             let totalAvailableLevels = Object.keys(questionsForCat).length;
@@ -171,8 +175,15 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ studentProfi
             weakness: practicedCategories.length > 1 ? practicedCategories[practicedCategories.length - 1] : null
         };
 
+        const totalSubjectAccuracy = totalQuestionsAnswered > 0 ? Math.round((totalQuestionsCorrect / totalQuestionsAnswered) * 100) : 0;
+
         return { 
-            overallProgress: { percent: progressPercent, completed: completedLessons, total: totalLessons },
+            overallProgress: { 
+                percent: progressPercent, 
+                completed: completedLessons, 
+                total: totalLessons,
+                accuracy: totalSubjectAccuracy 
+            },
             masteryLevels: levels.filter(l => l.practiceCount > 0 || categoryIdsForSubject.includes(l.id)),
             totalSessions: allHistory.length,
             totalTime,
@@ -236,7 +247,18 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ studentProfi
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 text-center">
                 <Card>
                     <h3 className="text-base sm:text-lg font-bold text-slate-700 dark:text-slate-300">Progreso Total</h3>
-                    <p className="text-4xl sm:text-5xl font-black text-blue-500 my-2">{overallProgress.percent}%</p>
+                    <p className="text-4xl sm:text-5xl font-black text-blue-500 mt-2">{overallProgress.percent}%</p>
+                    <div className="flex flex-col items-center mb-2">
+                        {totalQuestionsAnswered > 0 ? (
+                            <span className={`text-sm font-bold px-2 py-0.5 rounded-full ${getQualitativeEvaluation(overallProgress.accuracy).color} text-white`}>
+                                Evaluación: {getQualitativeEvaluation(overallProgress.accuracy).grade}
+                            </span>
+                        ) : (
+                            <span className="text-sm font-bold px-2 py-0.5 rounded-full bg-slate-400 text-white">
+                                Sin Evaluación
+                            </span>
+                        )}
+                    </div>
                     <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">{overallProgress.completed} de {overallProgress.total} lecciones</p>
                 </Card>
                  <Card>
@@ -259,23 +281,36 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ studentProfi
             <Card>
                 <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4 text-center">Dominio por Categoría</h2>
                 <div className="space-y-4">
-                    {masteryLevels.map(({ id, mastery, totalCorrect, totalAttempted, accuracy }) => (
-                        <div key={id}>
-                            <div className="flex justify-between items-center mb-1">
-                                <span className="font-bold text-slate-700 dark:text-slate-300">{categoryNames[id]} {categoryIcons[id]}</span>
-                                <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{mastery}% Dominio</span>
-                            </div>
-                            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-4 mb-1">
-                                <div className="bg-blue-500 h-4 rounded-full transition-all duration-500" style={{ width: `${mastery}%` }}></div>
-                            </div>
-                            {totalAttempted > 0 && (
-                                 <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 px-1">
-                                    <span>{totalCorrect} / {totalAttempted} Preguntas Correctas</span>
-                                    <span className="font-semibold">Precisión Promedio: {accuracy}%</span>
+                    {masteryLevels.map(({ id, mastery, totalCorrect, totalAttempted, accuracy, averageScore }) => {
+                        // Use accuracy or averageScore (scaled to 100) for qualitative evaluation instead of mastery (completion)
+                        const performanceMetric = totalAttempted > 0 ? accuracy : 0;
+                        const evalInfo = getQualitativeEvaluation(performanceMetric);
+                        
+                        return (
+                            <div key={id}>
+                                <div className="flex justify-between items-center mb-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-bold text-slate-700 dark:text-slate-300">{categoryNames[id]} {categoryIcons[id]}</span>
+                                        {totalAttempted > 0 && (
+                                            <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${evalInfo.color} text-white`}>
+                                                {evalInfo.grade}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{mastery}% Dominio</span>
                                 </div>
-                            )}
-                        </div>
-                    ))}
+                                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-4 mb-1">
+                                    <div className="bg-blue-500 h-4 rounded-full transition-all duration-500" style={{ width: `${mastery}%` }}></div>
+                                </div>
+                                {totalAttempted > 0 && (
+                                    <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 px-1">
+                                        <span>{totalCorrect} / {totalAttempted} Preguntas Correctas</span>
+                                        <span className="font-semibold">Precisión: {accuracy}%</span>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </Card>
 

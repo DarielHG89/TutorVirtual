@@ -65,16 +65,20 @@ export const MatchPairsExercise: React.FC<MatchPairsExerciseProps> = ({ exercise
     , [droppedTerms]);
 
     const allCorrect = useMemo(() => {
-        if (savedState) return true;
         return Object.keys(droppedTerms).length === exercise.pairs.length && Object.values(droppedTerms).every(t => t !== null)
-    }, [droppedTerms, exercise.pairs.length, savedState]);
+    }, [droppedTerms, exercise.pairs.length]);
+
+    const onCompleteRef = useRef(onComplete);
+    useEffect(() => {
+        onCompleteRef.current = onComplete;
+    }, [onComplete]);
 
     useEffect(() => {
         if (allCorrect && !onCompleteCalled.current) {
             onCompleteCalled.current = true;
             setShowConfetti(true);
             setTimeout(() => {
-                onComplete({ dropped: droppedTerms });
+                onCompleteRef.current({ dropped: droppedTerms });
             }, 2000);
             
             const resetTimer = setTimeout(() => {
@@ -82,17 +86,17 @@ export const MatchPairsExercise: React.FC<MatchPairsExerciseProps> = ({ exercise
             }, 3000); // 3 second delay for "Play again"
             return () => clearTimeout(resetTimer);
         }
-    }, [allCorrect, onComplete, droppedTerms]);
+    }, [allCorrect, droppedTerms]);
 
     const handleDragStart = (e: React.DragEvent<HTMLDivElement>, termData: TermItem) => {
         e.dataTransfer.setData('termData', JSON.stringify(termData));
         e.dataTransfer.effectAllowed = 'move';
     };
 
-    const handleDrop = (e: React.DragEvent<HTMLDivElement>, defItem: DefinitionItem, defShuffledIndex: number) => {
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>, defItem: DefinitionItem) => {
         e.preventDefault();
         setIsDraggingOver(null);
-        if (droppedTerms[defShuffledIndex]) return;
+        if (droppedTerms[defItem.originalIndex]) return;
 
         try {
             const termData = JSON.parse(e.dataTransfer.getData('termData')) as TermItem;
@@ -103,13 +107,13 @@ export const MatchPairsExercise: React.FC<MatchPairsExerciseProps> = ({ exercise
             if (sourceDefinitionText === targetDefinitionText) {
                 // Correct match
                 playCorrectSound();
-                setDroppedTerms(prev => ({...prev, [defShuffledIndex]: termData }));
-                setFeedback(prev => ({...prev, [defShuffledIndex]: 'correct' }));
+                setDroppedTerms(prev => ({...prev, [defItem.originalIndex]: termData }));
+                setFeedback(prev => ({...prev, [defItem.originalIndex]: 'correct' }));
             } else {
                 // Incorrect match
                 playIncorrectSound();
-                setFeedback(prev => ({...prev, [defShuffledIndex]: 'incorrect' }));
-                setTimeout(() => setFeedback(prev => ({...prev, [defShuffledIndex]: 'idle' })), 500);
+                setFeedback(prev => ({...prev, [defItem.originalIndex]: 'incorrect' }));
+                setTimeout(() => setFeedback(prev => ({...prev, [defItem.originalIndex]: 'idle' })), 500);
             }
         } catch (err) {
             console.error("Error parsing dropped data:", err);
@@ -159,18 +163,18 @@ export const MatchPairsExercise: React.FC<MatchPairsExerciseProps> = ({ exercise
                 {/* Definitions Column */}
                 <div className="space-y-3">
                      {!allCorrect && <h3 className="font-bold text-center text-slate-600 dark:text-slate-300">...a su Definición Correcta</h3>}
-                    {shuffledDefinitions.map((defItem, defShuffledIndex) => {
-                        const droppedTerm = droppedTerms[defShuffledIndex];
-                        const currentFeedback = feedback[defShuffledIndex] || (droppedTerm ? 'correct' : 'idle');
+                    {shuffledDefinitions.map((defItem) => {
+                        const droppedTerm = droppedTerms[defItem.originalIndex];
+                        const currentFeedback = feedback[defItem.originalIndex] || (droppedTerm ? 'correct' : 'idle');
                         
                         return (
                             <div
                                 key={defItem.originalIndex}
                                 onDragOver={(e) => { if (!allCorrect) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; } }}
-                                onDragEnter={() => !droppedTerm && !allCorrect && setIsDraggingOver(defShuffledIndex)}
+                                onDragEnter={() => !droppedTerm && !allCorrect && setIsDraggingOver(defItem.originalIndex)}
                                 onDragLeave={() => setIsDraggingOver(null)}
-                                onDrop={(e) => !allCorrect && handleDrop(e, defItem, defShuffledIndex)}
-                                className={`drop-zone min-h-[5rem] p-4 rounded-lg border-2 border-dashed flex items-center justify-center transition-all duration-300 ${feedbackClasses[currentFeedback]} ${isDraggingOver === defShuffledIndex && !allCorrect ? 'drag-over' : ''} ${allCorrect ? 'cursor-default' : ''}`}
+                                onDrop={(e) => !allCorrect && handleDrop(e, defItem)}
+                                className={`drop-zone min-h-[5rem] p-4 rounded-lg border-2 border-dashed flex items-center justify-center transition-all duration-300 ${feedbackClasses[currentFeedback]} ${isDraggingOver === defItem.originalIndex && !allCorrect ? 'drag-over' : ''} ${allCorrect ? 'cursor-default' : ''}`}
                             >
                                 {droppedTerm ? (
                                     <span className="font-bold text-lg">

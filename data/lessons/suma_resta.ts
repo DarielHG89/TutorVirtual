@@ -25,19 +25,19 @@ export const sumaRestaLessons: LessonContent[] = [
             
             <div class="bg-orange-50 dark:bg-orange-900/30 p-4 rounded-lg mb-4 shadow-inner">
                 <h4 class="text-xl font-bold mb-2 text-orange-800 dark:text-orange-300">Paso 1: ¡Cada uno a su puesto! 🚶‍♂️🚶‍♀️</h4>
-                <p>Coloca los números en columna. Cada tipo de número en su sitio: unidades con unidades, decenas con decenas... ¡Como en una fila para entrar al cine!</p>
-                <pre class="bg-white dark:bg-slate-800 p-2 rounded mt-2 text-lg text-slate-700 dark:text-slate-200">  125\n+ 243\n-----</pre>
+                <p>Ubicamos los <strong>sumandos</strong> en columna usando la <strong>Tabla MCDU</strong>. Cada cifra en su sitio: unidades (U) con unidades, decenas (D) con decenas, centenas (C) con centenas...</p>
+                <pre class="bg-white dark:bg-slate-800 p-2 rounded mt-2 text-lg text-slate-700 dark:text-slate-200">  (sumando)  125\n+ (sumando)  243\n-----------</pre>
             </div>
 
             <div class="bg-cyan-50 dark:bg-cyan-900/30 p-4 rounded-lg mb-4 shadow-inner">
                 <h4 class="text-xl font-bold mb-2 text-cyan-800 dark:text-cyan-300">Paso 2: ¡De derecha a izquierda! 👉</h4>
-                <p>¡Siempre empezamos por las <strong>unidades</strong>, los más pequeños primero!</p>
+                <p>¡Siempre empezamos por las <strong>unidades</strong>! Al final obtenemos la <strong>suma o total</strong>.</p>
                 <ul class="list-disc list-inside ml-4 mt-2">
                     <li><strong>Unidades:</strong> 5 + 3 = 8</li>
                     <li><strong>Decenas:</strong> 2 + 4 = 6</li>
                     <li><strong>Centenas:</strong> 1 + 2 = 3</li>
                 </ul>
-                 <pre class="bg-white dark:bg-slate-800 p-2 rounded mt-2 text-lg text-slate-700 dark:text-slate-200">  125\n+ 243\n-----\n  368</pre>
+                 <pre class="bg-white dark:bg-slate-800 p-2 rounded mt-2 text-lg text-slate-700 dark:text-slate-200">  125\n+ 243\n-----\n  368 (suma o total)</pre>
                  <div data-exercise-index="0"></div>
             </div>
 
@@ -74,13 +74,13 @@ export const sumaRestaLessons: LessonContent[] = [
         period: 2,
         categoryId: 'suma_resta',
         theory: `
-            <h3 class="text-2xl font-bold mb-4 text-red-600 dark:text-red-400">¡Restando como detectives! 🕵️‍♂️</h3>
-            <p class="mb-4">Restar números grandes es como encontrar la diferencia. ¡También se hace por columnas, pero a veces el número de arriba necesita pedir ayuda!</p>
+            <h3 class="text-2xl font-bold mb-4 text-red-600 dark:text-red-400">¡Sustrayendo como detectives! 🕵️‍♂️</h3>
+            <p class="mb-4">Realizar una sustracción de números grandes es como hallar la diferencia. ¡También se hace por columnas, pero a veces el minuendo necesita pedir ayuda!</p>
             
             <div class="bg-red-50 dark:bg-red-900/30 p-4 rounded-lg mb-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-red-800 dark:text-red-300">Paso 1 y 2: Colocar y Empezar por la Derecha</h4>
-                <p>Igual que en la suma, colocamos un número debajo del otro y empezamos por las <strong>unidades</strong>.</p>
-                <pre class="bg-white dark:bg-slate-800 p-2 rounded mt-2 text-lg text-slate-700 dark:text-slate-200">  458\n- 123\n-----\n    5  (porque 8-3=5)\n   3   (porque 5-2=3)\n  3    (porque 4-1=3)\n\nResultado: 335</pre>
+                <h4 class="text-xl font-bold mb-2 text-red-800 dark:text-red-300">Paso 1 y 2: El Minuendo y el Sustraendo</h4>
+                <p>En la sustracción, el número de arriba es el <strong>minuendo</strong> y el que resta es el <strong>sustraendo</strong>. El resultado se llama <strong>diferencia</strong>.</p>
+                <pre class="bg-white dark:bg-slate-800 p-2 rounded mt-2 text-lg text-slate-700 dark:text-slate-200"> (minuendo)    458\n (sustraendo) - 123\n -----------\n (diferencia)   335</pre>
                 <div data-exercise-index="0"></div>
             </div>
 
@@ -99,13 +99,13 @@ export const sumaRestaLessons: LessonContent[] = [
         interactiveExercises: [
             {
                 type: 'fill-in-the-text',
-                title: '¡A Practicar!: Resta Simple',
+                title: '¡A Practicar!: Sustracción Simple',
                 textWithInputs: 'Calcula 458 - 123 = __INPUT__.',
                 correctAnswers: ['335']
             },
             {
                 type: 'fill-in-the-text',
-                title: '¡A Practicar!: Resta Pidiendo Prestado',
+                title: '¡A Practicar!: Sustracción con Sobrepaso',
                 textWithInputs: 'Calcula 52 - 18 = __INPUT__.',
                 correctAnswers: ['34']
             }

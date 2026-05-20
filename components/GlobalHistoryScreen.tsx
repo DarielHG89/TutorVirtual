@@ -4,6 +4,7 @@ import { Card } from './common/Card';
 import { Button } from './common/Button';
 import { categoryNames } from '../utils/constants';
 import { playClickSound } from '../utils/sounds';
+import { getQualitativeEvaluation } from '../utils/evaluationUtils';
 
 interface GlobalHistoryScreenProps {
     gameState: GameState;
@@ -93,6 +94,8 @@ export const GlobalHistoryScreen: React.FC<GlobalHistoryScreenProps> = ({ gameSt
                     allHistory.map((entry, index) => {
                         const correctAnswers = entry.results?.filter(r => r.correct).length || 0;
                         const totalQuestions = entry.results?.length || 0;
+                        const accuracy = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+                        const evalInfo = getQualitativeEvaluation(accuracy);
                         const lessonName = entry.lessonId ? lessonIdToNameMap.get(entry.lessonId) : null;
                         
                         return (
@@ -101,23 +104,29 @@ export const GlobalHistoryScreen: React.FC<GlobalHistoryScreenProps> = ({ gameSt
                                 className="!p-3 text-left animate-staggered-fade-in"
                             >
                                 <div className="flex justify-between items-center flex-wrap gap-2">
-                                    <div className="min-w-0 flex-1">
-                                        <p className="font-bold text-slate-800 dark:text-slate-200 text-lg flex items-center gap-2">
-                                            {categoryNames[entry.categoryId as CategoryId] || entry.categoryId}
-                                        </p>
-                                        <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                                            <p className="mb-1">
-                                                <span className="font-semibold text-slate-700 dark:text-slate-300 bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full text-xs mr-2">
-                                                    {practiceTypeNames[entry.type] || 'Práctica'}
-                                                </span>
-                                                <span className="mr-2">Nivel {entry.level}</span>
-                                                {entry.totalTime !== undefined && <span>⏱️ <span className="font-medium">{formatTime(entry.totalTime)}</span></span>}
+                                    <div className="min-w-0 flex-1 flex gap-3">
+                                        <div className={`flex flex-col items-center justify-center w-12 h-12 rounded-lg ${evalInfo.color} text-white shadow-sm flex-shrink-0 mt-1`}>
+                                            <span className="text-xl font-black">{evalInfo.grade}</span>
+                                            <span className="text-[7px] font-black uppercase tracking-tighter">{evalInfo.label}</span>
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="font-bold text-slate-800 dark:text-slate-200 text-lg flex items-center gap-2">
+                                                {categoryNames[entry.categoryId as CategoryId] || entry.categoryId}
                                             </p>
-                                            <p className="font-medium">
-                                                Puntuación: <span className="text-blue-600 dark:text-blue-400">{Math.round(entry.score)}</span> | 
-                                                Aciertos: <span className="text-green-600 dark:text-green-400 ml-1">{correctAnswers}/{totalQuestions}</span>
-                                            </p>
-                                            {lessonName && <p className="font-semibold text-purple-700 dark:text-purple-400 mt-1">📘 {lessonName}</p>}
+                                            <div className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">
+                                                <p className="mb-1">
+                                                    <span className="font-semibold text-slate-700 dark:text-slate-300 bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full text-[10px] mr-2">
+                                                        {practiceTypeNames[entry.type] || 'Práctica'}
+                                                    </span>
+                                                    <span className="mr-2">Nivel {entry.level}</span>
+                                                    {entry.totalTime !== undefined && <span>⏱️ <span className="font-medium">{formatTime(entry.totalTime)}</span></span>}
+                                                </p>
+                                                <p className="font-medium">
+                                                    Puntos: <span className="text-blue-600 dark:text-blue-400">{Math.round(entry.score)}</span> | 
+                                                    Aciertos: <span className="text-green-600 dark:text-green-400 ml-1">{correctAnswers}/{totalQuestions}</span>
+                                                </p>
+                                                {lessonName && <p className="font-semibold text-purple-700 dark:text-purple-400 mt-1">📘 {lessonName}</p>}
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="text-right flex flex-col items-end gap-2">
