@@ -26,6 +26,7 @@ export const geometriaLessons: LessonContent[] = [
             <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg mb-4 shadow-inner">
                 <h4 class="text-xl font-bold mb-2 text-blue-800 dark:text-blue-300">Rectas Paralelas 🛤️</h4>
                 <p>Son aquellas que NUNCA se cortan por más que las alargues. ¡Como las vías del tren! 🚄</p>
+                <p class="mt-2 text-sm italic"><strong>La distancia entre dos rectas paralelas</strong> siempre es la misma en cualquier parte, por eso nunca se acercan ni se alejan. ¡Se mide usando un segmento perpendicular entre ambas!</p>
                 <div data-exercise-index="0"></div>
             </div>
 

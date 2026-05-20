@@ -232,6 +232,22 @@ export const multiDiviQuestions: Record<number, Question[]> = {
                 });
             }
             return qs;
+        })(),
+        ...(() => {
+            const qs: Question[] = [];
+            for (let i = 0; i < 20; i++) {
+                const a = 32 + i * 2;
+                const b = 2 + (i % 4);
+                qs.push({
+                    type: 'input',
+                    question: `Resuelve esta multiplicación paso a paso: ${a} x ${b} 🏢`,
+                    answer: (a * b).toString(),
+                    hints: [`Colocamos el ${a} arriba y el ${b} abajo.`, `Primero: ${b} x ${a % 10}.`, `Segundo: ${b} x ${Math.floor(a / 10)}, más lo que lleves si es el caso.`, `El resultado es ${a * b}.`],
+                    explanation: `¡Magnífico! Al multiplicar de forma escrita, paso a paso, obtenemos que ${a} x ${b} = **${a * b}**. ¡Eres un maestro de las alturas numéricas! 🏢✨`,
+                    lessonId: 'multiplicacion_escrita_3_4'
+                });
+            }
+            return qs;
         })()
     ]
 };

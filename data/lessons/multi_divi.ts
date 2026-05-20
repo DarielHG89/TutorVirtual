@@ -280,4 +280,77 @@ export const multiDiviLessons: LessonContent[] = [
         ],
         practice: getQuestionsForLesson('division_3_3'),
     },
+    {
+        id: 'multiplicacion_escrita_3_4',
+        title: 'Multiplicación Escrita a un Paso 🏢',
+        period: 2,
+        categoryId: 'multi_divi',
+        theory: `
+            <h3 class="text-2xl font-bold mb-4 text-indigo-600 dark:text-indigo-400">Multiplicar por pasos 🧗‍♂️</h3>
+            <p class="mb-4">Para multiplicar números grandes, los escribimos uno debajo del otro. ¡Pero aquí el número de abajo visita todas las habitaciones del número de arriba! 🏢</p>
+            
+            <div class="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-lg mb-4 shadow-inner text-center">
+                <h4 class="text-xl font-bold mb-2 text-indigo-800 dark:text-indigo-300">Paso 1: Colocar los números ✍️</h4>
+                <p>El número más grande arriba y el más pequeño abajo, alineados por la derecha.</p>
+                <div class="font-mono text-2xl p-4 inline-block rounded bg-white dark:bg-slate-800 mt-2 text-slate-700 dark:text-slate-200">
+                    <div class="text-right">43</div>
+                    <div class="border-b-2 border-slate-600 dark:border-slate-400 text-right">x 2</div>
+                </div>
+                <div data-exercise-index="0"></div>
+            </div>
+
+            <div class="bg-teal-50 dark:bg-teal-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-teal-800 dark:text-teal-300">Paso 2: ¡A multiplicar! 🚀</h4>
+                <ol class="list-decimal list-inside space-y-2">
+                    <li>Multiplicamos <strong>2 x 3</strong> (unidades). Nos da 6. Lo escribimos abajo.</li>
+                    <li>Multiplicamos <strong>2 x 4</strong> (decenas). Nos da 8. Lo escribimos debajo de las decenas.</li>
+                    <li>¡Listo! El resultado es <strong>86</strong>.</li>
+                </ol>
+                <div data-exercise-index="1"></div>
+            </div>
+
+            <div class="bg-pink-50 dark:bg-pink-900/30 p-4 rounded-lg shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-pink-800 dark:text-pink-300">¿Y si nos llevamos una? 🎈</h4>
+                <p>Si la multiplicación da 10 o más (ej: <strong>24 x 3</strong>):</p>
+                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li><strong>3 x 4 = 12</strong>. Escribimos el 2 y nos llevamos el 1.</li>
+                    <li><strong>3 x 2 = 6</strong>. Le sumamos el 1 que llevábamos (6 + 1 = 7).</li>
+                    <li>El resultado es <strong>72</strong>. ¡Fácil! 😎</li>
+                </ul>
+                <div data-exercise-index="2"></div>
+            </div>
+        `,
+        interactiveExercises: [
+            {
+                type: 'fill-in-the-blanks',
+                title: 'Multiplicando Unidades y Decenas',
+                textWithBlanks: 'En 32 x 3: Primero 3 x 2 = __BLANK__. Luego 3 x 3 = __BLANK__. El resultado es __BLANK__.',
+                blanks: [
+                    { correctAnswer: '6', options: ['5', '6', '8'] },
+                    { correctAnswer: '9', options: ['6', '9', '12'] },
+                    { correctAnswer: '96', options: ['96', '69', '36'] }
+                ]
+            },
+            {
+                type: 'fill-in-the-blanks',
+                title: 'Llevando al vecino',
+                textWithBlanks: 'En 15 x 4: 4x5=20 (llevo __BLANK__). 4x1=4, más lo que llevaba es __BLANK__. Da 60.',
+                blanks: [
+                    { correctAnswer: '2', options: ['1', '2', '3'] },
+                    { correctAnswer: '6', options: ['4', '5', '6'] }
+                ]
+            },
+            {
+                type: 'match-pairs',
+                title: 'Resuelve estas rápidas',
+                pairs: [
+                    { term: '21 x 4', definition: '84' },
+                    { term: '12 x 3', definition: '36' },
+                    { term: '15 x 2', definition: '30' },
+                    { term: '11 x 7', definition: '77' },
+                ]
+            }
+        ],
+        practice: getQuestionsForLesson('multiplicacion_escrita_3_4'),
+    },
 ];
