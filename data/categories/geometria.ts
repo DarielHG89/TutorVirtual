@@ -228,9 +228,9 @@ export const geometriaQuestions: Record<number, Question[]> = {
             return qs;
         })(),
         
-        // --- Lección: Circunferencia, círculo y cilindro (GEOMETRIA_P3) ---
+        // --- Lección: Circunferencia, círculo, cilindro y esfera (GEOMETRIA_P3) ---
         { type: 'mcq', question: '¿Cómo se llama la línea del borde de un círculo?', imageUrl: createCircleSVG('radius', 5), options: ['Circunferencia', 'Círculo', 'Radio'], answer: 'Circunferencia', hints:['Es solo el contorno, no lo de adentro.', 'Es como un anillo o un hula-hoop.', 'La palabra empieza con C.', 'No es "círculo".', 'Circunferencia.'], explanation: 'La línea que forma el borde de un círculo se llama circunferencia. ¡El contorno perfecto! ✨', lessonId: GEOMETRIA_P3},
-        { type: 'mcq', question: 'Una moneda es un ejemplo de...', options: ['Circunferencia', 'Círculo', 'Cilindro'], answer: 'Círculo', hints:['No es solo el borde, sino también lo de adentro.', 'Es una figura plana.', 'Es la superficie completa.', 'Círculo.', 'No es una figura 3D.'], explanation: 'Una moneda, que es plana y redonda (incluyendo su interior), es un ejemplo de un círculo. 🪙', lessonId: GEOMETRIA_P3},
+        { type: 'mcq', question: '¿Qué figura 3D es totalmente curva y no tiene esquinas? ⚽', options: ['Cilindro', 'Esfera', 'Cubo'], answer: 'Esfera', hints:['Es como una pelota.', 'No tiene caras planas.', 'Gira y rueda perfectamente.', 'La Tierra tiene esta forma.', 'Esfera.'], explanation: '¡Correcto! La esfera es el cuerpo redondo perfecto, como una pelota o una canica. ⚽✨', lessonId: GEOMETRIA_P3},
         { type: 'mcq', question: '¿Qué figura 3D es esta?', imageUrl: create3DShapeSVG('cylinder'), options: ['Cubo', 'Cilindro', 'Cono'], answer: 'Cilindro', hints:['Tiene dos bases circulares.', 'Puede rodar si la tumbas.', 'Es como una lata de refresco.', 'No tiene esquinas.', 'Cilindro.'], explanation: 'Esta figura es un cilindro. ¡Como una lata de compota o un rollo de papel! 🥫', lessonId: GEOMETRIA_P3},
         { type: 'mcq', question: 'La línea marcada en rojo, que cruza todo el círculo por el centro, se llama...', imageUrl: createCircleSVG('diameter', 10), options: ['Radio', 'Diámetro', 'Cuerda'], answer: 'Diámetro', hints:['Es la distancia más larga dentro del círculo.', 'Es el doble del radio.', 'Pasa justo por el centro.', 'Empieza con D.', 'Diámetro.'], explanation: 'Esa línea es el diámetro. ¡Atraviesa el corazón del círculo de lado a lado! ❤️', lessonId: GEOMETRIA_P3},
         { type: 'mcq', question: 'La línea marcada en azul, que va del centro al borde, se llama...', imageUrl: createCircleSVG('radius', 5), options: ['Radio', 'Diámetro', 'Circunferencia'], answer: 'Radio', hints:['Es la mitad del diámetro.', 'Es como los rayos de una rueda de bicicleta.', 'Todos los radios de un círculo miden lo mismo.', 'Empieza con R.', 'Radio.'], explanation: 'Esa línea es el radio. ¡Es el brazo que mide el tamaño del círculo! 💪', lessonId: GEOMETRIA_P3},
@@ -322,7 +322,8 @@ export const geometriaQuestions: Record<number, Question[]> = {
             return qs;
         })(),
 
-        // --- Lección: Circunferencia, círculo y cilindro (GEOMETRIA_P3) ---
+        // --- Lección: Circunferencia, círculo, cilindro y esfera (GEOMETRIA_P3) ---
+        { type: 'mcq', question: '¿Cuál de estos objetos se parece más a una esfera? 🏀', options: ['Una lata', 'Una naranja', 'Un libro'], answer: 'Una naranja', hints:['Debe ser redondo por todas partes.', 'No puede tener bases planas.', 'Una naranja es como una pelota.', 'La naranja.'], explanation: '¡Exacto! Una naranja tiene forma de esfera. Una lata es un cilindro y un libro un ortoedro. 🍊✨', lessonId: GEOMETRIA_P3},
         { type: 'input', question: 'El diámetro de un círculo es de 20 cm. ¿Cuánto mide su radio? 📏🔴', imageUrl: createCircleSVG('diameter', 20), answer: '10', hints:['El radio es el segmento que va desde el centro hasta el borde.', 'El diámetro cruza todo el círculo, pasando por el centro.', 'Por eso, el radio mide exactamente la mitad que el diámetro.', 'Divide 20 entre 2.', 'La respuesta es 10.'], explanation: `¡Perfecto! 🌟 El radio es siempre la mitad del diámetro. 
         Si el diámetro es 20 cm, entonces: **20 ÷ 2 = 10 cm**. 
         ¡El radio mide 10 centímetros! 📏✨`, lessonId: GEOMETRIA_P3},
@@ -417,7 +418,8 @@ export const geometriaQuestions: Record<number, Question[]> = {
             return qs;
         })(),
 
-        // --- Lección: Circunferencia, círculo y cilindro (GEOMETRIA_P3) ---
+        // --- Lección: Circunferencia, círculo, cilindro y esfera (GEOMETRIA_P3) ---
+        { type: 'mcq', question: '¿Cuál de estos cuerpos redondos no tiene ninguna cara plana? ⚽', options: ['Cilindro', 'Esfera', 'Ambos'], answer: 'Esfera', hints:['El cilindro tiene dos tapas circulares planas.', 'La esfera es redonda por todos lados.', 'Piensa en una pelota.', 'Esfera.'], explanation: '¡Correcto! La esfera es curva en todas sus direcciones y no tiene ninguna base o cara plana. ⚽✨', lessonId: GEOMETRIA_P3},
         { type: 'mcq', question: 'Si el diámetro de un círculo es 0, ¿qué es el círculo?', options: ['Un círculo muy grande', 'Un punto', 'Una línea'], answer: 'Un punto', hints:['Un diámetro de 0 significa que no tiene ancho.', 'Una figura sin ancho ni largo es...', 'Un punto.', 'No tiene tamaño.', 'Es la mínima expresión.'], explanation: 'Un círculo con un diámetro de 0 no tiene dimensiones, es simplemente un punto en el espacio. 📍', lessonId: GEOMETRIA_P3},
         { type: 'mcq', question: 'La línea que une dos puntos cualquiera de la circunferencia se llama...', options: ['Radio', 'Diámetro', 'Cuerda'], answer: 'Cuerda', hints:['No tiene por qué pasar por el centro.', 'El diámetro es un tipo especial de esta línea.', 'Une dos puntos del borde.', 'Cuerda.', 'Como la cuerda de un arco.'], explanation: 'Una cuerda es cualquier segmento de línea que une dos puntos en la circunferencia. ¡El diámetro es la cuerda más larga posible! 🏹', lessonId: GEOMETRIA_P3},
         ...(() => {

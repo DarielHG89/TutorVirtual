@@ -145,6 +145,21 @@ export const multiDiviQuestions: Record<number, Question[]> = {
                     });
                 }
             }
+            // División con resto (Nivel 2)
+            for (let i = 0; i < 20; i++) {
+                const divisor = 2 + (i % 5);
+                const quotient = 5 + (i % 10);
+                const remainder = 1 + (i % (divisor - 1 || 1));
+                const total = (divisor * quotient) + remainder;
+                qs.push({
+                    type: 'input',
+                    question: `Calcula el resto de esta división: ${total} ÷ ${divisor} 🍎♻️`,
+                    answer: remainder.toString(),
+                    hints: [`¿Cuántas veces cabe el ${divisor} en ${total}?`, `Cabe ${quotient} veces porque ${divisor} x ${quotient} = ${divisor * quotient}.`, `Ahora resta: ${total} - ${divisor * quotient}.`, `Lo que sobra es el resto.`],
+                    explanation: `¡Correcto! 👀 En la división ${total} ÷ ${divisor}, el cociente es ${quotient} y sobran **${remainder}**. ¡El resto siempre es menor que el divisor! ✨`,
+                    lessonId: 'division_3_resto'
+                });
+            }
             return qs;
         })()
     ],
@@ -152,7 +167,7 @@ export const multiDiviQuestions: Record<number, Question[]> = {
         // === NIVEL 3: 80 preguntas (40 Multiplicación, 40 División) ===
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 30; i++) {
                 const a = 45 + i * 5;
                 const b = 6 + (i % 4);
                 qs.push({
@@ -168,7 +183,7 @@ export const multiDiviQuestions: Record<number, Question[]> = {
         })(),
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 30; i++) {
                 const divisor = 5 + (i % 5);
                 const quotient = 25 + i * 2;
                 const total = divisor * quotient;
@@ -181,6 +196,23 @@ export const multiDiviQuestions: Record<number, Question[]> = {
                     lessonId: DIVISION
                 });
             }
+            // Problemas de división con resto (Nivel 3)
+            qs.push({
+                type: 'input',
+                question: 'Una obrera empaqueta 55 vasos en cajas de 6 vasos cada una. ¿Cuántos vasos le sobran? 🏺📦',
+                answer: '1',
+                hints: ['Divide 55 entre 6.', 'Busca en la tabla del 6: 6 x 9 = 54.', 'Calcula la diferencia: 55 - 54.', 'Uno.'],
+                explanation: '55 ÷ 6 = 9 y sobra **1**. Se llenan 9 cajas y queda un vaso suelto. 🏺',
+                lessonId: 'division_3_resto'
+            });
+            qs.push({
+                type: 'input',
+                question: 'Para un auto nuevo se necesitan 5 gomas. ¿Cuántas gomas sobran si tenemos 878 gomas para armar autos? 🚗🛞',
+                answer: '3',
+                hints: ['Divide 878 entre 5.', 'En la división larga: el último residuo es el que sobra.', 'Resta hasta el final.', 'Tres.'],
+                explanation: '878 ÷ 5 da 175 autos y sobran **3** gomas. ¡Muy bien calculado! 🛞',
+                lessonId: 'division_3_resto'
+            });
             return qs;
         })(),
         ...(() => {

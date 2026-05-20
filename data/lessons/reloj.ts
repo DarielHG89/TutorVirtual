@@ -163,17 +163,6 @@ export const relojLessons: LessonContent[] = [
                 <p class="mt-2 font-bold">Sumamos los minutos: 15 + 30 = 45. ¡Estará listo a las <strong>3:45</strong>! 🤤✨</p>
                 <div data-exercise-index="1"></div>
             </div>
-
-            <div class="bg-emerald-50 dark:bg-emerald-900/30 p-4 rounded-lg shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-emerald-800 dark:text-emerald-300">Días, Semanas y Meses 📅🌱</h4>
-                <p>El tiempo también se mide en períodos largos:</p>
-                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
-                    <li><strong>7 días</strong> = 1 semana.</li>
-                    <li><strong>4 semanas</strong> (aprox) = 1 mes.</li>
-                    <li><strong>12 meses</strong> = ¡1 año! 🎂🎈</li>
-                </ul>
-                <div data-exercise-index="2"></div>
-            </div>
         `,
         interactiveExercises: [
             {
@@ -183,16 +172,6 @@ export const relojLessons: LessonContent[] = [
                 correctAnswers: ['10']
             },
             {
-                type: 'match-pairs',
-                title: 'Calendario Loco 📅',
-                pairs: [
-                    { term: '7 días', definition: 'Una semana' },
-                    { term: '365 días', definition: 'Un año' },
-                    { term: '30 días', definition: 'Un mes (aprox)' },
-                    { term: '12 meses', definition: 'Un año completo' },
-                ]
-            },
-            {
                 type: 'fill-in-the-text',
                 title: '¡A merendar!',
                 textWithInputs: 'Si la merienda es a las 4:30 y son las 4:10, faltan __INPUT__ minutos para comer.',
@@ -200,5 +179,56 @@ export const relojLessons: LessonContent[] = [
             }
         ],
         practice: getQuestionsForLesson('reloj_problemas'),
+    },
+    {
+        id: 'reloj_calendario',
+        title: 'El Calendario: Días, Meses y Años 📅🎂',
+        period: 3,
+        categoryId: 'reloj',
+        theory: `
+            <h3 class="text-2xl font-bold mb-4 text-emerald-600 dark:text-emerald-400">¡El gran viaje del tiempo! 📅🚀</h3>
+            <p class="mb-4">Para medir tiempos largos usamos el <strong>calendario</strong>. ¡Es como un mapa que nos dice dónde estamos en el año!</p>
+            
+            <div class="bg-emerald-50 dark:bg-emerald-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-emerald-800 dark:text-emerald-300">Unidades de Tiempo Largo ⏳📅</h4>
+                <p>¡Memoriza estas equivalencias mágicas!:</p>
+                <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li><strong>1 año</strong> = 12 meses (o 365 días).</li>
+                    <li><strong>1 semestre</strong> = 6 meses.</li>
+                    <li><strong>1 trimestre</strong> = 3 meses. ¡Como los períodos de la escuela! 🏫</li>
+                    <li><strong>1 mes</strong> = 30 o 31 días (febrero tiene 28).</li>
+                    <li><strong>1 semana</strong> = 7 días.</li>
+                </ul>
+                <div data-exercise-index="0"></div>
+            </div>
+
+            <div class="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-indigo-800 dark:text-indigo-300">Tiempo de Gigantes 🖐️🌕</h4>
+                <p><strong>Un lustro</strong> = 5 años. <strong>Una década</strong> = 10 años. <strong>Un siglo</strong> = 100 años.</p>
+                <div data-exercise-index="1"></div>
+            </div>
+        `,
+        interactiveExercises: [
+            {
+                type: 'fill-in-the-blanks',
+                title: 'Conversiones Rápidas',
+                textWithBlanks: 'En 2 años hay __BLANK__ meses. En 2 semanas hay __BLANK__ días.',
+                blanks: [
+                    { correctAnswer: '24', options: ['12', '24', '30'] },
+                    { correctAnswer: '14', options: ['7', '10', '14'] }
+                ]
+            },
+            {
+                type: 'match-pairs',
+                title: 'Equivalencias Extra',
+                pairs: [
+                    { term: '1 Lustro', definition: '5 años' },
+                    { term: '1 Década', definition: '10 años' },
+                    { term: '1 Siglo', definition: '100 años' },
+                    { term: '1 Semestre', definition: '6 meses' }
+                ]
+            }
+        ],
+        practice: getQuestionsForLesson('reloj_calendario'),
     },
 ];

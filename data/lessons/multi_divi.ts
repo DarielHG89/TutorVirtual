@@ -160,6 +160,54 @@ export const multiDiviLessons: LessonContent[] = [
         practice: getQuestionsForLesson('division_3_2'),
     },
     {
+        id: 'division_3_resto',
+        title: 'División con Resto: ¡Lo que sobra importa! 🍎♻️',
+        period: 2,
+        categoryId: 'multi_divi',
+        theory: `
+            <h3 class="text-2xl font-bold mb-4 text-rose-600 dark:text-rose-400">¿Qué pasa si no podemos repartir todo? 🍎🤔</h3>
+            <p class="mb-4">A veces, al repartir objetos en grupos iguales, sobran algunos que no alcanzan para completar otro grupo. ¡Eso que sobra es el <strong>resto</strong>!</p>
+            
+            <div class="bg-rose-50 dark:bg-rose-900/30 p-4 rounded-lg mb-4 shadow-inner text-center">
+                <h4 class="text-xl font-bold mb-2 text-rose-800 dark:text-rose-300">Ejemplo: Repartiendo Manzanas 🍎</h4>
+                <p>Si tienes 7 manzanas y las quieres poner en 2 cestas:</p>
+                <ul class="list-disc list-inside ml-4 mt-2 space-y-1 text-left">
+                    <li>Pones 3 en cada cesta (3 x 2 = 6).</li>
+                    <li>Sobra <strong>1</strong> manzana que no puedes poner en ninguna cesta sin que una tenga más que la otra.</li>
+                </ul>
+                <p class="mt-2 font-mono font-bold text-lg">7 ÷ 2 = 3 y sobra 1</p>
+                <div data-exercise-index="0"></div>
+            </div>
+
+            <div class="bg-amber-50 dark:bg-yellow-900/30 p-4 rounded-lg mb-4 shadow-inner">
+                <h4 class="text-xl font-bold mb-2 text-amber-800 dark:text-amber-300">La Regla de Oro del Resto 👑</h4>
+                <p>El <strong>resto</strong> siempre, siempre tiene que ser <strong>más pequeño</strong> que el divisor. ¡Si es igual o mayor, significa que aún podías repartir más!</p>
+                <p class="mt-2 italic">Si divides entre 5, el resto solo puede ser 0, 1, 2, 3 o 4.</p>
+                <div data-exercise-index="1"></div>
+            </div>
+        `,
+        interactiveExercises: [
+            {
+                type: 'fill-in-the-blanks',
+                title: 'Calculando el Resto',
+                textWithBlanks: 'Si divido 13 entre 4: Caben __BLANK__ veces (4 x 3 = 12) y el resto es __BLANK__.',
+                blanks: [
+                    { correctAnswer: '3', options: ['2', '3', '4'] },
+                    { correctAnswer: '1', options: ['1', '2', '3'] }
+                ]
+            },
+            {
+                type: 'fill-in-the-blanks',
+                title: '¿Es posible este resto?',
+                textWithBlanks: 'Si dividimos un número entre 3, el resto __BLANK__ es IMPOSIBLE.',
+                blanks: [
+                    { correctAnswer: '4', options: ['0', '1', '2', '4'] }
+                ]
+            }
+        ],
+        practice: getQuestionsForLesson('division_3_resto'),
+    },
+    {
         id: 'division_3_3',
         title: 'División Escrita: El método de la Galera 🏰',
         period: 2,

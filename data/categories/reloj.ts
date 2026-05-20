@@ -4,6 +4,7 @@ import type { Question } from '../../types';
 const RELOJ_LECTURA = 'reloj_lectura';
 const RELOJ_MINUTOS = 'reloj_minutos';
 const RELOJ_PROBLEMAS = 'reloj_problemas';
+const RELOJ_CALENDARIO = 'reloj_calendario';
 
 // Helper para crear representaciones visuales de relojes
 const createClockSVG = (h: number, m: number): string => {
@@ -224,6 +225,67 @@ export const relojQuestions: Record<number, Question[]> = {
                     explanation: `¡Muy bien! 🌟 Hallamos la diferencia entre el tiempo final y el inicial: ${endMins} - ${startMins} = **${dur}** minutos. ¡El tiempo pasa volando! ✨`,
                     lessonId: RELOJ_PROBLEMAS
                 });
+            }
+            return qs;
+        })(),
+        ...(() => {
+            const qs: Question[] = [];
+            // Preguntas de calendario y unidades largas (Siglos, décadas, etc.)
+            for (let i = 0; i < 20; i++) {
+                const isMcq = i % 2 === 0;
+                if (i % 4 === 0) {
+                    const years = 2 + (i % 5);
+                    const months = years * 12;
+                    qs.push({
+                        type: isMcq ? 'mcq' : 'input',
+                        question: `¿Cuántos meses hay en ${years} años? 📅`,
+                        answer: months.toString(),
+                        options: isMcq ? [months.toString(), (months - 12).toString(), (months + 12).toString()].sort(() => Math.random() - 0.5) : undefined,
+                        hints: [`Multiplica por 12.`, `1 año = 12 meses.`, `2 años = 24 meses.`, `Calcula ${years} x 12.`],
+                        explanation: `¡Correcto! 🎯 Como 1 año tiene 12 meses, ${years} años tienen ${years} x 12 = **${months}** meses. ✨`,
+                        lessonId: RELOJ_CALENDARIO
+                    });
+                } else if (i % 4 === 1) {
+                    const weeks = 2 + (i % 4);
+                    const days = weeks * 7;
+                    qs.push({
+                        type: isMcq ? 'mcq' : 'input',
+                        question: `¿Cuántos días hay en ${weeks} semanas? 📅`,
+                        answer: days.toString(),
+                        options: isMcq ? [days.toString(), (days - 7).toString(), (days + 7).toString()].sort(() => Math.random() - 0.5) : undefined,
+                        hints: [`Multiplica por 7.`, `1 semana = 7 días.`, `2 semanas = 14 días.`, `Calcula ${weeks} x 7.`],
+                        explanation: `¡Muy bien! 🎯 Cada semana tiene 7 días, así que ${weeks} semanas son **${days}** días. ✨`,
+                        lessonId: RELOJ_CALENDARIO
+                    });
+                } else if (i % 4 === 2) {
+                    const pairs = [
+                        { q: 'lustro', a: '5' },
+                        { q: 'década', a: '10' },
+                        { q: 'siglo', a: '100' },
+                        { q: 'milenio', a: '1000' }
+                    ];
+                    const item = pairs[i % 4];
+                    qs.push({
+                        type: 'input',
+                        question: `Un ${item.q} tiene __ años. 🕰️`,
+                        answer: item.a,
+                        hints: [`Es una unidad de tiempo larga.`, `¿Cuántos años son?`, `Pista: empieza por la letra de su número (década-diez).`, `La respuesta es ${item.a}.`],
+                        explanation: `¡Exacto! 🎯 Un ${item.q} equivale a **${item.a}** años. ✨`,
+                        lessonId: RELOJ_CALENDARIO
+                    });
+                } else {
+                    const totalMonths = 18 + (i * 2);
+                    const years = Math.floor(totalMonths / 12);
+                    const remMonths = totalMonths % 12;
+                    qs.push({
+                        type: 'input',
+                        question: `Si un bebé tiene ${totalMonths} meses, ¿cuántos años y meses tiene? (Escribe solo los años) 👶`,
+                        answer: years.toString(),
+                        hints: [`Divide entre 12.`, `Caben 12 meses en un año.`, `¿Cuántas veces cabe el 12 en ${totalMonths}?`],
+                        explanation: `¡Bien pensado! 🎯 ${totalMonths} meses son **${years}** año(s) y ${remMonths} meses. ✨`,
+                        lessonId: RELOJ_CALENDARIO
+                    });
+                }
             }
             return qs;
         })()
