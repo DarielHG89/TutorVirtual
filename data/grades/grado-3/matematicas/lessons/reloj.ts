@@ -1,4 +1,4 @@
-import type { LessonContent } from '../../types';
+import type { LessonContent } from '../../../../../types';
 import { relojQuestions } from '../categories/reloj';
 
 const getQuestionsForLesson = (lessonId: string) => {

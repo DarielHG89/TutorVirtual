@@ -6,6 +6,9 @@ import { useSpeech } from '../context/SpeechContext';
 import type { QuestionResult, CategoryId, QuizConfig } from '../types';
 import { contentManager } from '../utils/contentManager';
 import { getQualitativeEvaluation } from '../utils/evaluationUtils';
+import { motion } from 'framer-motion';
+import { playMilestoneSound } from '../utils/sounds';
+import { aiConfigManager } from '../utils/aiConfigManager';
 
 interface ResultsProps {
     results: QuestionResult[];
@@ -17,6 +20,11 @@ interface ResultsProps {
     onGoToStudyArea?: () => void;
     quizConfig: QuizConfig | null;
     onStartNextLevel: () => void;
+    milestoneInfo?: {
+        isNewMilestone: boolean;
+        type: 'perfect' | 'category_completed' | 'level_completed';
+        categoryName: string;
+    } | null;
 }
 
 const MIN_SCORE_TO_PASS = 0.8;
@@ -96,7 +104,7 @@ export const Confetti: React.FC<ConfettiProps> = ({ onComplete }) => {
 };
 
 
-export const Results: React.FC<ResultsProps> = ({ results, onBack, onRetry, practiceSuggestion, onGoToPractice, onGoToMainMenu, onGoToStudyArea, quizConfig, onStartNextLevel }) => {
+export const Results: React.FC<ResultsProps> = ({ results, onBack, onRetry, practiceSuggestion, onGoToPractice, onGoToMainMenu, onGoToStudyArea, quizConfig, onStartNextLevel, milestoneInfo }) => {
     const score = results.filter(r => r.correct).length;
     const total = results.length;
     const percent = total > 0 ? (score / total) * 100 : 0;
@@ -109,12 +117,32 @@ export const Results: React.FC<ResultsProps> = ({ results, onBack, onRetry, prac
     const title = isPerfectScore ? "¡Puntuación Perfecta!" : "¡Aventura Completada!";
 
     useEffect(() => {
-        let resultText = `${title}. Tu resultado final es ${score} de ${total}. Evaluación cualitativa: ${evalInfo.label}.`;
-        if (practiceSuggestion) {
-            resultText += ` ¡Felicidades, has completado todos los niveles de esta lección!`;
+        const appConfig = aiConfigManager.getConfig();
+
+        // 1. Play sound effect when milestone is reached
+        if (milestoneInfo?.isNewMilestone && appConfig.useCelebratorySounds !== false) {
+            playMilestoneSound();
         }
-        speak(resultText);
-    }, [score, total, title, speak, practiceSuggestion, evalInfo.label]);
+
+        // 2. Play speech feedback
+        let resultText = '';
+        if (milestoneInfo?.isNewMilestone) {
+            if (milestoneInfo.type === 'category_completed') {
+                resultText = `¡SÚPER HITO INCREÍBLE! ¡Has dominado por completo todos los niveles de ${milestoneInfo.categoryName}! ¡Hiciste un trabajo fabuloso y te ganaste el súper trofeo de maestría! ¡Eres una estrella brillante! `;
+            } else if (milestoneInfo.type === 'perfect') {
+                resultText = `¡SÚPER LOGRO DE CAMPEÓN! ¡Conseguiste una puntuación perfecta de diez de diez en un nivel de ${milestoneInfo.categoryName}! ¡Impresionante, medalla de oro para ti! `;
+            } else if (milestoneInfo.type === 'level_completed') {
+                resultText = `¡EXCELENTE TRABAJO! ¡Has superado un nuevo nivel en la categoría de ${milestoneInfo.categoryName}! ¡Tu cerebro crece con cada práctica, sigue así! `;
+            }
+            speak(resultText, { enthusiastic: true });
+        } else {
+            resultText = `${title}. Tu resultado final es ${score} de ${total}. Evaluación cualitativa: ${evalInfo.label}.`;
+            if (practiceSuggestion) {
+                resultText += ` ¡Felicidades, has completado todos los niveles de esta lección!`;
+            }
+            speak(resultText);
+        }
+    }, [score, total, title, speak, practiceSuggestion, evalInfo.label, milestoneInfo]);
 
     const showNextLevelButton = useMemo(() => {
         if (!passed || !quizConfig || practiceSuggestion) {
@@ -166,9 +194,36 @@ export const Results: React.FC<ResultsProps> = ({ results, onBack, onRetry, prac
                     </div>
                     <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 italic max-w-xs">{evalInfo.description}</p>
                 </div>
-                <p className="text-lg text-slate-600 dark:text-slate-400 mb-6">
+                <p className="text-lg text-slate-600 dark:text-slate-400 mb-6 font-medium">
                     Tiempo Total: <span className="font-bold">{formatTime(totalTime)}</span>
                 </p>
+
+                {milestoneInfo?.isNewMilestone && (
+                    <motion.div 
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 120, damping: 15 }}
+                        className="mb-8 p-6 rounded-3xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800/80 dark:to-amber-950/20 border-4 border-dashed border-amber-400 dark:border-amber-600/50 flex flex-col items-center justify-center max-w-md mx-auto shadow-xl"
+                    >
+                        <motion.div 
+                            animate={{ rotate: [0, -12, 12, -12, 12, 0] }}
+                            transition={{ duration: 1, delay: 0.5, repeat: Infinity, repeatDelay: 3 }}
+                            className="text-6xl mb-3 drop-shadow-md"
+                        >
+                            {milestoneInfo.type === 'category_completed' ? '🏆' : milestoneInfo.type === 'perfect' ? '🥇' : '⭐'}
+                        </motion.div>
+                        <h4 className="text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
+                            {milestoneInfo.type === 'category_completed' && "¡SÚPER MAESTRÍA DE CATEGORÍA!"}
+                            {milestoneInfo.type === 'perfect' && "¡CAMPEÓN DE PUNTUACIÓN PERFECTA!"}
+                            {milestoneInfo.type === 'level_completed' && "¡NIVEL DE MAESTRÍA SUPERADO!"}
+                        </h4>
+                        <p className="text-sm font-black text-slate-700 dark:text-slate-300 mt-2 text-center max-w-xs leading-snug">
+                            {milestoneInfo.type === 'category_completed' && `¡Completaste con honores cada nivel de ${milestoneInfo.categoryName}! ¡Felicidades, te ganaste el Súper Trofeo!`}
+                            {milestoneInfo.type === 'perfect' && `¡Diste en el blanco! Puntuación de 10 de 10 en ${milestoneInfo.categoryName}.`}
+                            {milestoneInfo.type === 'level_completed' && `¡Qué gran esfuerzo! Has alcanzado un nuevo hito en de la categoría ${milestoneInfo.categoryName}.`}
+                        </p>
+                    </motion.div>
+                )}
 
                 <div className="flex flex-wrap justify-center gap-3 mb-6 animate-fade-in">
                     <Button onClick={onBack} variant="secondary">

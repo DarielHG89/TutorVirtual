@@ -1,4 +1,4 @@
-import type { Question } from '../../types';
+import type { Question } from '../../../../../types';
 
 // IDs de lecciones para claridad
 const GEOMETRIA_P1 = 'geometria_p1';

@@ -1,4 +1,4 @@
-import type { LessonContent } from '../../types';
+import type { LessonContent } from '../../../../../types';
 import { problemasQuestions } from '../categories/problemas';
 
 const getQuestionsForLesson = (lessonId: string) => {
@@ -29,7 +29,7 @@ export const problemasLessons: LessonContent[] = [
                 <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
                     <li><strong>"¿Cuánto hay en TOTAL?"</strong> -> Casi siempre es una Adición ➕</li>
                     <li><strong>"¿Cuántos QUEDAN o FALTAN?"</strong> -> Casi siempre es una Sustracción ➖</li>
-                    <li><strong>"Tengo n grupos de x"</strong> -> ¡Multiplicación! ✖️</li>
+                    <li><strong>"Tengo n grupos de x"</strong> -> ¡Multiplicación! ✖</li>
                 </ul>
                 <div data-exercise-index="0"></div>
             </div>

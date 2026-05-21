@@ -213,6 +213,55 @@ export const AiConfigModal: React.FC<AiConfigModalProps> = ({ onClose }) => {
                             </AnimatePresence>
                         </div>
                     )}
+
+                    {/* Tutor Customizations Section */}
+                    <div className="border-t border-slate-200 dark:border-slate-700 pt-5 mt-4 space-y-4">
+                        <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                            <span>🏆 Motivación y Celebraciones</span>
+                        </h4>
+                        
+                        {/* Option 1: Enthusiastic Voice */}
+                        <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700/50">
+                            <div className="pr-4">
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
+                                    🎤 Voz de Tutor Súper Entusiasta
+                                </label>
+                                <span className="text-[11px] text-slate-500 dark:text-slate-400 block leading-tight">
+                                    Voz más animada o rápida cuando logras hitos de maestría.
+                                </span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setConfig({ ...config, useEnthusiasticVoice: !config.useEnthusiasticVoice })}
+                                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${config.useEnthusiasticVoice !== false ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-600'}`}
+                            >
+                                <span
+                                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${config.useEnthusiasticVoice !== false ? 'translate-x-5' : 'translate-x-0'}`}
+                                />
+                            </button>
+                        </div>
+
+                        {/* Option 2: Special Sound Effects */}
+                        <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700/50">
+                            <div className="pr-4">
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
+                                    ✨ Efectos de Sonido Especiales
+                                </label>
+                                <span className="text-[11px] text-slate-500 dark:text-slate-400 block leading-tight">
+                                    Reproduce un divertido repique de notas al alcanzar nuevos hitos.
+                                </span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setConfig({ ...config, useCelebratorySounds: !config.useCelebratorySounds })}
+                                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${config.useCelebratorySounds !== false ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-600'}`}
+                            >
+                                <span
+                                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${config.useCelebratorySounds !== false ? 'translate-x-5' : 'translate-x-0'}`}
+                                />
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="mt-8 flex gap-3">

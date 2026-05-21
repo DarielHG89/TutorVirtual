@@ -1,4 +1,4 @@
-import type { LessonContent } from '../../types';
+import type { LessonContent } from '../../../../../types';
 import { geometriaQuestions } from '../categories/geometria';
 
 const getQuestionsForLesson = (lessonId: string) => {
@@ -132,7 +132,7 @@ export const geometriaLessons: LessonContent[] = [
             
             <div class="bg-pink-50 dark:bg-pink-900/30 p-4 rounded-lg mb-4 shadow-inner">
                 <h4 class="text-xl font-bold mb-2 text-pink-800 dark:text-pink-300">Círculo y Circunferencia ⏺️</h4>
-                <p>La <strong>circunferencia</strong> es el borde. El <strong>círculo</strong> es la superficie de adentro. ¡Si el radio es de 2 cm, el diámetro es de 4 cm! 🪙</p>
+                <p>La <strong>circunferencia</strong> es el borde. El <strong>círculo</strong> es la superficie de adentro. ¡Si el radio es de 2 cm, el diámetro es de 4 cm! 💰</p>
                 <div data-exercise-index="0"></div>
             </div>
  

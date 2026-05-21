@@ -1,4 +1,4 @@
-import type { Question } from '../../types';
+import type { Question } from '../../../../../types';
 
 // IDs de lecciones
 const FRACCIONES_INTRO = 'fracciones_intro';

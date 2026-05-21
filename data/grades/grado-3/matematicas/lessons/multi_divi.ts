@@ -1,4 +1,4 @@
-import type { LessonContent } from '../../types';
+import type { LessonContent } from '../../../../../types';
 import { multiDiviQuestions } from '../categories/multi_divi';
 
 const getQuestionsForLesson = (lessonId: string) => {

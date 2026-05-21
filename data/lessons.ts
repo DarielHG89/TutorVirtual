@@ -1,13 +1,13 @@
 import type { LessonContent } from '../types';
 
-import { numerosLessons } from './lessons/numeros';
-import { sumaRestaLessons } from './lessons/suma_resta';
-import { multiDiviLessons } from './lessons/multi_divi';
-import { problemasLessons } from './lessons/problemas';
-import { geometriaLessons } from './lessons/geometria';
-import { medidasLessons } from './lessons/medidas';
-import { relojLessons } from './lessons/reloj';
-import { fraccionesLessons } from './lessons/fracciones';
+import { numerosLessons } from './grades/grado-3/matematicas/lessons/numeros';
+import { sumaRestaLessons } from './grades/grado-3/matematicas/lessons/suma_resta';
+import { multiDiviLessons } from './grades/grado-3/matematicas/lessons/multi_divi';
+import { problemasLessons } from './grades/grado-3/matematicas/lessons/problemas';
+import { geometriaLessons } from './grades/grado-3/matematicas/lessons/geometria';
+import { medidasLessons } from './grades/grado-3/matematicas/lessons/medidas';
+import { relojLessons } from './grades/grado-3/matematicas/lessons/reloj';
+import { fraccionesLessons } from './grades/grado-3/matematicas/lessons/fracciones';
 
 export const lessons: LessonContent[] = [
     ...numerosLessons,

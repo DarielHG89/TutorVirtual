@@ -139,3 +139,40 @@ export const playIncorrectSound = () => playTone('incorrect');
 export const playClickSound = () => playTone('click');
 export const playHintSound = () => playTone('hint');
 export const playMascotSound = (type: 'chirp' | 'surprised' | 'snore') => playTone(`mascot-${type}` as any);
+
+export const playMilestoneSound = () => {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    try {
+        const now = ctx.currentTime;
+        const notes = [
+            { freq: 261.63, time: 0 },      // C4
+            { freq: 329.63, time: 0.1 },    // E4
+            { freq: 392.00, time: 0.2 },    // G4
+            { freq: 523.25, time: 0.3 },    // C5
+            { freq: 659.25, time: 0.4 },    // E5
+            { freq: 783.99, time: 0.5 },    // G5
+            { freq: 1046.50, time: 0.6 }    // C6 (Triumphant High C!)
+        ];
+        
+        notes.forEach(note => {
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            
+            oscillator.type = 'triangle';
+            oscillator.frequency.setValueAtTime(note.freq, now + note.time);
+            
+            gainNode.gain.setValueAtTime(0, now + note.time);
+            gainNode.gain.linearRampToValueAtTime(0.25, now + note.time + 0.02);
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, now + note.time + 0.35);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            
+            oscillator.start(now + note.time);
+            oscillator.stop(now + note.time + 0.45);
+        });
+    } catch (e) {
+        console.error("Could not play milestone sound:", e);
+    }
+};

@@ -1,4 +1,4 @@
-import type { Question } from '../../types';
+import type { Question } from '../../../../../types';
 
 // IDs de lecciones
 const MULTIPLICACION = 'multiplicacion_3_1';

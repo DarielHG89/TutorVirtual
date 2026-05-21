@@ -1,4 +1,4 @@
-import type { Question } from '../../types';
+import type { Question } from '../../../../../types';
 
 // IDs de lecciones
 const NUMEROS_1_1 = 'numeros_1_1';
@@ -242,7 +242,7 @@ export const numerosQuestions: Record<number, Question[]> = {
                     if (i % 4 === 0) {
                         qs.push({
                             type: 'input',
-                            question: `Si Pedro tiene $${h}.00 CUP y quiere saber cuántos centavos (¢) tiene en total, ¿cuántos centavos son? 🇨🇺🪙`,
+                            question: `Si Pedro tiene $${h}.00 CUP y quiere saber cuántos centavos (¢) tiene en total, ¿cuántos centavos son? 🇨🇺💰`,
                             imageUrl: createNumbersSVG('coins', { val: h, label: 'CUP' }),
                             answer: (h * 100).toString(),
                             hints: [`Recuerda que 1 peso cubano (CUP) son 100 centavos.`, `Multiplica los ${h} pesos por 100.`, `Simplemente agrega dos ceros al número de pesos.`, `Son ${h * 100} centavos.`, `No le pongas punto o coma.`],

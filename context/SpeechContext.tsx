@@ -4,11 +4,12 @@ import type { VoiceMode } from '../types';
 import { generateSpeech } from '../services/aiService';
 import { decode, decodeAudioData } from '../utils/audio';
 import { initLocalTts, synthesizeLocal, isLocalTtsReady } from '../services/localTtsService';
+import { aiConfigManager } from '../utils/aiConfigManager';
 
 interface SpeechContextType {
     isMuted: boolean;
     toggleMute: () => void;
-    speak: (text: string) => void;
+    speak: (text: string, options?: { enthusiastic?: boolean }) => void;
     isSupported: boolean;
     isSpeaking: boolean;
     availableLocalVoices: SpeechSynthesisVoice[];
@@ -141,14 +142,14 @@ export const SpeechProvider: React.FC<{ children: ReactNode; voiceMode: VoiceMod
             currentAudioSourceRef,
             ttsModelUrl,
             ttsConfigUrl,
-            async playOnline(text: string) {
+            async playOnline(text: string, enthusiastic?: boolean) {
                 if (!audioContextRef.current) {
                     console.error("AudioContext not available.");
                     setIsSpeaking(false);
                     return;
                 }
                 try {
-                    const base64Audio = await generateSpeech(text);
+                    const base64Audio = await generateSpeech(text, enthusiastic);
                     const audioData = decode(base64Audio);
                     const audioBuffer = await decodeAudioData(audioData, audioContextRef.current, 24000, 1);
                     
@@ -170,7 +171,7 @@ export const SpeechProvider: React.FC<{ children: ReactNode; voiceMode: VoiceMod
     }, [isMuted, isSupported, availableLocalVoices, selectedVoiceURI, voiceMode]);
 
 
-    const speak = useCallback(async (text: string) => {
+    const speak = useCallback(async (text: string, options?: { enthusiastic?: boolean }) => {
         const logic = logicRef.current;
         if (!logic || logic.isMuted || !logic.isSupported) return;
 
@@ -184,41 +185,51 @@ export const SpeechProvider: React.FC<{ children: ReactNode; voiceMode: VoiceMod
         const useLocal = logic.voiceMode === 'local' || (logic.voiceMode === 'auto' && logic.availableLocalVoices.length > 0);
         const useWasm = logic.voiceMode === 'local-wasm';
         
+        // Fetch config to check if user/parent allowed the more enthusiastic voice
+        const appConfig = aiConfigManager.getConfig();
+        const shouldBeEnthusiastic = appConfig.useEnthusiasticVoice !== false && !!options?.enthusiastic;
+        
         if (useWasm) {
-            try {
-                if (!isLocalTtsReady()) {
-                    await initLocalTts({
-                        modelUrl: logic.ttsModelUrl,
-                        configUrl: logic.ttsConfigUrl
-                    });
-                }
-                
-                console.log("Synthesizing with Local WASM model...");
-                const ctx = logic.audioContextRef.current;
-                if (!ctx) throw new Error("AudioContext missing");
-                
-                const audioBuffer = await synthesizeLocal(sanitizedText, ctx);
-                
-                if (audioBuffer) {
-                    if (ctx.state === 'suspended') await ctx.resume();
+            // Local WASM lacks dynamic pitch, so if enthusiastic we prefer online or default back if offline
+            if (shouldBeEnthusiastic) {
+                console.log("[SpeechContext] WASM TTS requested with enthusiasm, routing to Enthusiastic Online voice...");
+                logic.playOnline(sanitizedText, true);
+            } else {
+                try {
+                    if (!isLocalTtsReady()) {
+                        await initLocalTts({
+                            modelUrl: logic.ttsModelUrl,
+                            configUrl: logic.ttsConfigUrl
+                        });
+                    }
+                    
+                    console.log("Synthesizing with Local WASM model...");
+                    const ctx = logic.audioContextRef.current;
+                    if (!ctx) throw new Error("AudioContext missing");
+                    
+                    const audioBuffer = await synthesizeLocal(sanitizedText, ctx);
+                    
+                    if (audioBuffer) {
+                        if (ctx.state === 'suspended') await ctx.resume();
 
-                    const source = ctx.createBufferSource();
-                    source.buffer = audioBuffer;
-                    source.connect(ctx.destination);
-                    
-                    source.onended = () => {
-                        logic.setIsSpeaking(false);
-                        logic.currentAudioSourceRef.current = null;
-                    };
-                    
-                    logic.currentAudioSourceRef.current = source;
-                    source.start();
-                } else {
-                    throw new Error("Synthesis produced no audio buffer or AudioContext missing");
+                        const source = ctx.createBufferSource();
+                        source.buffer = audioBuffer;
+                        source.connect(ctx.destination);
+                        
+                        source.onended = () => {
+                            logic.setIsSpeaking(false);
+                            logic.currentAudioSourceRef.current = null;
+                        };
+                        
+                        logic.currentAudioSourceRef.current = source;
+                        source.start();
+                    } else {
+                        throw new Error("Synthesis produced no audio buffer or AudioContext missing");
+                    }
+                } catch (error) {
+                    console.error("Local WASM TTS error, falling back to online:", error);
+                    logic.playOnline(sanitizedText, shouldBeEnthusiastic);
                 }
-            } catch (error) {
-                console.error("Local WASM TTS error, falling back to online:", error);
-                logic.playOnline(sanitizedText);
             }
         } else if (useLocal) {
             const utterance = new SpeechSynthesisUtterance(sanitizedText);
@@ -232,6 +243,15 @@ export const SpeechProvider: React.FC<{ children: ReactNode; voiceMode: VoiceMod
                 utterance.voice = logic.defaultSpanishVoice;
             }
             utterance.lang = utterance.voice?.lang || 'es-ES';
+
+            // Boost enthusiasm for children!
+            if (shouldBeEnthusiastic) {
+                utterance.pitch = 1.35; // Playful, energetic pitch
+                utterance.rate = 1.15;  // Expressive speed
+            } else {
+                utterance.pitch = 1.0;
+                utterance.rate = 1.0;
+            }
 
             utterance.onend = () => {
                 logic.setIsSpeaking(false);
@@ -247,7 +267,7 @@ export const SpeechProvider: React.FC<{ children: ReactNode; voiceMode: VoiceMod
                     
                     if (logic.voiceMode === 'auto') {
                         console.log("Local TTS failed, attempting fallback to online voice.");
-                        logic.playOnline(sanitizedText);
+                        logic.playOnline(sanitizedText, shouldBeEnthusiastic);
                     } else {
                         logic.setIsSpeaking(false);
                     }
@@ -259,7 +279,7 @@ export const SpeechProvider: React.FC<{ children: ReactNode; voiceMode: VoiceMod
 
             window.speechSynthesis.speak(utterance);
         } else {
-            logic.playOnline(sanitizedText);
+            logic.playOnline(sanitizedText, shouldBeEnthusiastic);
         }
     }, []);
 

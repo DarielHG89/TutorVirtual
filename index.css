@@ -322,3 +322,21 @@ html.dark .onboarding-text { color: #cbd5e1; }
     justify-content: center;
     gap: 1rem;
 }
+
+/* Gamified Story Mode Enhancements */
+@keyframes shine-anim {
+  0% { transform: translateX(-100%) rotate(15deg); }
+  100% { transform: translateX(110%) rotate(15deg); }
+}
+.animate-shine {
+  animation: shine-anim 1.5s ease-in-out infinite;
+}
+
+@keyframes float-badge {
+  0%, 100% { transform: translateY(0px) translateX(-50%); }
+  50% { transform: translateY(-6px) translateX(-50%); }
+}
+.animate-float-badge {
+  animation: float-badge 2s ease-in-out infinite;
+}
+

@@ -13,7 +13,7 @@ interface FreePracticeMenuProps {
 const categoryIcons: Record<CategoryId, string> = {
     numeros: '🔢',
     suma_resta: '➕',
-    multi_divi: '✖️',
+    multi_divi: '✖',
     problemas: '🧠',
     geometria: '📐',
     medidas: '📏',

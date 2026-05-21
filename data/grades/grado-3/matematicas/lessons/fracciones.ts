@@ -1,4 +1,4 @@
-import type { LessonContent } from '../../types';
+import type { LessonContent } from '../../../../../types';
 import { fraccionesQuestions } from '../categories/fracciones';
 
 const getQuestionsForLesson = (lessonId: string) => {

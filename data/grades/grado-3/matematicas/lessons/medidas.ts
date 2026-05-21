@@ -1,4 +1,4 @@
-import type { LessonContent } from '../../types';
+import type { LessonContent } from '../../../../../types';
 import { medidasQuestions } from '../categories/medidas';
 
 const getQuestionsForLesson = (lessonId: string) => {
@@ -119,7 +119,7 @@ export const medidasLessons: LessonContent[] = [
             <p class="mb-4">Usamos el Peso Cubano para comprar cosas. ¡Aprender a contar dinero es muy divertido e importante! 🛍️</p>
             
             <div class="bg-emerald-50 dark:bg-emerald-900/30 p-4 rounded-lg mb-4 shadow-inner">
-                <h4 class="text-xl font-bold mb-2 text-emerald-800 dark:text-emerald-300">Billetes y Monedas 🪙💵</h4>
+                <h4 class="text-xl font-bold mb-2 text-emerald-800 dark:text-emerald-300">Billetes y Monedas 💰💵</h4>
                 <p>Tenemos monedas de 1, 2, 5 pesos y billetes de 10, 20, 50, 100... y más. ¡Saber sumar nos ayuda a saber el vuelto!</p>
                 <div data-exercise-index="0"></div>
             </div>

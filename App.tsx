@@ -20,6 +20,7 @@ import { AvatarSelectorModal, type AvatarSelectorModalProps } from './components
 import { FeedbackModal } from './components/FeedbackModal';
 import { StudentDashboard } from './components/StudentDashboard';
 import { Onboarding } from './components/Onboarding';
+import { GuidedTour } from './components/GuidedTour';
 import { DynamicBackground, type BackgroundTheme } from './components/common/DynamicBackground';
 import { InteractiveMascot } from './components/common/InteractiveMascot'; // Import Mascot
 import { useGameState } from './hooks/useGameState';
@@ -71,7 +72,14 @@ export default function App() {
     const [dashboardUser, setDashboardUser] = useState<StudentProfile | null>(null);
     const [avatarSelectorProps, setAvatarSelectorProps] = useState<Omit<AvatarSelectorModalProps, 'isOpen'> | null>(null);
     const [isOnboardingVisible, setIsOnboardingVisible] = useState(false);
+    const [isGuidedTourVisible, setIsGuidedTourVisible] = useState(false);
     const [isAiConfigModalOpen, setIsAiConfigModalOpen] = useState(false);
+    
+    const [milestoneInfo, setMilestoneInfo] = useState<{
+        isNewMilestone: boolean;
+        type: 'perfect' | 'category_completed' | 'level_completed';
+        categoryName: string;
+    } | null>(null);
     
     const [aiSuggestion, setAiSuggestion] = useState<{ text: string; isLoading: boolean; error: string | null }>({ text: '', isLoading: false, error: null });
 
@@ -239,6 +247,12 @@ export default function App() {
             window.removeEventListener('ai-config-updated', handleAiConfigUpdated);
         };
     }, []);
+
+    useEffect(() => {
+        if (currentUser && screen === 'main-menu' && !isOnboardingVisible && !currentUser.hasCompletedGuidedTour && !isGuidedTourVisible) {
+            setIsGuidedTourVisible(true);
+        }
+    }, [currentUser, screen, isOnboardingVisible, isGuidedTourVisible]);
     
     useEffect(() => {
         localStorage.setItem(DEBUG_MODE_KEY, JSON.stringify(isDebugMode));
@@ -421,6 +435,15 @@ export default function App() {
                     }
                 });
             });
+
+            // Also include interactive exercises from completed lessons
+            contentManager.getLessons().filter(l => l.categoryId === catId && completedLessonIds.has(l.id)).forEach(lesson => {
+                if (lesson.interactiveExercises) {
+                    lesson.interactiveExercises.forEach(ex => {
+                        pool.push({ ...ex, lessonId: lesson.id } as unknown as Question);
+                    });
+                }
+            });
         });
         
         return pool;
@@ -523,6 +546,18 @@ export default function App() {
         }
     }, [currentUser, allUsers, dispatch]);
 
+    const handleFinishGuidedTour = useCallback(() => {
+        setIsGuidedTourVisible(false);
+        if (currentUser) {
+            const updatedUser = { ...currentUser, hasCompletedGuidedTour: true };
+            const updatedUsers = allUsers.map(u => u.id === currentUser.id ? updatedUser : u);
+            
+            dispatch({ type: 'SET_ALL_USERS', payload: updatedUsers });
+            localStorage.setItem(USER_LIST_KEY, JSON.stringify(updatedUsers));
+            dispatch({ type: 'SET_CURRENT_USER', payload: updatedUser });
+        }
+    }, [currentUser, allUsers, dispatch]);
+
     const handleSelectCategory = useCallback((categoryId: CategoryId) => {
         if (!currentUser) return;
         dispatch({ type: 'SELECT_CATEGORY', payload: { categoryId, isFreeMode: false } });
@@ -550,7 +585,44 @@ export default function App() {
         }
 
         const categoryPool = questions[categoryId] || {};
-        const fullQuestionPool: { question: Question; originalIndex: number }[] = (categoryPool[level] || []).map((q: Question, index: number) => ({ question: q, originalIndex: index }));
+        
+        // Pool all questions from all levels
+        let allQuestions: Question[] = [];
+        Object.values(categoryPool).forEach(arr => {
+            allQuestions = allQuestions.concat(arr as Question[]);
+        });
+
+        // Mix in interactive exercises from lessons of this category
+        lessons.filter(l => l.categoryId === categoryId).forEach(l => {
+            if (l.interactiveExercises) {
+                l.interactiveExercises.forEach(ex => {
+                    const iq = { ...ex, lessonId: l.id } as unknown as Question;
+                    allQuestions.push(iq);
+                });
+            }
+        });
+
+        // Group by lesson and subtopic template
+        const byGroup: Record<string, Question[]> = {};
+        allQuestions.forEach(q => {
+            const lessonKey = q.lessonId || 'general';
+            const templateKey = 'question' in q && typeof q.question === 'string' ? q.question.split(' ').slice(0, 3).join(' ') : 'interactive';
+            const key = `${lessonKey}_${templateKey}`;
+            if (!byGroup[key]) byGroup[key] = [];
+            byGroup[key].push(q);
+        });
+
+        // Distribute to the current level
+        const levelQuestions: Question[] = [];
+        Object.values(byGroup).forEach(groupQuestions => {
+            groupQuestions.forEach((q, i) => {
+                if ((i % 3) + 1 === level) {
+                    levelQuestions.push(q);
+                }
+            });
+        });
+
+        const fullQuestionPool: { question: Question; originalIndex: number }[] = levelQuestions.map((q, index) => ({ question: q, originalIndex: index }));
 
         const completedLessonIds = lessons
             .filter(l => l.categoryId === categoryId && (gameState[l.id]?.highScores?.[1] || 0) >= MIN_SCORE_TO_UNLOCK)
@@ -603,9 +675,38 @@ export default function App() {
             scrollPositionsRef.current[key] = mainContentRef.current.scrollTop;
         }
         const lesson = lessons.find(l => l.id === lessonId);
-        if (!lesson || !lesson.practice[level]) return;
+        if (!lesson) return;
     
-        const fullQuestionPool: { question: Question; originalIndex: number }[] = (lesson.practice[level] || []).map((q: Question, index: number) => ({ question: q, originalIndex: index }));
+        let allQuestions: Question[] = [];
+        Object.values(lesson.practice).forEach(arr => {
+            allQuestions = allQuestions.concat(arr as Question[]);
+        });
+
+        // Mix in interactive exercises from this lesson
+        if (lesson.interactiveExercises) {
+            lesson.interactiveExercises.forEach(ex => {
+                const iq = { ...ex, lessonId: lesson.id } as unknown as Question;
+                allQuestions.push(iq);
+            });
+        }
+
+        const byGroup: Record<string, Question[]> = {};
+        allQuestions.forEach(q => {
+            const templateKey = 'question' in q && typeof q.question === 'string' ? q.question.split(' ').slice(0, 3).join(' ') : 'interactive';
+            if (!byGroup[templateKey]) byGroup[templateKey] = [];
+            byGroup[templateKey].push(q);
+        });
+
+        const levelQuestions: Question[] = [];
+        Object.values(byGroup).forEach(groupQuestions => {
+            groupQuestions.forEach((q, i) => {
+                if ((i % 3) + 1 === level) {
+                    levelQuestions.push(q);
+                }
+            });
+        });
+
+        const fullQuestionPool: { question: Question; originalIndex: number }[] = levelQuestions.map((q, index) => ({ question: q, originalIndex: index }));
     
         let usedIndices = gameState[lessonId]?.usedQuestions?.[level] || [];
         let availablePool = fullQuestionPool.filter(item => !usedIndices.includes(item.originalIndex));
@@ -822,6 +923,65 @@ export default function App() {
             }
             
             skillScore = Math.max(0, skillScore);
+
+            // COMPUTE MILESTONE ACHIEVEMENTS (for enthusiastic Voice & Sound Effects)
+            let isNewMilestone = false;
+            let milestoneType: 'perfect' | 'category_completed' | 'level_completed' | null = null;
+            let milestoneCategoryName = '';
+
+            if (quizConfig.type === 'practice' || quizConfig.type === 'lesson') {
+                const categoryId = skillKey as CategoryId;
+                milestoneCategoryName = categoryNames[categoryId] || categoryId;
+                const normalizedScore = total > 0 ? (score / total) * 10 : 0;
+                
+                const stateForKey = gameState[key];
+                const previousHighScore = stateForKey?.highScores?.[level] || 0;
+                
+                // 1. Level Completion: First time getting high score >= 8
+                const isCompletedWithThisQuiz = normalizedScore >= 8 && previousHighScore < 8;
+                
+                // 2. Perfect Score: First time getting perfect 10/10
+                const isPerfectWithThisQuiz = normalizedScore === 10 && previousHighScore < 10;
+                
+                // Calculate if the entire category is now fully mastered (all levels 10/10)
+                const questionsPool = contentManager.getQuestions()[categoryId] || {};
+                const totalLevels = Object.keys(questionsPool).length;
+                
+                let completedLevelsBeforePerfect = 0;
+                Object.keys(questionsPool).forEach(lvlStr => {
+                    const lvlNum = parseInt(lvlStr);
+                    const hs = gameState[key]?.highScores?.[lvlNum] || 0;
+                    if (hs === 10) {
+                        completedLevelsBeforePerfect++;
+                    }
+                });
+                
+                const completesCategoryMastery = isPerfectWithThisQuiz && (completedLevelsBeforePerfect + 1 >= totalLevels) && totalLevels > 0;
+
+                if (completesCategoryMastery) {
+                    isNewMilestone = true;
+                    milestoneType = 'category_completed';
+                } else if (isPerfectWithThisQuiz) {
+                    isNewMilestone = true;
+                    milestoneType = 'perfect';
+                } else if (isCompletedWithThisQuiz) {
+                    isNewMilestone = true;
+                    milestoneType = 'level_completed';
+                }
+                
+                if (isNewMilestone && milestoneType) {
+                    setMilestoneInfo({
+                        isNewMilestone: true,
+                        type: milestoneType,
+                        categoryName: milestoneCategoryName
+                    });
+                } else {
+                    setMilestoneInfo(null);
+                }
+            } else {
+                setMilestoneInfo(null);
+            }
+
             addSkillRecord(skillKey, skillScore, level, quizConfig.type, totalTime, results, lessonIdForRecord);
 
             if ((quizConfig.type === 'practice' && !isFreeMode) || quizConfig.type === 'lesson' || quizConfig.type === 'exam') {
@@ -991,7 +1151,7 @@ export default function App() {
             case 'achievements':
                  return { component: <AchievementsScreen studentProfile={currentUser!} />, title: 'Logros', onBack: handleBackToMenu, showHeader: true };
             case 'quick-games':
-                 return { component: <QuickGamesScreen onBack={handleBackToMenu} />, title: 'Juegos Rápidos', onBack: handleBackToMenu, showHeader: true };
+                 return { component: <QuickGamesScreen studentProfile={currentUser} onBack={handleBackToMenu} />, title: 'Juegos Rápidos', onBack: handleBackToMenu, showHeader: true };
             case 'free-practice-menu':
                 return { component: <FreePracticeMenu onSelectCategory={handleSelectCategoryForFreePractice} subjectId={activeSubjectId} studentProfile={currentUser} />, title: 'Práctica Libre', onBack: handleBackToMenu, showHeader: true };
             case 'study-area':
@@ -1007,7 +1167,7 @@ export default function App() {
                 return { component: <Quiz quizConfig={quizConfig} onQuizEnd={handleQuizEnd} onBack={backFromQuiz} isAiEnabled={isAiEnabled} studentProfile={currentUser} isDebugMode={isDebugMode} isEditorMode={isEditorMode} onUpdateQuestion={handleUpdateQuestion} />, title: quizConfig.name, onBack: backFromQuiz, showHeader: true };
             case 'results':
                 if (!finalResults) return { component: null, showHeader: false };
-                return { component: <Results results={finalResults} onBack={backFromResults} onRetry={handleRetryQuiz} practiceSuggestion={showPracticeSuggestion} onGoToPractice={handleGoToPracticeFromSuggestion} onGoToMainMenu={handleBackToMenu} onGoToStudyArea={handleBackToStudyArea} quizConfig={quizConfig} onStartNextLevel={handleStartNextLevel} />, title: 'Resultados', onBack: backFromResults, showHeader: true };
+                return { component: <Results results={finalResults} onBack={backFromResults} onRetry={handleRetryQuiz} practiceSuggestion={showPracticeSuggestion} onGoToPractice={handleGoToPracticeFromSuggestion} onGoToMainMenu={handleBackToMenu} onGoToStudyArea={handleBackToStudyArea} quizConfig={quizConfig} onStartNextLevel={handleStartNextLevel} milestoneInfo={milestoneInfo} />, title: 'Resultados', onBack: backFromResults, showHeader: true };
             case 'live-conversation':
                  if (!currentUser) return { component: null, showHeader: false };
                  return { component: <LiveConversation studentProfile={currentUser} onBack={handleBackToMenu} isAiEnabled={isAiEnabled} connectionStatus={connectionStatus} />, title: 'Charla con el Maestro', onBack: handleBackToMenu, showHeader: true };
@@ -1095,6 +1255,9 @@ export default function App() {
             {avatarSelectorProps && <AvatarSelectorModal isOpen={true} {...avatarSelectorProps} isAiAvailable={connectionStatus === 'online'} />}
             {isOnboardingVisible && currentUser && (
                 <Onboarding user={currentUser} onFinish={handleFinishOnboarding} />
+            )}
+            {isGuidedTourVisible && currentUser && (
+                <GuidedTour userName={currentUser.name} onFinish={handleFinishGuidedTour} />
             )}
             <AnimatePresence>
                 {isAiConfigModalOpen && (

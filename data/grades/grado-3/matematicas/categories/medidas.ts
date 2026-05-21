@@ -1,4 +1,4 @@
-import type { Question } from '../../types';
+import type { Question } from '../../../../../types';
 
 // IDs de lecciones para claridad
 const MEDIDAS_LONGITUD_1 = 'medidas_longitud_1';
@@ -304,9 +304,9 @@ export const medidasQuestions: Record<number, Question[]> = {
         { type: 'input', question: 'Un helado en la barquillera cuesta $18,00. Si pagas con un billete de $20,00, ¿cuánto dinero te deben devolver de vuelto? 🍦💵', imageUrl: createMedidasSVG('item', {item1: '🍦', val1: 18, unit: 'PESOS'}), answer: '2', hints:['El "vuelto" es la diferencia entre lo que entregaste y el precio.', 'Debes realizar una sustracción.', '$20,00 - $18,00 = ?', 'Solo faltan 2 para llegar a 20.', 'Dos pesos.'], explanation: `¡Muy bien calculado! 🍦 Hallamos la diferencia entre el dinero entregado y el precio: **$20,00 - $18,00 = 2 pesos**. 
         ¡Te deben devolver 2 pesos de vuelto! 💸😉`, lessonId: MEDIDAS_MONEDA_1},
         { type: 'mcq', question: 'Quieres comprar un juguete que cuesta $80,00. ¿Cuál es el billete más pequeño que te alcanza para pagar? 🧸💰', options: ['Un billete de 50', 'Un billete de 100', 'Un billete de 20'], answer: 'Un billete de 100', hints:['Necesitas un billete que sea mayor o igual a 80.', '50 es menor que 80, no te alcanza.', '20 también es menor que 80.', '100 es mayor que 80, así que con ese sí puedes pagar.', 'Te sobraría dinero.'], explanation: '¡Exacto! 🧸 Como el juguete cuesta $80,00 pesos, el billete de $100,00 pesos es el único que cubre el precio. ¡Incluso te sobrarán 20 pesos de vuelto! 💵✨', lessonId: MEDIDAS_MONEDA_1},
-        { type: 'input', question: 'Si tienes 5 monedas de 3 CUP cada una, ¿cuánto dinero tienes en total? 🪙💰', answer: '15', hints:['Tienes 5 veces 3 pesos.', 'Puedes sumar 3+3+3+3+3.', 'O multiplicar 5 x 3.', 'Tabla del 5 o del 3.', 'Quince.'], explanation: `¡Magnífico! 🚀 Multiplicamos la cantidad de monedas por su valor:
+        { type: 'input', question: 'Si tienes 5 monedas de 3 CUP cada una, ¿cuánto dinero tienes en total? 💰', answer: '15', hints:['Tienes 5 veces 3 pesos.', 'Puedes sumar 3+3+3+3+3.', 'O multiplicar 5 x 3.', 'Tabla del 5 o del 3.', 'Quince.'], explanation: `¡Magnífico! 🚀 Multiplicamos la cantidad de monedas por su valor:
         **5 monedas x 3 pesos = 15 CUP**. 
-        ¡Ya tienes 15 pesos para tu alcancía! 🐷🪙✨`, lessonId: MEDIDAS_MONEDA_1},
+        ¡Ya tienes 15 pesos para tu alcancía! 🐷💰✨`, lessonId: MEDIDAS_MONEDA_1},
         ...(() => {
             const qs: Question[] = [];
             for (let i = 0; i < 37; i++) {

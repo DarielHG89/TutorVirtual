@@ -263,13 +263,18 @@ export async function generateHint(question: Question, profile: StudentProfile):
 }
 
 
-export async function generateSpeech(text: string): Promise<string> {
+export async function generateSpeech(text: string, enthusiastic?: boolean): Promise<string> {
     if (!isApiAvailable || !aiInstance) {
         // Simple fallback or indication that TTS is offline
         throw new Error("El servicio de voz no está disponible sin conexión.");
     }
     try {
-        const promptText = `Lee el siguiente texto en español: "${text}"`;
+        const promptText = enthusiastic 
+            ? `Lee el siguiente texto en español con muchísima felicidad, alegría, entusiasmo desbordante y emoción (estamos celebrando un gran logro de aprendizaje del niño): "${text}"`
+            : `Lee el siguiente texto en español: "${text}"`;
+        
+        const voiceName = enthusiastic ? 'Puck' : 'Kore';
+        
         const response = await aiInstance.models.generateContent({
             model: "gemini-1.5-flash-preview-tts",
             contents: [{ parts: [{ text: promptText }] }],
@@ -277,7 +282,7 @@ export async function generateSpeech(text: string): Promise<string> {
                 responseModalities: [Modality.AUDIO],
                 speechConfig: {
                     voiceConfig: {
-                        prebuiltVoiceConfig: { voiceName: 'Kore' },
+                        prebuiltVoiceConfig: { voiceName },
                     },
                 },
             },

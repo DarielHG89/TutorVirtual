@@ -14,7 +14,7 @@ interface ChooseTheOperationExerciseProps {
 const operationIcons = {
     '+': '➕',
     '-': '➖',
-    'x': '✖️',
+    'x': '✖',
     '÷': '➗',
 };
 

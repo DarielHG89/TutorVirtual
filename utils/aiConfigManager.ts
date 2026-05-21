@@ -4,6 +4,8 @@ const AI_CONFIG_KEY = "tutor_ai_config";
 
 const DEFAULT_CONFIG: AiConfig = {
     mode: 'none',
+    useEnthusiasticVoice: true,
+    useCelebratorySounds: true,
 };
 
 export const aiConfigManager = {
@@ -11,7 +13,12 @@ export const aiConfigManager = {
         const saved = localStorage.getItem(AI_CONFIG_KEY);
         if (saved) {
             try {
-                return JSON.parse(saved);
+                const parsed = JSON.parse(saved);
+                return {
+                    useEnthusiasticVoice: true,
+                    useCelebratorySounds: true,
+                    ...parsed
+                };
             } catch (e) {
                 console.error("Error parsing AI config", e);
             }

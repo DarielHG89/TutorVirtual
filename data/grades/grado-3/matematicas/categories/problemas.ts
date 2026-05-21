@@ -1,5 +1,5 @@
 
-import type { Question } from '../../types';
+import type { Question } from '../../../../../types';
 
 // Lesson IDs
 const PASO_1 = 'single_step_1_2';
@@ -65,7 +65,7 @@ export const problemasQuestions: Record<number, Question[]> = {
         { type: 'input', question: 'Tenía $50,00, mi mamá me dio $20,00 más y gasté $10,00 en un pan. ¿Cuánto me queda? 🥖', imageUrl: createProblemSVG('🥖', '(50+20)-10'), answer: '60', hints:['1. Primero suma lo que tienes ahora: $50,00 + $20,00 = $70,00.', '2. Luego realiza la sustracción de lo que gastaste en el pan.', '$70,00 - $10,00 = ?', 'Sesenta pesos.', '60.'], explanation: `Este es un problema de dos pasos:
         1. **Adición** de lo que tenías y lo que te dieron: 50 + 20 = 70 pesos. 💰
         2. **Sustracción** de lo que gastaste: 70 - 10 = 60 pesos. 
-        ¡Te quedan 60 pesos para seguir ahorrando! 🐷🪙`, lessonId: PASO_2 },
+        ¡Te quedan 60 pesos para seguir ahorrando! 🐷💰`, lessonId: PASO_2 },
         ...(() => {
             const qs: Question[] = [];
             const themes = [
@@ -73,7 +73,7 @@ export const problemasQuestions: Record<number, Question[]> = {
                 { actor: 'Una niña 👧', obj: 'cromos 🃏', gana: 'compró', pierde: 'regaló' },
                 { actor: 'El maestro 👨‍🏫', obj: 'lápices ✏️', gana: 'encontró', pierde: 'se le rompieron' },
                 { actor: 'Mi abuela 👵', obj: 'galletas 🍪', gana: 'horneó', pierde: 'se comió' },
-                { actor: 'Un pirata 🏴‍☠️', obj: 'monedas de oro 🪙', gana: 'desenterró', pierde: 'se le cayeron al mar' }
+                { actor: 'Un pirata 🏴‍☠️', obj: 'monedas de oro 💰', gana: 'desenterró', pierde: 'se le cayeron al mar' }
             ];
             for (let i = 0; i < 40; i++) {
                 const inicial = 100 + i;
@@ -99,7 +99,7 @@ export const problemasQuestions: Record<number, Question[]> = {
         // === COMBINADAS (40) ===
         { type: 'input', question: 'Calcula el resultado de esta operación combinada: (10 + 5) x 2 🛡️', imageUrl: createProblemSVG('🧮', '(10+5)*2'), answer: '30', hints:['¡Regla de oro!: Primero resuelve lo que está dentro del paréntesis: 10 + 5.', '10 + 5 = 15.', 'Ahora multiplica ese resultado por 2.', 'El doble de 15.', 'La respuesta es 30.'], explanation: `¡Excelente! En las operaciones combinadas, los paréntesis mandan:
         1. Resolvemos el paréntesis: **(10 + 5) = 15**. 📦
-        2. Multiplicamos por 2: **15 x 2 = 30**. ✖️
+        2. Multiplicamos por 2: **15 x 2 = 30**. ✖
         ¡El resultado es 30! Recuerda siempre respetar el orden de los superpoderes. 🛡️✨`, lessonId: COMBINADAS },
         ...(() => {
             const qs: Question[] = [];

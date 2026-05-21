@@ -5,12 +5,14 @@ import { SpeedMathGame } from './games/SpeedMathGame';
 import { MemoryMathGame } from './games/MemoryMathGame';
 import { NumberNinjaGame } from './games/NumberNinjaGame';
 import { motion } from 'framer-motion';
+import type { StudentProfile } from '../types';
 
 interface QuickGamesScreenProps {
     onBack: () => void;
+    studentProfile?: StudentProfile | null;
 }
 
-export const QuickGamesScreen: React.FC<QuickGamesScreenProps> = ({ onBack }) => {
+export const QuickGamesScreen: React.FC<QuickGamesScreenProps> = ({ onBack, studentProfile }) => {
 
     const games = [
         { id: 'speed-math', title: 'Cálculo Veloz', description: 'Resuelve la mayor cantidad de operaciones en 60 segundos.', icon: '⚡' },
@@ -21,7 +23,7 @@ export const QuickGamesScreen: React.FC<QuickGamesScreenProps> = ({ onBack }) =>
     const [activeGame, setActiveGame] = useState<string | null>(null);
 
     if (activeGame === 'speed-math') {
-        return <SpeedMathGame onBack={() => setActiveGame(null)} />;
+        return <SpeedMathGame studentProfile={studentProfile} onBack={() => setActiveGame(null)} />;
     }
     
     if (activeGame === 'memory-math') {

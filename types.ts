@@ -27,6 +27,8 @@ export interface AiConfig {
     apiKey?: string;
     localEndpoint?: string;
     localModel?: string;
+    useEnthusiasticVoice?: boolean;
+    useCelebratorySounds?: boolean;
 }
 
 export type ConnectionStatus = 'checking' | 'online' | 'offline';
@@ -37,6 +39,7 @@ export type QuestionBase = {
     explanation?: string;
     hints?: string[];
     lessonId?: string;
+    subTopic?: string;
     categoryId?: string;
 };
 
@@ -177,6 +180,7 @@ export interface StudentProfile {
     gender: 'boy' | 'girl';
     avatar?: string;
     hasCompletedOnboarding?: boolean;
+    hasCompletedGuidedTour?: boolean;
     gradeId?: string;
     achievements?: Achievement[];
 }

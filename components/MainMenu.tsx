@@ -37,7 +37,7 @@ export interface MainMenuProps {
 const categoryIcons: Record<CategoryId, string> = {
     numeros: '🔢',
     suma_resta: '➕',
-    multi_divi: '✖️',
+    multi_divi: '✖',
     problemas: '🧠',
     geometria: '📐',
     medidas: '📏',
@@ -182,7 +182,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ studentProfile, gameState, o
             <h1 className="font-title text-5xl sm:text-7xl text-slate-800 text-gradient">Maestro Digital</h1>
             <p className="text-lg mt-2 text-slate-600 dark:text-slate-300">Este es tu panel de progreso, {studentName}. ¡Elige un modo para empezar!</p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-4 mb-6 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50">
+            <div id="subject-selector" className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-4 mb-6 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50">
                 <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-slate-500 dark:text-slate-400">Grado:</span>
                     <span className="font-bold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-700 px-3 py-1.5 rounded-lg shadow-sm border border-slate-200 dark:border-slate-600 truncate">
@@ -241,25 +241,25 @@ export const MainMenu: React.FC<MainMenuProps> = ({ studentProfile, gameState, o
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-8 max-w-6xl mx-auto">
-                 <div className="text-center">
+                 <div id="study-area-btn" className="text-center">
                      <Button variant="warning" onClick={() => onStartStudyArea(selectedSubject)} className="w-full text-xl py-4 h-full flex flex-col items-center justify-center gap-2 transform hover:scale-105" disabled={!selectedSubject}>
                         <span className="text-3xl">🗺️</span>
                         <span>Modo Historia</span>
                     </Button>
                  </div>
-                 <div className="text-center">
+                 <div id="mini-games-btn" className="text-center">
                      <Button variant="special" onClick={onGoToMiniGames} className="w-full text-xl py-4 h-full flex flex-col items-center justify-center gap-2 transform hover:scale-105">
                         <span className="text-3xl">🕹️</span>
                         <span>Juegos Rápidos</span>
                     </Button>
                  </div>
-                 <div className="text-center">
+                 <div id="ai-chat-btn" className="text-center">
                      <Button variant="special" onClick={onStartLiveConversation} disabled={connectionStatus !== 'online' || !isAiEnabled} className="w-full text-xl py-4 h-full flex flex-col items-center justify-center gap-2 transform hover:scale-105">
                         <span className="text-3xl">🤖</span>
                         <span>Charla IA</span>
                     </Button>
                  </div>
-                 <div className="text-center">
+                 <div id="achievements-btn" className="text-center">
                      <Button variant="primary" onClick={onGoToAchievements} className="w-full text-xl py-4 h-full flex flex-col items-center justify-center gap-2 transform hover:scale-105">
                         <span className="text-3xl">🏆</span>
                         <span>Logros</span>
@@ -271,7 +271,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ studentProfile, gameState, o
             {masteryLevels.length === 0 ? (
                 <p className="text-slate-500 dark:text-slate-400 mb-8 border-2 border-dashed border-slate-300 dark:border-slate-700 p-8 rounded-xl font-bold">No hay categorías configuradas para esta asignatura.</p>
             ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                <div id="practice-modes-grid" className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
                     {masteryLevels.map(({ id, mastery, stars, isMastered }, index) => {
                         const isPracticeUnlocked = unlockedPracticeCategories.has(id);
                         const hasNewContent = newContentNotifications[id];
@@ -333,7 +333,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ studentProfile, gameState, o
             <hr className="my-6 border-slate-300 dark:border-slate-600" />
 
             <h2 className="text-3xl font-black text-slate-800 dark:text-slate-200 mb-4">Otros Modos</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 justify-center items-start gap-6">
+            <div id="other-modes-section" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 justify-center items-start gap-6">
                 <div style={{ animationDelay: '0ms' }} className="animate-staggered-fade-in flex flex-col h-full">
                     <Button className="w-full" variant="secondary" onClick={onStartWeeklyExam} disabled={!areExamsEnabled}>🏆 Examen Semanal</Button>
                     <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 flex-grow">Un examen completo de 10 preguntas sobre todo lo que has aprendido.</p>
@@ -361,7 +361,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ studentProfile, gameState, o
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Los modos de examen se activarán cuando hayas practicado más contenido.</p>
             )}
 
-            <div className="mt-8 border-t border-slate-300 dark:border-slate-600 pt-4 text-center flex flex-col sm:flex-row justify-center gap-4 sm:gap-8">
+            <div id="parent-settings-btn" className="mt-8 border-t border-slate-300 dark:border-slate-600 pt-4 text-center flex flex-col sm:flex-row justify-center gap-4 sm:gap-8">
                 <button onClick={() => { playClickSound(); onGoToParentDashboard(); }} className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 font-semibold transition-colors">
                     🔑 Modo Padre / Tutor
                 </button>

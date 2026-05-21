@@ -10,7 +10,12 @@ export function shuffleArray<T,>(array: T[]): T[] {
 export function selectDistributedQuestions<T extends { question: any }>(pool: T[], count: number): T[] {
     const groups: Record<string, T[]> = {};
     for (const item of pool) {
-        const key = item.question?.lessonId || 'general';
+        let templateKey = 'general';
+        if (item.question && 'question' in item.question && typeof item.question.question === 'string') {
+            templateKey = item.question.question.split(' ').slice(0, 3).join(' ');
+        }
+        const key = item.question?.subTopic || item.question?.lessonId ? `${item.question?.lessonId}_${templateKey}` : templateKey;
+        
         if (!groups[key]) groups[key] = [];
         groups[key].push(item);
     }

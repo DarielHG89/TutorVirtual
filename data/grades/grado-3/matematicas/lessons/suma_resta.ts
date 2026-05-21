@@ -1,4 +1,4 @@
-import type { LessonContent } from '../../types';
+import type { LessonContent } from '../../../../../types';
 import { sumaRestaQuestions } from '../categories/suma_resta';
 
 const getQuestionsForLesson = (lessonId: string) => {
