@@ -68,7 +68,11 @@ export const NumberNinjaGame: React.FC<NumberNinjaGameProps> = ({ onBack }) => {
         const loop = (time: number) => {
             if (!isPlayingRef.current) return;
 
-            const spawnInterval = Math.max(500, 1500 - scoreRef.current * 30);
+            const scoreScore = scoreRef.current;
+            // Base speed multiplier starts at 1.0 and increases very gently (capped at 1.4x)
+            const speedMultiplier = 1.0 + Math.min(0.4, scoreScore * 0.01);
+
+            const spawnInterval = Math.max(700, 1800 - scoreScore * 35);
             if (time - lastSpawnTimeRef.current > spawnInterval) {
                 lastSpawnTimeRef.current = time;
                 
@@ -83,13 +87,13 @@ export const NumberNinjaGame: React.FC<NumberNinjaGameProps> = ({ onBack }) => {
                     value,
                     x: 15 + Math.random() * 70, // 15% to 85%
                     y: 110,
-                    vx: (Math.random() - 0.5) * 0.5,
-                    vy: -(Math.random() * 1.0 + 2.0),
+                    vx: ((Math.random() - 0.5) * 0.4) * speedMultiplier,
+                    vy: -(Math.random() * 0.4 + 1.1) * speedMultiplier, // Slower, more controllable ascent
                     isEven,
                     isCut: false,
                     isMissed: false,
                     rotation: Math.random() * 360,
-                    rotV: (Math.random() - 0.5) * 5,
+                    rotV: (Math.random() - 0.5) * 4,
                     scale: 1,
                     opacity: 1
                 });
@@ -106,7 +110,10 @@ export const NumberNinjaGame: React.FC<NumberNinjaGameProps> = ({ onBack }) => {
                 num.x += num.vx;
                 num.y += num.vy;
                 num.rotation += num.rotV;
-                num.vy += 0.035; // gravity
+                
+                // Gentler gravity so they float elegantly and stay on screen longer
+                const gravityVal = 0.016 * speedMultiplier;
+                num.vy += gravityVal; 
 
                 if (num.y > 115 && num.vy > 0 && !num.isMissed && !num.isCut) {
                     num.isMissed = true;
@@ -220,10 +227,22 @@ export const NumberNinjaGame: React.FC<NumberNinjaGameProps> = ({ onBack }) => {
             </div>
 
             {/* Game Canvas / Playground */}
-            <div className="w-full h-full relative cursor-crosshair active:cursor-[url('/slash.png'),_crosshair] touch-none" onContextMenu={(e) => e.preventDefault()}>
-                {/* Background Decor */}
-                <div className="absolute inset-0 opacity-10 flex items-center justify-center pointer-events-none">
-                    <span className="text-[20rem] font-black text-indigo-500">🥷</span>
+            <div className="w-full h-full relative overflow-hidden bg-slate-950 cursor-crosshair touch-none" onContextMenu={(e) => e.preventDefault()}>
+                {/* Dojo Shoji Screen Background */}
+                <div className="absolute inset-0 pointer-events-none">
+                    {/* Shoji translucent paper screen */}
+                    <div className="absolute inset-0 bg-[#1e202e]" />
+                    {/* Dark Wood lattice frames (Grid lines) */}
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#11131c_3px,transparent_3px),linear-gradient(to_bottom,#11131c_3px,transparent_3px)] bg-[size:64px_80px] opacity-70" />
+                    {/* Red lacquer trim lines (traditional Dojo touch) */}
+                    <div className="absolute inset-x-0 top-0 h-1 bg-rose-900 opacity-60" />
+                    <div className="absolute inset-x-0 bottom-0 h-3 bg-[#11131c]" />
+                    {/* Ambient light glow */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/40 via-transparent to-rose-900/10 opacity-70" />
+                    {/* Big stylized background watermark */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-25">
+                        <span className="text-[28rem] font-black select-none drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">🥷</span>
+                    </div>
                 </div>
 
                 {numbersRef.current.map(num => (
@@ -238,7 +257,7 @@ export const NumberNinjaGame: React.FC<NumberNinjaGameProps> = ({ onBack }) => {
                                 handleSlash(num.id);
                             }
                         }}
-                        className={`absolute w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center rounded-2xl sm:rounded-3xl shadow-xl shadow-black/50 select-none touch-none hover:shadow-2xl hover:brightness-110 active:brightness-125
+                        className={`absolute w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center rounded-2xl sm:rounded-[2rem] shadow-xl shadow-black/50 select-none touch-none hover:shadow-2xl hover:brightness-110 active:brightness-125 transition-transform duration-75
                             ${num.isCut ? (num.isEven ? 'bg-emerald-400/90 text-white border-2 border-white' : 'bg-rose-500/90 text-white border-2 border-white') : 'bg-slate-100 text-slate-800 border-b-8 border-slate-300'}
                         `}
                         style={{
@@ -247,7 +266,7 @@ export const NumberNinjaGame: React.FC<NumberNinjaGameProps> = ({ onBack }) => {
                             transform: `translate(-50%, -50%) rotate(${num.rotation}deg) scale(${num.scale})`,
                             opacity: num.opacity,
                             transition: 'background-color 0.1s', // only background transitions
-                            fontSize: num.isCut ? '4rem' : '3.5rem',
+                            fontSize: num.isCut ? '4.5rem' : '4rem',
                             fontWeight: 900
                         }}
                     >

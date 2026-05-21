@@ -80,7 +80,29 @@ const ProgressItem: React.FC<{
     const avgScore = highScoresEntries.length > 0 
         ? (highScoresEntries.reduce((sum, [_, s]) => sum + (s as number), 0) / highScoresEntries.length) * 10
         : 0;
-    const evalInfo = getQualitativeEvaluation(avgScore);
+    
+    const isCompleted = highScoresEntries.length >= maxLevel;
+    let evalInfo = getQualitativeEvaluation(avgScore);
+
+    if (!isCompleted) {
+        if (highScoresEntries.length === 0) {
+            evalInfo = {
+                grade: '—' as any,
+                label: 'Pendiente',
+                description: 'Aún no iniciado',
+                color: 'bg-slate-400 dark:bg-slate-500',
+                textColor: 'text-slate-600 dark:text-slate-400'
+            };
+        } else if (avgScore < 60) {
+            evalInfo = {
+                grade: 'EP' as any,
+                label: 'En progreso',
+                description: 'Faltan niveles por completar para la evaluación.',
+                color: 'bg-amber-500 dark:bg-amber-600',
+                textColor: 'text-amber-600'
+            };
+        }
+    }
 
     const highScoresText = highScoresEntries
         .map(([level, score]) => `Nivel ${level}: ${score}/10`)

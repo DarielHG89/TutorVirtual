@@ -13,6 +13,33 @@ async function startServer() {
 
   app.use(express.json({ limit: '10mb' }));
 
+  // Dynamic automatic downloader for offline emoji font (Google Noto Color Emoji)
+  const publicDir = path.join(process.cwd(), 'public');
+  const fontPath = path.join(publicDir, 'NotoColorEmoji.ttf');
+  const fontUrl = 'https://fonts.gstatic.com/s/notocoloremoji/v39/Yq6P-KqIXTD0t4D9z1ESnKM3-HpFab4.ttf';
+
+  if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+  }
+
+  if (!fs.existsSync(fontPath)) {
+    console.log(`[Font Downloader] Noto Color Emoji font not found at ${fontPath}. Downloading offline asset...`);
+    fetch(fontUrl)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+        return res.arrayBuffer();
+      })
+      .then(buffer => {
+        fs.writeFileSync(fontPath, Buffer.from(buffer));
+        console.log(`[Font Downloader] Noto Color Emoji successfully saved at ${fontPath} for complete offline support.`);
+      })
+      .catch(err => {
+        console.error('[Font Downloader] Failed to retrieve emoji font:', err);
+      });
+  } else {
+    console.log(`[Font Downloader] Noto Color Emoji font is ready locally at ${fontPath}.`);
+  }
+
   // API Route to save content back to source files
   app.post("/api/save-content", async (req, res) => {
     const { type, data } = req.body;

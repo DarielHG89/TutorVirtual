@@ -192,22 +192,38 @@ export const MemoryMathGame: React.FC<MemoryMathGameProps> = ({ onBack }) => {
                     <motion.div
                         key={card.id}
                         onClick={() => handleCardClick(card.id)}
-                        className={`aspect-square sm:aspect-[4/3] rounded-xl flex items-center justify-center text-center p-2 cursor-pointer transition-all ${card.state === 'hidden' ? 'bg-indigo-600 hover:bg-indigo-500 shadow-[0_6px_0_#4f46e5]' : card.state === 'visible' ? 'bg-white text-slate-800 shadow-inner' : 'bg-emerald-500 text-white opacity-60'}`}
+                        className="relative aspect-square sm:aspect-[4/3] rounded-xl cursor-pointer w-full text-center"
+                        style={{ transformStyle: 'preserve-3d' }}
                         animate={{ rotateY: card.state === 'hidden' ? 0 : 180 }}
                         transition={{ duration: 0.3 }}
-                        style={{ transformStyle: 'preserve-3d' }}
                     >
+                        {/* Front Side: Hidden when flipped */}
                         <div 
-                            style={{ backfaceVisibility: 'hidden', transform: card.state === 'hidden' ? 'rotateY(0deg)' : 'rotateY(180deg)' }}
-                            className={`w-full h-full flex items-center justify-center`}
+                            style={{ 
+                                backfaceVisibility: 'hidden', 
+                                WebkitBackfaceVisibility: 'hidden' 
+                            }}
+                            className={`absolute inset-0 w-full h-full rounded-xl flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 shadow-[0_6px_0_#4f46e5] text-white select-none`}
                         >
-                           {card.state !== 'hidden' ? (
-                               <span className="text-2xl sm:text-3xl font-black" style={{ transform: 'rotateY(180deg)' }}>
-                                   {card.content}
-                               </span>
-                           ) : (
-                               <span className="text-4xl opacity-50">?</span>
-                           )}
+                            <span className="text-4xl font-extrabold opacity-75">?</span>
+                        </div>
+
+                        {/* Back Side: Revealed when flipped, pre-rotated by 180deg so it aligns face-up when card flips to 180deg */}
+                        <div 
+                            style={{ 
+                                backfaceVisibility: 'hidden', 
+                                WebkitBackfaceVisibility: 'hidden',
+                                transform: 'rotateY(180deg)'
+                            }}
+                            className={`absolute inset-0 w-full h-full rounded-xl flex flex-col items-center justify-center p-2 border-2 shadow-inner select-none ${
+                                card.state === 'matched' 
+                                ? 'bg-emerald-500 border-emerald-400 text-white opacity-80' 
+                                : 'bg-white border-slate-200 text-slate-800 dark:bg-slate-700 dark:border-slate-600 dark:text-white'
+                            }`}
+                        >
+                            <span className="text-xl sm:text-2xl font-black block leading-none">
+                                {card.content}
+                            </span>
                         </div>
                     </motion.div>
                 ))}
