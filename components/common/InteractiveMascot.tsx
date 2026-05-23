@@ -5,6 +5,7 @@ import { useSpeech } from '../../context/SpeechContext';
 import { BackgroundTheme } from './DynamicBackground';
 import { playClickSound, playCorrectSound, playMascotSound } from '../../utils/sounds';
 import { MascotDisplay } from './mascot/MascotDisplay';
+import { PuppyDisplay } from './mascot/PuppyDisplay';
 import { MCDUTable } from '../math/MCDUTable';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -46,6 +47,11 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
     const [showMathTable, setShowMathTable] = useState(false);
     const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
     const [idleAction, setIdleAction] = useState<IdleActionType>('none');
+
+    // Puppy interactive states (Fetching ball, eating bone, and speaking bubble)
+    const [isFetching, setIsFetching] = useState(false);
+    const [isEating, setIsEating] = useState(false);
+    const [dialogue, setDialogue] = useState<{ text: string; sender: 'robot' | 'puppy' } | null>(null);
 
     // Debug State
     const [showDebug, setShowDebug] = useState(false);
@@ -607,6 +613,51 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
         }
     };
 
+    const dialogueList: { sender: 'robot' | 'puppy'; text: string }[][] = [
+        [
+            { sender: 'robot', text: '¡Oye hermano, qué bola! 🤖🇨🇺 ¿Qué clase de día para aprender, eh?' },
+            { sender: 'puppy', text: '¡Guau, asere compay! 🐶🐾 ¡Con este campeón resolviendo, nos ganamos un premio!' }
+        ],
+        [
+            { sender: 'robot', text: '¡Asere, métele cabeza a este ejercicio que está facilito! 🧠🤖' },
+            { sender: 'puppy', text: '¡Guau! 🐶 ¡Así mismo compay! ¡Un último empujón y nos comemos un buen helado! 🍦🐾' }
+        ],
+        [
+            { sender: 'robot', text: '¡Oye asere, estás hecho un bárbaro con la aritmética! 🤖🔢' },
+            { sender: 'puppy', text: '¡La verdad que sí! 🐶 ¡Tiene más puntería que un cubano jugando dominó! 🀄🐾' }
+        ],
+        [
+            { sender: 'robot', text: '¡Ay mi madre, se nos trabó el paraguas con esta pregunta! 🤖⛈️' },
+            { sender: 'puppy', text: '¡No te me achantes, asere! 🐶 ¡Mírate los tips y saca los dotes matemáticos! 🛟🐾' }
+        ],
+        [
+            { sender: 'robot', text: '¡Asere, tengo el disco duro echando humo de tanta cuenta! 🤖💨' },
+            { sender: 'puppy', text: '¡Guau! 🐶 ¡Échate un aire compay, tómate un juguito caña y seguimos fajados! 🥤🐾' }
+        ]
+    ];
+
+    const startConversation = () => {
+        playMascotSound('chirp');
+        const randomChoice = dialogueList[Math.floor(Math.random() * dialogueList.length)];
+        
+        // Show first message
+        setDialogue(randomChoice[0]);
+        if (randomChoice[0].sender === 'robot') {
+            triggerReaction('speaking', 3200);
+        }
+        
+        // Wait and switch to puppy's message
+        setTimeout(() => {
+            setDialogue(randomChoice[1]);
+            playMascotSound('chirp');
+            
+            // Wait and clear
+            setTimeout(() => {
+                setDialogue(null);
+            }, 3800);
+        }, 3400);
+    };
+
     const positionStyle: React.CSSProperties = position 
         ? { left: `${position.x}px`, top: `${position.y}px`, transform: `translateY(${scrollOffset}px) scale(${isDragging ? 1.1 : 1})` }
         : { bottom: '1rem', right: '1rem', transform: `translateY(${scrollOffset}px)` };
@@ -802,11 +853,32 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
             )}
 
             {showMenu && (
-                <div className="mascot-menu fixed bg-white dark:bg-slate-800 rounded-xl shadow-xl border-2 border-blue-300 p-2 flex gap-2 animate-modal-scale-in" style={menuStyle} onPointerDown={(e) => e.stopPropagation()}>
-                    <button onClick={() => { playClickSound(); setShowMenu(false); triggerReaction('speaking', 3000); }} className="p-2 hover:bg-blue-100 rounded-full text-xl" title="Hablar">🗣️</button>
-                    <button onClick={() => { playClickSound(); setShowMenu(false); setIsVisible(false); setTimeout(() => setIsVisible(true), 5000); }} className="p-2 hover:bg-blue-100 rounded-full text-xl" title="Esconder">👻</button>
-                    <button onClick={() => { playClickSound(); setShowMenu(false); setEmotion('thinking'); }} className="p-2 hover:bg-blue-100 rounded-full text-xl" title="Pensar">🤔</button>
-                    <button onClick={() => { playClickSound(); setShowMenu(false); setShowMathTable(true); }} className="p-2 hover:bg-blue-100 rounded-full text-xl" title="Tabla MCDU">🔢</button>
+                <div className="mascot-menu fixed bg-white dark:bg-slate-800 rounded-xl shadow-xl border-2 border-blue-300 p-1.5 flex gap-1.5 items-center animate-modal-scale-in z-[99999]" style={menuStyle} onPointerDown={(e) => e.stopPropagation()}>
+                    <button onClick={() => { playClickSound(); setShowMenu(false); startConversation(); }} className="p-2 hover:bg-sky-100 dark:hover:bg-slate-700 rounded-full text-lg" title="Conversar">💬</button>
+                    <button onClick={() => {
+                        playClickSound();
+                        setShowMenu(false);
+                        setIsEating(true);
+                        triggerReaction('happy', 2000);
+                        setTimeout(() => setIsEating(false), 2000);
+                    }} className="p-2 hover:bg-amber-100 dark:hover:bg-slate-700 rounded-full text-lg" title="Dar Huesito Canino 🍖">🍖</button>
+                    <button onClick={() => {
+                        playClickSound();
+                        setShowMenu(false);
+                        setIsFetching(true);
+                        setEmotion('surprised');
+                        setTimeout(() => {
+                            setEmotion('happy');
+                        }, 800);
+                        setTimeout(() => {
+                            setIsFetching(false);
+                            setEmotion('idle');
+                        }, 2200);
+                    }} className="p-2 hover:bg-lime-100 dark:hover:bg-slate-700 rounded-full text-lg" title="Lanzar Pelota 🥎">🥎</button>
+                    <button onClick={() => { playClickSound(); setShowMenu(false); triggerReaction('speaking', 3000); }} className="p-2 hover:bg-blue-100 dark:hover:bg-slate-700 rounded-full text-lg" title="Hablar robot">🗣️</button>
+                    <button onClick={() => { playClickSound(); setShowMenu(false); setEmotion('thinking'); }} className="p-2 hover:bg-blue-100 dark:hover:bg-slate-700 rounded-full text-lg" title="Pensar">🤔</button>
+                    <button onClick={() => { playClickSound(); setShowMenu(false); setShowMathTable(true); }} className="p-2 hover:bg-blue-100 dark:hover:bg-slate-700 rounded-full text-lg" title="Tabla MCDU">🔢</button>
+                    <button onClick={() => { playClickSound(); setShowMenu(false); setIsVisible(false); setTimeout(() => setIsVisible(true), 5000); }} className="p-2 hover:bg-blue-100 dark:hover:bg-slate-700 rounded-full text-lg" title="Esconder">👻</button>
                 </div>
             )}
 
@@ -840,7 +912,7 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
 
             <div 
                 ref={containerRef}
-                className={`fixed z-50 w-36 h-36 sm:w-48 sm:h-48 transition-all duration-100 ease-out select-none`}
+                className={`fixed z-50 flex items-end justify-between gap-1 w-[160px] h-20 sm:w-[240px] sm:h-28 transition-all duration-100 ease-out select-none`}
                 style={{ 
                     ...positionStyle, 
                     opacity: isVisible ? 1 : 0.3, 
@@ -853,20 +925,59 @@ export const InteractiveMascot: React.FC<InteractiveMascotProps> = ({ activeThem
                 onPointerUp={handlePointerUp}
                 onPointerCancel={handlePointerUp}
             >
-                <MascotDisplay
-                    emotion={emotion}
-                    streak={showDebug ? debugStreak : streak}
-                    idleAction={idleAction}
-                    isSpeaking={isSpeaking}
-                    isDragging={isDragging}
-                    isBouncing={isBouncing}
-                    isBlinking={isBlinking}
-                    isInterested={isInterested}
-                    isDizzy={emotion === 'dizzy'}
-                    isHidden={!isVisible}
-                    activeTheme={activeTheme}
-                    debugIdleDisabled={debugIdleDisabled}
-                />
+                {/* Real-time Bilingual Cuban Speech Dialogue Bubble */}
+                <AnimatePresence>
+                    {dialogue && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.85, y: 15 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.85, y: 15 }}
+                            className={`absolute bottom-[115%] ${dialogue.sender === 'robot' ? 'left-0' : 'right-0'} w-[150px] sm:w-[190px] bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 p-2 rounded-xl shadow-2xl border-2 ${dialogue.sender === 'robot' ? 'border-sky-400' : 'border-amber-500'} text-xs font-semibold z-30 pointer-events-none flex flex-col gap-0.5`}
+                        >
+                            <div className="flex items-center justify-between">
+                                <span className={`text-[10px] uppercase tracking-wider ${dialogue.sender === 'robot' ? 'text-sky-500' : 'text-amber-600'}`}>
+                                    {dialogue.sender === 'robot' ? '🤖 Robi' : '🐶 Cachito'}
+                                </span>
+                                <span className="text-[8px] text-slate-400">{dialogue.sender === 'robot' ? '¡Beep!' : '¡Guau!'}</span>
+                            </div>
+                            <p className="leading-tight text-[10px] sm:text-[11px] font-medium">{dialogue.text}</p>
+                            
+                            {/* Dialogue bubble pointer arrow */}
+                            <div className={`absolute bottom-[-8px] ${dialogue.sender === 'robot' ? 'left-6' : 'right-6'} w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] ${dialogue.sender === 'robot' ? 'border-t-sky-400' : 'border-t-amber-500'}`} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Left Companion: Robot */}
+                <div className="w-[48%] h-full relative pointer-events-none">
+                    <MascotDisplay
+                        emotion={emotion}
+                        streak={showDebug ? debugStreak : streak}
+                        idleAction={idleAction}
+                        isSpeaking={isSpeaking || (dialogue?.sender === 'robot')}
+                        isDragging={isDragging}
+                        isBouncing={isBouncing}
+                        isBlinking={isBlinking}
+                        isInterested={isInterested}
+                        isDizzy={emotion === 'dizzy'}
+                        isHidden={!isVisible}
+                        activeTheme={activeTheme}
+                        debugIdleDisabled={debugIdleDisabled}
+                    />
+                </div>
+
+                {/* Right Companion: Puppy (Cachito) */}
+                <div className="w-[48%] h-full relative pointer-events-none">
+                    <PuppyDisplay
+                        emotion={emotion}
+                        isDragging={isDragging}
+                        isBouncing={isBouncing}
+                        isBlinking={isBlinking}
+                        isSpeaking={dialogue?.sender === 'puppy'}
+                        isFetching={isFetching}
+                        isEating={isEating}
+                    />
+                </div>
             </div>
         </>
     );
