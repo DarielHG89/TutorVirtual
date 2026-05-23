@@ -8,81 +8,137 @@ const NUMEROS_1_3 = 'numeros_1_3';
 // Helper para crear representaciones visuales de números
 const createNumbersSVG = (type: 'blocks' | 'coins' | 'items' | 'number-line' | 'abacus', data: any): string => {
     let content = '';
+    let viewBox = "0 0 100 100";
+
     if (type === 'blocks') {
-        const { um, h, d, u } = data;
-        let x = 5;
-        // Unidades de Millar (cubos morados)
-        for (let i = 0; i < (um || 0); i++) {
-            content += `<rect x="${x}" y="5" width="25" height="25" fill="#A142F4" stroke="white" stroke-width="1" />`;
-            x += 27;
+        const { um = 0, h = 0, d = 0, u = 0 } = data;
+        let yOffset = 5;
+        let maxX = 100;
+        
+        if (um > 0) {
+            for (let i = 0; i < um; i++) {
+                const x = 5 + (i % 5) * 32;
+                const y = yOffset + Math.floor(i / 5) * 32;
+                content += `<rect x="${x}" y="${y}" width="28" height="28" fill="#A142F4" stroke="white" stroke-width="1" rx="4" />`;
+                content += `<text x="${x + 14}" y="${y + 18}" font-family="sans-serif" font-size="12" fill="white" text-anchor="middle" font-weight="bold">M</text>`;
+                maxX = Math.max(maxX, x + 32);
+            }
+            yOffset += Math.ceil(um / 5) * 32 + 8;
         }
-        x = 5;
-        // Centenas (cuadrados azules)
-        for (let i = 0; i < (h || 0); i++) {
-            content += `<rect x="${x}" y="35" width="18" height="18" fill="#4285F4" stroke="white" stroke-width="1" />`;
-            x += 20;
+
+        if (h > 0) {
+            for (let i = 0; i < h; i++) {
+                const x = 5 + (i % 5) * 24;
+                const y = yOffset + Math.floor(i / 5) * 24;
+                content += `<rect x="${x}" y="${y}" width="20" height="20" fill="#3b82f6" stroke="white" stroke-width="1" rx="2" />`;
+                content += `<text x="${x + 10}" y="${y + 14}" font-family="sans-serif" font-size="10" fill="white" text-anchor="middle" font-weight="bold">C</text>`;
+                maxX = Math.max(maxX, x + 24);
+            }
+            yOffset += Math.ceil(h / 5) * 24 + 8;
         }
-        x = 5;
-        // Decenas (barras rojas)
-        for (let i = 0; i < (d || 0); i++) {
-            content += `<rect x="${x}" y="60" width="4" height="30" fill="#EA4335" stroke="white" stroke-width="1" />`;
-            x += 6;
+
+        if (d > 0) {
+            for (let i = 0; i < d; i++) {
+                const x = 5 + (i % 10) * 10;
+                const y = yOffset + Math.floor(i / 10) * 36;
+                content += `<rect x="${x}" y="${y}" width="8" height="32" fill="#ef4444" stroke="white" stroke-width="1" rx="2" />`;
+                maxX = Math.max(maxX, x + 10);
+            }
+            yOffset += Math.ceil(d / 10) * 36 + 8;
         }
-        x = 50;
-        // Unidades (cuadritos amarillos)
-        for (let i = 0; i < (u || 0); i++) {
-            content += `<rect x="${x + (i%5)*8}" y="${60 + Math.floor(i/5)*8}" width="6" height="6" fill="#FBBC05" stroke="white" stroke-width="1" />`;
+
+        if (u > 0) {
+            for (let i = 0; i < u; i++) {
+                const x = 5 + (i % 10) * 10;
+                const y = yOffset + Math.floor(i / 10) * 10;
+                content += `<rect x="${x}" y="${y}" width="8" height="8" fill="#eab308" stroke="white" stroke-width="1" rx="2" />`;
+                maxX = Math.max(maxX, x + 10);
+            }
+            yOffset += Math.ceil(u / 10) * 10 + 5;
         }
+        
+        viewBox = `0 0 ${Math.max(100, maxX + 5)} ${Math.max(100, yOffset)}`;
     } else if (type === 'coins') {
         const { val, label = 'PESOS' } = data;
-        content += `<circle cx="50" cy="50" r="35" fill="#FFD700" stroke="#B8860B" stroke-width="2" />`;
-        content += `<text x="50" y="58" font-family="Arial" font-size="28" fill="#B8860B" text-anchor="middle" font-weight="bold">${val}</text>`;
-        content += `<text x="50" y="78" font-family="Arial" font-size="10" fill="#B8860B" text-anchor="middle">${label}</text>`;
+        content += `<circle cx="50" cy="50" r="45" fill="#FFD700" stroke="#B8860B" stroke-width="2" />`;
+        content += `<text x="50" y="58" font-family="sans-serif" font-size="28" fill="#B8860B" text-anchor="middle" font-weight="bold">${val}</text>`;
+        content += `<text x="50" y="78" font-family="sans-serif" font-size="10" fill="#B8860B" text-anchor="middle">${label}</text>`;
+        viewBox = `0 0 100 100`;
     } else if (type === 'items') {
         const { icon, count } = data;
+        let maxX = 100;
+        let maxY = 100;
         for (let i = 0; i < count; i++) {
             const row = Math.floor(i / 10);
             const col = i % 10;
-            content += `<text x="${col * 10 + 2}" y="${row * 12 + 15}" font-size="10">${icon}</text>`;
+            const x = col * 12 + 4;
+            const y = row * 14 + 15;
+            content += `<text x="${x}" y="${y}" font-size="12">${icon}</text>`;
+            maxX = Math.max(maxX, x + 15);
+            maxY = Math.max(maxY, y + 10);
         }
+        viewBox = `0 0 ${maxX} ${maxY}`;
     } else if (type === 'number-line') {
         const { min, max, target, highlights } = data;
         content += `<line x1="10" y1="50" x2="90" y2="50" stroke="#475569" stroke-width="2" />`;
         content += `<line x1="10" y1="45" x2="10" y2="55" stroke="#475569" stroke-width="2" />`;
-        content += `<text x="10" y="65" font-size="8" text-anchor="middle">${min}</text>`;
+        content += `<text x="10" y="68" font-size="8" font-family="sans-serif" text-anchor="middle">${min}</text>`;
         content += `<line x1="50" y1="45" x2="50" y2="55" stroke="#475569" stroke-width="2" />`;
-        content += `<text x="50" y="65" font-size="8" text-anchor="middle">${(min+max)/2}</text>`;
+        content += `<text x="50" y="68" font-size="8" font-family="sans-serif" text-anchor="middle">${(min+max)/2}</text>`;
         content += `<line x1="90" y1="45" x2="90" y2="55" stroke="#475569" stroke-width="2" />`;
-        content += `<text x="90" y="65" font-size="8" text-anchor="middle">${max}</text>`;
+        content += `<text x="90" y="68" font-size="8" font-family="sans-serif" text-anchor="middle">${max}</text>`;
         if (target) {
             const targetX = 10 + ((target - min) / (max - min)) * 80;
             content += `<line x1="${targetX}" y1="40" x2="${targetX}" y2="60" stroke="#ef4444" stroke-width="2" />`;
-            content += `<text x="${targetX}" y="35" font-size="10" font-weight="bold" fill="#ef4444" text-anchor="middle">${target}</text>`;
+            content += `<text x="${targetX}" y="35" font-size="10" font-weight="bold" font-family="sans-serif" fill="#ef4444" text-anchor="middle">${target}</text>`;
         }
         if (highlights) {
             highlights.forEach((h: any) => {
                 const hlX = 10 + ((h.val - min) / (max - min)) * 80;
                 content += `<circle cx="${hlX}" cy="50" r="3" fill="#3b82f6" />`;
-                content += `<text x="${hlX}" y="35" font-size="8" fill="#3b82f6" text-anchor="middle">${h.label || h.val}</text>`;
+                content += `<text x="${hlX}" y="35" font-size="8" fill="#3b82f6" font-family="sans-serif" text-anchor="middle">${h.label || h.val}</text>`;
             });
         }
+        viewBox = `0 0 100 80`;
     } else if (type === 'abacus') {
-        const { h, d, u } = data;
-        content += `<rect x="10" y="80" width="80" height="10" fill="#8B4513" />`;
+        const { um = 0, h = 0, d = 0, u = 0 } = data;
+        let columns = 3;
+        if (um > 0) columns = 4;
+        
+        const width = 120;
+        const spacing = width / (columns + 1);
+        
+        content += `<rect x="10" y="80" width="${width - 20}" height="10" fill="#8B4513" rx="2" />`;
+        
+        let cx = spacing;
+        
+        if (columns === 4) {
+            content += `<line x1="${cx}" y1="20" x2="${cx}" y2="80" stroke="#475569" stroke-width="3" />`;
+            for (let i = 0; i < um; i++) content += `<ellipse cx="${cx}" cy="${75 - i*7}" rx="9" ry="4" fill="#A142F4" stroke="white" stroke-width="1" />`;
+            content += `<text x="${cx}" y="100" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle" fill="#A142F4">UM</text>`;
+            cx += spacing;
+        }
+
         // Centenas
-        content += `<line x1="25" y1="20" x2="25" y2="80" stroke="#475569" stroke-width="2" />`;
-        for (let i = 0; i < h; i++) content += `<ellipse cx="25" cy="${75 - i*8}" rx="10" ry="4" fill="#3b82f6" stroke="white" />`;
-        content += `<text x="25" y="98" font-size="8" font-weight="bold" text-anchor="middle">C</text>`;
+        content += `<line x1="${cx}" y1="20" x2="${cx}" y2="80" stroke="#475569" stroke-width="3" />`;
+        for (let i = 0; i < h; i++) content += `<ellipse cx="${cx}" cy="${75 - i*7}" rx="9" ry="4" fill="#3b82f6" stroke="white" stroke-width="1" />`;
+        content += `<text x="${cx}" y="100" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle" fill="#3b82f6">C</text>`;
+        cx += spacing;
+        
         // Decenas
-        content += `<line x1="50" y1="20" x2="50" y2="80" stroke="#475569" stroke-width="2" />`;
-        for (let i = 0; i < d; i++) content += `<ellipse cx="50" cy="${75 - i*8}" rx="10" ry="4" fill="#ef4444" stroke="white" />`;
-        content += `<text x="50" y="98" font-size="8" font-weight="bold" text-anchor="middle">D</text>`;
+        content += `<line x1="${cx}" y1="20" x2="${cx}" y2="80" stroke="#475569" stroke-width="3" />`;
+        for (let i = 0; i < d; i++) content += `<ellipse cx="${cx}" cy="${75 - i*7}" rx="9" ry="4" fill="#ef4444" stroke="white" stroke-width="1" />`;
+        content += `<text x="${cx}" y="100" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle" fill="#ef4444">D</text>`;
+        cx += spacing;
+
         // Unidades
-        content += `<line x1="75" y1="20" x2="75" y2="80" stroke="#475569" stroke-width="2" />`;
-        for (let i = 0; i < u; i++) content += `<ellipse cx="75" cy="${75 - i*8}" rx="10" ry="4" fill="#eab308" stroke="white" />`;
-        content += `<text x="75" y="98" font-size="8" font-weight="bold" text-anchor="middle">U</text>`;
+        content += `<line x1="${cx}" y1="20" x2="${cx}" y2="80" stroke="#475569" stroke-width="3" />`;
+        for (let i = 0; i < u; i++) content += `<ellipse cx="${cx}" cy="${75 - i*7}" rx="9" ry="4" fill="#eab308" stroke="white" stroke-width="1" />`;
+        content += `<text x="${cx}" y="100" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle" fill="#eab308">U</text>`;
+        
+        viewBox = `0 0 120 110`;
     }
-    return `data:image/svg+xml;base64,${btoa(`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${content}</svg>`)}`;
+    return `data:image/svg+xml;base64,${btoa(`<svg viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg">${content}</svg>`)}`;
 };
 
 export const numerosQuestions: Record<number, Question[]> = {
@@ -93,7 +149,7 @@ export const numerosQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: '¿Qué número es "ochenta y siete"? 🧐🔢', options: ['78', '87', '807'], answer: '87', imageUrl: createNumbersSVG('blocks', { d: 8, u: 7 }), hints: ['"Ochenta" significa 8 decenas.', 'Luego viene "y siete" unidades.', 'Busca el 8 y el 7 juntos.', 'Ochenta y siete.', '87.'], explanation: '¡Correcto! 🎯 8 decenas y 7 unidades forman el **87**. ¡En la tabla de posiciones sería D=8, U=7! 🌟✨', lessonId: NUMEROS_1_1 },
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 39; i++) {
+            for (let i = 0; i < 3; i++) {
                 const num = 10 + i;
                 const type = i % 3;
                 if (type === 0) {
@@ -134,7 +190,7 @@ export const numerosQuestions: Record<number, Question[]> = {
         { type: 'input', question: 'Ubica en cifras: "quinientos sesenta y dos" ✍️📦', answer: '562', imageUrl: createNumbersSVG('blocks', { h: 5, d: 6, u: 2 }), hints:['"Quinientos" es el 500.', '"Sesenta" es el 60.', 'El 2 va al final.', 'Escribe 5, 6, 2.', '562.'], explanation: '¡Perfecto! 🌟 5 centenas, 6 decenas y 2 unidades forman el **562**. ¡Cabe perfecto en la tabla MCDU! 📦✨', lessonId: NUMEROS_1_2},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 39; i++) {
+            for (let i = 0; i < 3; i++) {
                 const num = 100 + i * 20;
                 const type = i % 2;
                 if (type === 0) {
@@ -168,7 +224,7 @@ export const numerosQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: '¿Cuál es mayor: 1899 o 1901? ⚖️🚀', options: ['1899', '1901'], answer: '1901', imageUrl: createNumbersSVG('blocks', { h: 9, d: 0, u: 1 }), hints: ['Mira las Unidades de Millar... son iguales.', 'Mira las Centenas: 8 contra 9.', 'El que tiene 9 centenas es el sucesor de otros muchos números.', '1901.'], explanation: '¡Muy bien! 🎯 **1901** es mayor porque tiene más centenas en la tabla MCDU. ¡Gran comparación! ⚖️✨', lessonId: NUMEROS_1_3 },
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 39; i++) {
+            for (let i = 0; i < 3; i++) {
                 const val1 = 100 + i * 10;
                 const type = i % 2;
                 if (type === 0) {
@@ -202,7 +258,7 @@ export const numerosQuestions: Record<number, Question[]> = {
         // --- NUMEROS_1_1 (40) ---
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const num = 15 + i*2;
                 const type = i % 2;
                 if (type === 0) {
@@ -234,7 +290,7 @@ export const numerosQuestions: Record<number, Question[]> = {
         // --- NUMEROS_1_2 (40) ---
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const num = 1000 + i * 215;
                 const type = i % 2;
                 if (type === 0) {
@@ -287,7 +343,7 @@ export const numerosQuestions: Record<number, Question[]> = {
         // --- NUMEROS_1_3 (40) ---
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const num = 500 + i * 50;
                 const type = i % 2;
                 if (type === 0) {
@@ -322,7 +378,7 @@ export const numerosQuestions: Record<number, Question[]> = {
         // --- NUMEROS_1_1 (40) ---
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const tens = 4 + Math.floor(i / 10); 
                 const units = i % 10;
                 const num = tens * 10 + units;
@@ -341,7 +397,7 @@ export const numerosQuestions: Record<number, Question[]> = {
         // --- NUMEROS_1_2 (40) ---
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const um = 1 + Math.floor(i / 5); 
                 const c = (i % 5) * 2; 
                 const total = um * 1000 + c * 100;
@@ -360,7 +416,7 @@ export const numerosQuestions: Record<number, Question[]> = {
         // --- NUMEROS_1_3 (40) ---
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const start = 9000 + i * 20;
                 const nums = [start, start + 1, start - 1].sort(() => Math.random() - 0.5);
                 const sorted = [...nums].sort((a,b) => a-b);

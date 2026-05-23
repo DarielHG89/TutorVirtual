@@ -606,7 +606,7 @@ export default function App() {
         const byGroup: Record<string, Question[]> = {};
         allQuestions.forEach(q => {
             const lessonKey = q.lessonId || 'general';
-            const templateKey = 'question' in q && typeof q.question === 'string' ? q.question.split(' ').slice(0, 3).join(' ') : 'interactive';
+            const templateKey = 'question' in q && typeof q.question === 'string' ? q.question.split(' ').slice(0, 3).join(' ') : 'interactive_' + ('title' in q ? q.title : Math.random());
             const key = `${lessonKey}_${templateKey}`;
             if (!byGroup[key]) byGroup[key] = [];
             byGroup[key].push(q);
@@ -615,11 +615,16 @@ export default function App() {
         // Distribute to the current level
         const levelQuestions: Question[] = [];
         Object.values(byGroup).forEach(groupQuestions => {
-            groupQuestions.forEach((q, i) => {
-                if ((i % 3) + 1 === level) {
-                    levelQuestions.push(q);
-                }
-            });
+            if (groupQuestions.length < 3) {
+                // If the group is small (like unique interactive questions), add them to this level's pool
+                groupQuestions.forEach(q => levelQuestions.push(q));
+            } else {
+                groupQuestions.forEach((q, i) => {
+                    if ((i % 3) + 1 === level) {
+                        levelQuestions.push(q);
+                    }
+                });
+            }
         });
 
         const fullQuestionPool: { question: Question; originalIndex: number }[] = levelQuestions.map((q, index) => ({ question: q, originalIndex: index }));
@@ -692,18 +697,22 @@ export default function App() {
 
         const byGroup: Record<string, Question[]> = {};
         allQuestions.forEach(q => {
-            const templateKey = 'question' in q && typeof q.question === 'string' ? q.question.split(' ').slice(0, 3).join(' ') : 'interactive';
+            const templateKey = 'question' in q && typeof q.question === 'string' ? q.question.split(' ').slice(0, 3).join(' ') : 'interactive_' + ('title' in q ? q.title : Math.random());
             if (!byGroup[templateKey]) byGroup[templateKey] = [];
             byGroup[templateKey].push(q);
         });
 
         const levelQuestions: Question[] = [];
         Object.values(byGroup).forEach(groupQuestions => {
-            groupQuestions.forEach((q, i) => {
-                if ((i % 3) + 1 === level) {
-                    levelQuestions.push(q);
-                }
-            });
+            if (groupQuestions.length < 3) {
+                groupQuestions.forEach(q => levelQuestions.push(q));
+            } else {
+                groupQuestions.forEach((q, i) => {
+                    if ((i % 3) + 1 === level) {
+                        levelQuestions.push(q);
+                    }
+                });
+            }
         });
 
         const fullQuestionPool: { question: Question; originalIndex: number }[] = levelQuestions.map((q, index) => ({ question: q, originalIndex: index }));

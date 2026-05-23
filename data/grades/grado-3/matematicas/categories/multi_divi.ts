@@ -8,17 +8,25 @@ const DIVISION_ESCRITA = 'division_3_3';
 // Helper para crear representaciones visuales de multi y divi
 const createMultiDivSVG = (type: 'multi' | 'div' | 'galera', a: number, b: number): string => {
     let content = '';
+    let viewBox = "0 0 100 100";
     if (type === 'multi') {
+        let maxX = 100;
+        let maxY = 100;
         // Filas y columnas de puntos
         for (let r = 0; r < a; r++) {
             for (let c = 0; c < b; c++) {
                 const x = c * 8 + 10;
                 const y = r * 8 + 10;
                 content += `<circle cx="${x}" cy="${y}" r="3" fill="#FBBC05" stroke="#B8860B" stroke-width="0.5" />`;
+                maxX = Math.max(maxX, x + 10);
+                maxY = Math.max(maxY, y + 20);
             }
         }
-        content += `<text x="5" y="95" font-size="8" fill="#B8860B">${a} filas x ${b} columnas</text>`;
+        content += `<text x="5" y="${maxY + 5}" font-size="8" fill="#B8860B" font-family="sans-serif">${a} filas x ${b} col</text>`;
+        viewBox = `0 0 ${maxX} ${maxY + 15}`;
     } else if (type === 'div') {
+        let maxX = 100;
+        let maxY = 100;
         // Reparto en cajas
         const total = a;
         const groups = b;
@@ -28,19 +36,23 @@ const createMultiDivSVG = (type: 'multi' | 'div' | 'galera', a: number, b: numbe
             const by = Math.floor(g / 3) * 30 + 5;
             content += `<rect x="${bx}" y="${by}" width="25" height="25" rx="2" fill="none" stroke="#4285F4" stroke-dasharray="2" />`;
             for (let i = 0; i < perGroup; i++) {
-                const dotX = bx + (i % 3) * 6 + 5;
-                const dotY = by + Math.floor(i / 3) * 6 + 5;
+                const dotX = bx + (i % 3) * 6 + 6;
+                const dotY = by + Math.floor(i / 3) * 6 + 6;
                 content += `<circle cx="${dotX}" cy="${dotY}" r="2" fill="#EA4335" />`;
             }
+            maxX = Math.max(maxX, bx + 30);
+            maxY = Math.max(maxY, by + 30);
         }
+        viewBox = `0 0 ${maxX} ${maxY}`;
     } else if (type === 'galera') {
         content += `<text x="15" y="45" font-family="monospace" font-size="24" font-weight="bold">${a}</text>`;
         content += `<line x1="45" y1="20" x2="45" y2="55" stroke="black" stroke-width="2" />`;
         content += `<line x1="45" y1="55" x2="85" y2="55" stroke="black" stroke-width="2" />`;
         content += `<text x="55" y="45" font-family="monospace" font-size="24" font-weight="bold">${b}</text>`;
-        content += `<text x="10" y="85" font-size="10" fill="#666">¿Cuál es el cociente?</text>`;
+        content += `<text x="10" y="85" font-size="10" fill="#666" font-family="sans-serif">¿Cuál es el cociente?</text>`;
+        viewBox = "0 0 100 100";
     }
-    return `data:image/svg+xml;base64,${btoa(`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${content}</svg>`)}`;
+    return `data:image/svg+xml;base64,${btoa(`<svg viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg">${content}</svg>`)}`;
 };
 
 export const multiDiviQuestions: Record<number, Question[]> = {
@@ -48,7 +60,7 @@ export const multiDiviQuestions: Record<number, Question[]> = {
         // === NIVEL 1: 80 preguntas (40 Multiplicación, 40 División) ===
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const a = 2 + (i % 4);
                 const b = 3 + (Math.floor(i / 4) % 3);
                 qs.push({
@@ -65,7 +77,7 @@ export const multiDiviQuestions: Record<number, Question[]> = {
         })(),
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const groups = 2 + (i % 3);
                 const perGroup = 2 + (Math.floor(i / 3) % 4);
                 const total = groups * perGroup;
@@ -86,7 +98,7 @@ export const multiDiviQuestions: Record<number, Question[]> = {
         // === NIVEL 2: 80 preguntas (40 Multiplicación, 40 División) ===
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 if (i % 2 === 0) {
                     // Truco de los ceros: multiplicando por 10 o 100
                     const a = 12 + i;
@@ -117,7 +129,7 @@ export const multiDiviQuestions: Record<number, Question[]> = {
         })(),
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 if (i % 2 === 0) {
                     const quotient = 10 + i;
                     const divisor = i % 4 === 0 ? 10 : 100;
@@ -146,7 +158,7 @@ export const multiDiviQuestions: Record<number, Question[]> = {
                 }
             }
             // División con resto (Nivel 2)
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 3; i++) {
                 const divisor = 2 + (i % 5);
                 const quotient = 5 + (i % 10);
                 const remainder = 1 + (i % (divisor - 1 || 1));
@@ -167,7 +179,7 @@ export const multiDiviQuestions: Record<number, Question[]> = {
         // === NIVEL 3: 80 preguntas (40 Multiplicación, 40 División) ===
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 30; i++) {
+            for (let i = 0; i < 3; i++) {
                 const a = 45 + i * 5;
                 const b = 6 + (i % 4);
                 qs.push({
@@ -183,7 +195,7 @@ export const multiDiviQuestions: Record<number, Question[]> = {
         })(),
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 30; i++) {
+            for (let i = 0; i < 3; i++) {
                 const divisor = 5 + (i % 5);
                 const quotient = 25 + i * 2;
                 const total = divisor * quotient;
@@ -217,7 +229,7 @@ export const multiDiviQuestions: Record<number, Question[]> = {
         })(),
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const divisor = 2 + (i % 3);
                 const quotient = 10 + i;
                 const total = divisor * quotient;
@@ -235,7 +247,7 @@ export const multiDiviQuestions: Record<number, Question[]> = {
         })(),
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 3; i++) {
                 const a = 32 + i * 2;
                 const b = 2 + (i % 4);
                 qs.push({

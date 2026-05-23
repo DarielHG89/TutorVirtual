@@ -116,7 +116,7 @@ export const medidasQuestions: Record<number, Question[]> = {
                 { name: 'un camión 🚚', answer: 'kg' }, { name: 'una fresa 🍓', answer: 'g' },
                 { name: 'una maleta 🧳', answer: 'kg' }, { name: 'un grano de arroz 🍚', answer: 'g' }
             ];
-            for (let i = 0; i < 37; i++) {
+            for (let i = 0; i < 3; i++) {
                 const item = items[i % items.length];
                 qs.push({
                     type: 'mcq',
@@ -143,7 +143,7 @@ export const medidasQuestions: Record<number, Question[]> = {
                 { name: 'un vaso de jugo 🧃', answer: 'ml' }, { name: 'la gasolina de un carro ⛽', answer: 'L' },
                 { name: 'una gota de lluvia 💧', answer: 'ml' }
             ];
-            for (let i = 0; i < 37; i++) {
+            for (let i = 0; i < 3; i++) {
                 const item = items[i % items.length];
                 qs.push({
                     type: 'mcq',
@@ -165,7 +165,7 @@ export const medidasQuestions: Record<number, Question[]> = {
         { type: 'input', question: 'Tienes 3 monedas de $1,00 cada una. ¿Cuánto dinero es?', imageUrl: createMedidasSVG('coins', { val1: 1, val2: 1, unit: 'PESOS' }), answer: '3', hints:['Suma el valor de las tres monedas.', '1 + 1 + 1 = ?', 'También puedes multiplicar: 3 x 1.', 'Tres.', '3.'], explanation: 'Si tienes tres monedas de 1 peso, en total tienes 3 pesos. ¡Así de fácil! 👍', lessonId: MEDIDAS_MONEDA_1},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 37; i++) {
+            for (let i = 0; i < 3; i++) {
                 const val1 = [1, 3, 5][i % 3];
                 const val2 = [20, 50, 100][i % 3];
                 qs.push({
@@ -192,7 +192,7 @@ export const medidasQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: '¿Cuántos metros hay en 1 kilómetro?', options: ['10', '100', '1000'], answer: '1000', hints:['La palabra "kilo" significa mil.', 'Un kilómetro es una distancia muy grande.', 'Son mil metros.', 'Un 1 con tres ceros.', '1000.'], explanation: '¡Correcto! 1 kilómetro es igual a 1000 metros. ¡Es una distancia para campeones! 🏃', lessonId: MEDIDAS_LONGITUD_1},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 37; i++) {
+            for (let i = 0; i < 3; i++) {
                 const val = i + 2;
                 if (i % 4 === 0) {
                     const centimetros = val * 100;
@@ -246,7 +246,7 @@ export const medidasQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: '¿Qué pesa más: 2 kilogramos de boniato o 2000 gramos de boniato? 🍠⚖️', options: ['2 kilogramos', '2000 gramos', 'Pesan exactamente lo mismo'], answer: 'Pesan exactamente lo mismo', hints:['Primero hagamos la conversión: 1 kg = 1000 g.', 'Entonces, 2 kg son iguales a 2000 g.', 'Compara 2000 g con 2000 g.', 'No hay uno mayor que otro.', 'Son iguales.'], explanation: '¡Justo así! 😉 Como 1 kg es igual a 1000 g, 2000 g es exactamente lo mismo que 2 kg. ¡El mismo peso dicho con palabras diferentes! 🍠✨', lessonId: MEDIDAS_MASA_1},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 37; i++) {
+            for (let i = 0; i < 3; i++) {
                 const val = i + 2;
                 if (i % 2 === 0) {
                     const gramos = val * 1000;
@@ -282,7 +282,7 @@ export const medidasQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: '¿Qué cantidad es mayor: medio litro o 500 mililitros? 🥛💧', options: ['Medio litro', '500 mililitros', 'Son la misma cantidad'], answer: 'Son la misma cantidad', hints:['Si 1 litro entero son 1000 ml...', '...la mitad de un litro (medio litro) es la mitad de 1000 ml.', 'La mitad de 1000 es 500.', 'Entonces, medio litro son 500 ml.', 'Son lo mismo.'], explanation: '¡Correcto! 🎯 Puesto que 1 litro son 1000 ml, la mitad es exactamente 500 ml. Medio litro y 500 ml son dos formas de llamar a la misma cantidad de jugo. 🧃✨', lessonId: MEDIDAS_CAPACIDAD_1},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 37; i++) {
+            for (let i = 0; i < 3; i++) {
                 const L = i + 2;
                 const mililitros = L * 1000;
                 qs.push({
@@ -309,7 +309,7 @@ export const medidasQuestions: Record<number, Question[]> = {
         ¡Ya tienes 15 pesos para tu alcancía! 🐷💰✨`, lessonId: MEDIDAS_MONEDA_1},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 37; i++) {
+            for (let i = 0; i < 3; i++) {
                 const price = 10 + i;
                 const paid = Math.ceil((price + 1) / 10) * 10;
                 const change = paid - price;
@@ -338,7 +338,7 @@ export const medidasQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: 'Un rectángulo mide 2 metros de largo y 50 cm de ancho. ¿Cuál es su perímetro en cm?', options: ['250 cm', '500 cm', '450 cm'], answer: '500 cm', hints:['¡Cuidado, las unidades son diferentes! Primero convierte todo a cm.', '2 metros son 200 cm.', 'El perímetro es la suma de todos los lados: 200 + 200 + 50 + 50.', '400 + 100 = ?', '500 cm.'], explanation: 'Primero convertimos 2 m a 200 cm. Luego calculamos el perímetro: 200+200+50+50 = 500 cm. ¡Atención al detalle! 🕵️', lessonId: MEDIDAS_LONGITUD_1},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 38; i++) {
+            for (let i = 0; i < 3; i++) {
                 const km = 1 + i*0.1;
                 qs.push({
                     type: 'input',
@@ -357,7 +357,7 @@ export const medidasQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: 'Un camión puede cargar 2000 kg. Si ya lleva 1200 kg, ¿cuántos kilogramos más puede llevar?', options: ['800 kg', '3200 kg', '1000 kg'], answer: '800 kg', hints:['Es una sustracción para saber lo que "falta".', '2000 - 1200 = ?', '20 - 12 = 8.', 'Añade los dos ceros.', '800.'], explanation: 'Realizamos la sustracción de la carga actual de la capacidad máxima: 2000 - 1200 = 800 kg. ¡Aún queda espacio! 📦', lessonId: MEDIDAS_MASA_1},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 38; i++) {
+            for (let i = 0; i < 3; i++) {
                 const g = 1200 + i * 50;
                 const kg = g/1000;
                 qs.push({
@@ -377,7 +377,7 @@ export const medidasQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: '¿Cuántos vasos de 500 ml puedo llenar con una jarra de 3 litros?', options: ['4', '5', '6'], answer: '6', hints:['Convierte todo a la misma unidad. Usemos ml.', '3 litros son 3000 ml.', 'Ahora divide el total de la jarra entre la capacidad de un vaso.', '3000 ÷ 500 = ? (Es como 30 ÷ 5).', 'Seis.'], explanation: 'La jarra tiene 3000 ml. Si cada vaso tiene 500 ml, podemos llenar 3000 / 500 = 6 vasos. ¡Refresco para todos! 🧃', lessonId: MEDIDAS_CAPACIDAD_1},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 38; i++) {
+            for (let i = 0; i < 3; i++) {
                 const ml = 250 * (i + 1);
                 qs.push({
                     type: 'input',
@@ -396,7 +396,7 @@ export const medidasQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: 'Tengo $200,00. ¿Cuántos helados de $25,00 puedo comprar como máximo?', options: ['4', '8', '10'], answer: '8', hints:['Es una división: ¿Cuántas veces cabe 25 en 200?', 'Piensa en las monedas: ¿cuántas monedas de 25 centavos hay en 2 pesos?', 'En $100,00 caben 4 helados (4 x 25 = 100).', 'En $200,00 cabrá el doble.', 'Ocho.'], explanation: 'Dividimos el dinero total entre el precio de cada helado: 200 ÷ 25 = 8 helados. ¡Invita a tus amigos! 🍦', lessonId: MEDIDAS_MONEDA_1},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 38; i++) {
+            for (let i = 0; i < 3; i++) {
                 const numItems = 2 + (i % 3);
                 const itemPrice = 20 + i;
                 const totalCost = numItems * itemPrice;

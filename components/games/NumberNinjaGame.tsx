@@ -29,6 +29,7 @@ export const NumberNinjaGame: React.FC<NumberNinjaGameProps> = ({ onBack }) => {
     const [score, setScore] = useState(0);
     const [lives, setLives] = useState(3);
     const [highScore, setHighScore] = useState(() => parseInt(localStorage.getItem('ninjaHighScore') || '0'));
+    const [showLifeBonus, setShowLifeBonus] = useState(false);
     
     const numbersRef = useRef<NinjaNumber[]>([]);
     const lastSpawnTimeRef = useRef<number>(0);
@@ -160,7 +161,20 @@ export const NumberNinjaGame: React.FC<NumberNinjaGameProps> = ({ onBack }) => {
 
         if (num.isEven) {
             playCorrectSound();
-            setScore(s => s + 1);
+            setScore(s => {
+                const newScore = s + 1;
+                if (newScore > 0 && newScore % 15 === 0) {
+                    setLives(l => {
+                        if (l < 5) {
+                            setShowLifeBonus(true);
+                            setTimeout(() => setShowLifeBonus(false), 2000);
+                            return l + 1;
+                        }
+                        return l;
+                    });
+                }
+                return newScore;
+            });
         } else {
             playIncorrectSound();
             setLives(l => {
@@ -194,10 +208,13 @@ export const NumberNinjaGame: React.FC<NumberNinjaGameProps> = ({ onBack }) => {
                     <p className="text-lg mb-4 text-slate-200">
                         Corta (toca) los números <span className="font-bold text-emerald-400">PARES</span> 🟢
                     </p>
-                    <p className="text-lg text-slate-200">
+                    <p className="text-lg mb-4 text-slate-200">
                         Ignora los números <span className="font-bold text-rose-400">IMPARES</span> 🔴
                     </p>
-                    <p className="text-sm mt-4 text-slate-400 italic">
+                    <p className="text-sm font-semibold text-emerald-300 mb-4 bg-emerald-950/40 p-2 rounded-lg border border-emerald-900/30">
+                        🎁 ¡Cada 15 cortes correctos recibes +1 ❤️ de vida extra! (Mínimo 3 iniciales, máximo 5)
+                    </p>
+                    <p className="text-sm text-slate-400 italic">
                         Pierdes una vida si cortas un impar, o si dejas caer un par.
                     </p>
                 </div>
@@ -211,13 +228,34 @@ export const NumberNinjaGame: React.FC<NumberNinjaGameProps> = ({ onBack }) => {
 
     return (
         <div className="max-w-4xl mx-auto bg-slate-900 rounded-2xl shadow-2xl my-4 overflow-hidden border-4 border-indigo-900 relative h-[600px]">
+            {/* Life Bonus Floating Animation */}
+            <AnimatePresence>
+                {showLifeBonus && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.3, y: 50 }}
+                        animate={{ opacity: 1, scale: 1.1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: -80 }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                        className="absolute inset-x-0 top-1/3 flex justify-center items-center z-25 pointer-events-none"
+                    >
+                        <div className="bg-emerald-500/95 text-white shadow-2xl rounded-2xl py-3 px-6 text-center border-4 border-emerald-400 font-black animate-pulse flex items-center gap-3">
+                            <span className="text-4xl">❤️</span>
+                            <div className="flex flex-col text-left">
+                                <span className="text-xl font-extrabold text-white tracking-widest uppercase leading-none">¡VIDA EXTRA!</span>
+                                <span className="text-xs text-emerald-100 font-normal mt-0.5">¡Ganaste +1 vida por racha de cortes! 🥷✨</span>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Header / HUD */}
             <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-10 pointer-events-none bg-gradient-to-b from-slate-900/80 to-transparent">
                 <div className="text-3xl font-black text-white drop-shadow-md">
                     <span className="text-emerald-400">{score}</span> <span className="text-lg text-slate-300 opacity-80 uppercase tracking-widest">Puntos</span>
                 </div>
                 <div className="flex gap-2">
-                    {[...Array(3)].map((_, i) => (
+                    {[...Array(5)].map((_, i) => (
                         <div key={i} className={`text-4xl transition-all duration-300 ${i < lives ? '' : 'opacity-20 grayscale scale-75'}`}>
                             ❤️
                         </div>

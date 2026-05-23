@@ -13,6 +13,8 @@ export function selectDistributedQuestions<T extends { question: any }>(pool: T[
         let templateKey = 'general';
         if (item.question && 'question' in item.question && typeof item.question.question === 'string') {
             templateKey = item.question.question.split(' ').slice(0, 3).join(' ');
+        } else if (item.question && 'title' in item.question && typeof item.question.title === 'string') {
+            templateKey = 'interactive_' + item.question.title;
         }
         const key = item.question?.subTopic || item.question?.lessonId ? `${item.question?.lessonId}_${templateKey}` : templateKey;
         

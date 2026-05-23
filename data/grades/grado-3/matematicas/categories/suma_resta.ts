@@ -7,19 +7,27 @@ const SUSTRACCION = 'sustraccion_2_3';
 // Helper para crear representaciones visuales de aritmética
 const createMathSVG = (type: 'add' | 'sub', a: number, b: number): string => {
     let content = '';
+    let viewBox = "0 0 100 100";
+    let maxX = 100;
+    let maxY = 100;
     if (type === 'add') {
         // Círculos para el primer número
         for (let i = 0; i < a; i++) {
             const x = (i % 5) * 8 + 5;
             const y = Math.floor(i / 5) * 8 + 10;
             content += `<circle cx="${x}" cy="${y}" r="3" fill="#4285F4" />`;
+            maxX = Math.max(maxX, x + 10);
+            maxY = Math.max(maxY, y + 10);
         }
-        content += `<text x="45" y="30" font-size="12" font-weight="bold">+</text>`;
+        content += `<text x="${maxX}" y="30" font-size="12" font-weight="bold" font-family="sans-serif">+</text>`;
+        let offset = maxX + 10;
         // Círculos para el segundo número
         for (let i = 0; i < b; i++) {
-            const x = (i % 5) * 8 + 55;
+            const x = (i % 5) * 8 + offset;
             const y = Math.floor(i / 5) * 8 + 10;
             content += `<circle cx="${x}" cy="${y}" r="3" fill="#34A853" />`;
+            maxX = Math.max(maxX, x + 10);
+            maxY = Math.max(maxY, y + 10);
         }
     } else {
         // Círculos totales
@@ -33,9 +41,12 @@ const createMathSVG = (type: 'add' | 'sub', a: number, b: number): string => {
                 content += `<circle cx="${x}" cy="${y}" r="3" fill="#CCCCCC" />`;
                 content += `<line x1="${x-2}" y1="${y-2}" x2="${x+2}" y2="${y+2}" stroke="black" stroke-width="1" />`;
             }
+            maxX = Math.max(maxX, x + 10);
+            maxY = Math.max(maxY, y + 10);
         }
     }
-    return `data:image/svg+xml;base64,${btoa(`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${content}</svg>`)}`;
+    viewBox = `0 0 ${maxX} ${maxY}`;
+    return `data:image/svg+xml;base64,${btoa(`<svg viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg">${content}</svg>`)}`;
 };
 
 export const sumaRestaQuestions: Record<number, Question[]> = {
@@ -50,7 +61,7 @@ export const sumaRestaQuestions: Record<number, Question[]> = {
                 { item: 'caramelos 🍬', action: 'encontraste' },
                 { item: 'lápices ✏️', action: 'conseguiste' }
             ];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const a = 5 + i;
                 const b = 2 + (i % 5);
                 const theme = themes[i % themes.length];
@@ -76,7 +87,7 @@ export const sumaRestaQuestions: Record<number, Question[]> = {
                 { item: 'chapas 🍾', action: 'perdiste' },
                 { item: 'pesos 💵', action: 'gastaste' }
             ];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const a = 10 + i;
                 const b = 1 + (i % 8);
                 const theme = themes[i % themes.length];
@@ -99,7 +110,7 @@ export const sumaRestaQuestions: Record<number, Question[]> = {
         // === NIVEL 2: 80 preguntas (40 Adición, 40 Sustracción) ===
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const a = 25 + i * 2;
                 const b = 15 + i;
                 const isMcq = i % 2 === 0;
@@ -118,7 +129,7 @@ export const sumaRestaQuestions: Record<number, Question[]> = {
         })(),
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const a = 50 + i * 2;
                 const b = 12 + i;
                 const isMcq = i % 2 !== 0;
@@ -146,7 +157,7 @@ export const sumaRestaQuestions: Record<number, Question[]> = {
                 { leg1: 'en pintar la pared 🎨', leg2: 'en arreglar la puerta 🚪' },
                 { leg1: 'por las manzanas 🍎', leg2: 'por los plátanos 🍌' }
             ];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const a = 250 + i * 15;
                 const b = 175 + i * 10;
                 const theme = themes[i % themes.length];
@@ -171,7 +182,7 @@ export const sumaRestaQuestions: Record<number, Question[]> = {
                 { item: 'en la juguetera 🧸' },
                 { item: 'en la panadería 🥖' }
             ];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const total = 1000 + i * 50;
                 const gasto = 450 + i * 25;
                 const theme = themes[i % themes.length];

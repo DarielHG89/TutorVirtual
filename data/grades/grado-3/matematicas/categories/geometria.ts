@@ -161,7 +161,7 @@ export const geometriaQuestions: Record<number, Question[]> = {
                 'perpendicular': 'Perpendiculares',
                 'secant': 'Secantes'
             };
-            for (let i = 0; i < 35; i++) {
+            for (let i = 0; i < 3; i++) {
                 const type = types[i % types.length];
                 qs.push({
                     type: 'mcq',
@@ -185,7 +185,7 @@ export const geometriaQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: 'La principal diferencia entre un cuadrado y un rectángulo es que el cuadrado tiene...', options:['Más lados', 'Lados curvos', 'Todos sus lados iguales'], answer: 'Todos sus lados iguales', hints:['Ambos tienen 4 lados.', 'Ninguno tiene lados curvos.', 'El cuadrado es el "equilibrado", con todos sus lados midiendo lo mismo.', 'Un rectángulo puede tener dos lados largos y dos cortos.', 'El cuadrado es un "rectángulo perfecto".'], explanation: 'La característica especial que define a un cuadrado es que sus cuatro lados son de igual longitud. ¡Es un rectángulo VIP! ⭐', lessonId: GEOMETRIA_P2_1},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 35; i++) {
+            for (let i = 0; i < 3; i++) {
                 const isSquare = i % 2 === 0;
                 const shape = isSquare ? 'square' : 'rect';
                 qs.push({
@@ -210,7 +210,7 @@ export const geometriaQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: 'Un ladrillo tiene forma de...', options: ['Cubo', 'Cilindro', 'Ortoedro'], answer: 'Ortoedro', hints:['Es una caja rectangular.', 'No es un cubo perfecto.', 'Tiene 6 caras rectangulares.', 'Se usa para construir casas.', 'Ortoedro o prisma rectangular.'], explanation: 'Un ladrillo es un ejemplo clásico de un ortoedro. ¡La base de la construcción! 🧱', lessonId: GEOMETRIA_P2_2},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 35; i++) {
+            for (let i = 0; i < 3; i++) {
                 const isCube = i % 2 === 0;
                 const shape = isCube ? 'cube' : 'ortoedro';
                 const part = ['caras', 'vértices', 'aristas'][i % 3];
@@ -236,7 +236,7 @@ export const geometriaQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: 'La línea marcada en azul, que va del centro al borde, se llama...', imageUrl: createCircleSVG('radius', 5), options: ['Radio', 'Diámetro', 'Circunferencia'], answer: 'Radio', hints:['Es la mitad del diámetro.', 'Es como los rayos de una rueda de bicicleta.', 'Todos los radios de un círculo miden lo mismo.', 'Empieza con R.', 'Radio.'], explanation: 'Esa línea es el radio. ¡Es el brazo que mide el tamaño del círculo! 💪', lessonId: GEOMETRIA_P3},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 35; i++) {
+            for (let i = 0; i < 3; i++) {
                 const isCylinder = i % 2 === 0;
                 const shape = isCylinder ? 'cylinder' : 'circle';
                 qs.push({
@@ -264,7 +264,7 @@ export const geometriaQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: 'La letra "T" está formada por dos líneas que son...', options: ['Paralelas', 'Perpendiculares', 'Secantes'], answer: 'Perpendiculares', hints:['El palo de arriba y el de abajo se cruzan.', 'Forman una esquina perfecta.', 'El cruce es de 90 grados.', 'No son paralelas.', 'Son perpendiculares.'], explanation: 'La letra "T" es un claro ejemplo de dos segmentos de recta que son perpendiculares entre sí. ➕', lessonId: GEOMETRIA_P1},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 37; i++) {
+            for (let i = 0; i < 3; i++) {
                 qs.push({
                     type: 'mcq',
                     question: 'En la letra "F", el palo vertical es ___ a los dos palos horizontales.',
@@ -284,7 +284,7 @@ export const geometriaQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: '¿Todos los rectángulos son cuadrados?', options: ['Sí', 'No'], answer: 'No', hints:['Un cuadrado necesita tener todos sus lados iguales.', '¿Un rectángulo siempre tiene todos sus lados iguales?', 'No, puede tener dos largos y dos cortos.', 'Por lo tanto, no todos los rectángulos son cuadrados.', 'Es al revés: todos los cuadrados sí son rectángulos.'], explanation: 'No, solo los rectángulos que tienen sus 4 lados iguales son cuadrados. ¡Ser un cuadrado es muy exclusivo! ✨', lessonId: GEOMETRIA_P2_1},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 37; i++) {
+            for (let i = 0; i < 3; i++) {
                 const side = 10 + Math.floor(i / 2); // Avoid duplicates easily
                 const perimeter = side * 4;
                 qs.push({
@@ -307,7 +307,7 @@ export const geometriaQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: '¿Cuántas aristas se juntan en cada vértice (esquina) de un cubo? 🎲', imageUrl: create3DShapeSVG('cube'), options: ['2', '3', '4'], answer: '3', hints:['Elige una esquina cualquiera del cubo en la imagen.', 'Cuenta cuántas líneas (aristas) llegan a ese punto exacto.', 'Llega una de arriba, una de abajo/lado y otra del frente.', 'Son exactamente 3.', 'La respuesta es tres.'], explanation: '¡Muy bien observado! 🧐 En cada vértice de un cubo o un ortoedro siempre se encuentran **3 aristas**. ¡Es el punto de unión de tres dimensiones! 🧊✨', lessonId: GEOMETRIA_P2_2},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 38; i++) {
+            for (let i = 0; i < 3; i++) {
                 qs.push({
                     type: 'mcq',
                     question: `Si miras un ${i % 2 === 0 ? 'cubo' : 'ortoedro'} perfectamente desde arriba, ¿qué forma plana verías? 👁️📦`,
@@ -333,7 +333,7 @@ export const geometriaQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: 'Si haces un corte a una lata de refresco (cilindro) de arriba a abajo, ¿qué figura plana ves en el corte? 🥫✂️', imageUrl: create3DShapeSVG('cylinder'), options: ['Círculo', 'Triángulo', 'Rectángulo'], answer: 'Rectángulo', hints:['Imagina una lata de refresco.', 'Si la partes por la mitad verticalmente...', 'La forma que ves en el interior del corte...', 'Tiene 4 lados y esquinas rectas.', 'Es un rectángulo.'], explanation: '¡Sorprendente pero cierto! 😲 Aunque el cilindro es redondo, si lo cortas verticalmente por el medio, la superficie que ves es un **rectángulo**. ¡La geometría tiene muchos trucos! 🥫📐', lessonId: GEOMETRIA_P3},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 37; i++) {
+            for (let i = 0; i < 3; i++) {
                 const isDiameterQuestion = i % 2 === 0;
                 const value = 10 + Math.floor(i / 2) * 2; // Keep it even so division by 2 is exact
                 const answer = isDiameterQuestion ? value * 2 : value / 2;
@@ -363,7 +363,7 @@ export const geometriaQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: 'Dos rectas en un mismo plano que no son paralelas, ¿qué son siempre?', options: ['Perpendiculares', 'Secantes', 'Iguales'], answer: 'Secantes', hints:['Si no son paralelas, significa que se tienen que cruzar en algún punto.', 'Las rectas que se cruzan se llaman secantes.', 'Perpendiculares es un caso especial de secantes.', 'La pregunta es qué son "siempre".', 'Siempre se cortarán.'], explanation: 'Si dos rectas en un plano no son paralelas, inevitablemente se cortarán en algún punto, por lo que son secantes. 💥', lessonId: GEOMETRIA_P1},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 39; i++) {
+            for (let i = 0; i < 3; i++) {
                 qs.push({
                     type: 'mcq',
                     question: 'En un mapa, la Calle A va de Norte a Sur. La Calle B va de Este a Oeste y la cruza. ¿Cómo son las calles entre sí?',
@@ -382,7 +382,7 @@ export const geometriaQuestions: Record<number, Question[]> = {
         { type: 'input', question: 'El perímetro de un cuadrado es 40 cm. ¿Cuánto mide cada lado?', answer: '10', hints:['El perímetro es la suma de los 4 lados iguales.', 'Si los 4 lados juntos miden 40, ¿cuánto mide uno solo?', 'Es una división.', '40 ÷ 4 = ?', 'Diez.'], explanation: 'Dividimos el perímetro total entre los 4 lados iguales del cuadrado: 40 cm ÷ 4 = 10 cm por lado. ¡Detective de medidas! 🕵️', lessonId: GEOMETRIA_P2_1},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 38; i++) {
+            for (let i = 0; i < 3; i++) {
                 const w = 3 + i;
                 const l = 8 + i;
                 const area = w * l;
@@ -403,7 +403,7 @@ export const geometriaQuestions: Record<number, Question[]> = {
         { type: 'input', question: 'Una piscina es un ortoedro que mide 10m de largo, 5m de ancho y 2m de profundidad. ¿Cuál es su volumen?', answer: '100', hints:['El volumen de un ortoedro es largo x ancho x alto.', 'Multiplica 10 x 5 x 2.', '10 x 5 = 50.', 'Ahora, 50 x 2 = 100.', 'La respuesta se da en metros cúbicos.'], explanation: 'El volumen se calcula multiplicando las tres dimensiones: 10m x 5m x 2m = 100 metros cúbicos. ¡Una gran piscina! 🏊', lessonId: GEOMETRIA_P2_2},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 38; i++) {
+            for (let i = 0; i < 3; i++) {
                 const side = 3 + Math.floor(i / 10); // Lado 3, 4, 5, 6
                 const volume = side * side * side;
                 qs.push({
@@ -424,7 +424,7 @@ export const geometriaQuestions: Record<number, Question[]> = {
         { type: 'mcq', question: 'La línea que une dos puntos cualquiera de la circunferencia se llama...', options: ['Radio', 'Diámetro', 'Cuerda'], answer: 'Cuerda', hints:['No tiene por qué pasar por el centro.', 'El diámetro es un tipo especial de esta línea.', 'Une dos puntos del borde.', 'Cuerda.', 'Como la cuerda de un arco.'], explanation: 'Una cuerda es cualquier segmento de línea que une dos puntos en la circunferencia. ¡El diámetro es la cuerda más larga posible! 🏹', lessonId: GEOMETRIA_P3},
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 38; i++) {
+            for (let i = 0; i < 3; i++) {
                 qs.push({
                     type: 'mcq',
                     question: `Si dibujo varios radios en un círculo, ¿miden todos lo mismo?`,

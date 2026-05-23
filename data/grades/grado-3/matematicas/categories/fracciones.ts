@@ -136,7 +136,7 @@ export const fraccionesQuestions: Record<number, Question[]> = {
         // === NIVEL 3: 80 preguntas (40 Intro, 40 Equivalentes) ===
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const isNumerador = i % 2 === 0;
                 const d = 3 + Math.floor(i / 2);
                 const n = (d - 1) - (i % 3);

@@ -30,7 +30,7 @@ export const relojQuestions: Record<number, Question[]> = {
         // === NIVEL 1: 120 preguntas (40 Lectura, 40 Minutos, 40 Problemas) ===
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const h = (i % 12) || 12;
                 const isMcq = i % 2 === 0;
                 qs.push({
@@ -48,7 +48,7 @@ export const relojQuestions: Record<number, Question[]> = {
         })(),
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const m = (i % 12) * 5;
                 const clockNum = (i % 12) || 12;
                 const isMcq = i % 2 !== 0; // alternates for variety
@@ -72,7 +72,7 @@ export const relojQuestions: Record<number, Question[]> = {
                 { activity: 'miras los muñequitos 📺', dt: '1 hora' },
                 { activity: 'estudias matemáticas 📚', dt: '1 hora' }
             ];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const h = 2 + (i % 5);
                 const theme = themes[i % themes.length];
                 const isMcq = i % 2 === 0;
@@ -93,7 +93,7 @@ export const relojQuestions: Record<number, Question[]> = {
         // === NIVEL 2: 120 preguntas (40 Lectura, 40 Minutos, 40 Problemas) ===
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const h = (i % 12) || 12;
                 const m = 30;
                 const isMcq = i % 2 !== 0;
@@ -112,7 +112,7 @@ export const relojQuestions: Record<number, Question[]> = {
         })(),
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const h = (i % 12) || 12;
                 const isMcq = i % 2 === 0;
                 qs.push({
@@ -135,7 +135,7 @@ export const relojQuestions: Record<number, Question[]> = {
                 { activity: 'La clase de dibujo 🎨', timeEndOffset: 45 },
                 { activity: 'El concierto de la escuela 🎵', timeEndOffset: 30 }
             ];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const startHour = 2 + (i % 8);
                 const theme = themes[i % themes.length];
                 const startMins = 0;
@@ -158,7 +158,7 @@ export const relojQuestions: Record<number, Question[]> = {
         // === NIVEL 3: 120 preguntas (40 Lectura, 40 Minutos, 40 Problemas) ===
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const h = (i % 12) || 12;
                 const m = 45;
                 const nextH = h === 12 ? 1 : h + 1;
@@ -184,7 +184,7 @@ export const relojQuestions: Record<number, Question[]> = {
                 { activity: 'un viaje de campo 🚌', durH: 1 },
                 { activity: 'un evento escolar 🎭', durH: 2 }
             ];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const theme = themes[i % themes.length];
                 const mins = 5 + (i % 50);
                 const totalMins = theme.durH * 60 + mins;
@@ -209,7 +209,7 @@ export const relojQuestions: Record<number, Question[]> = {
                 { activity: 'Comenzaste la tarea ✍️', dur: 35 },
                 { activity: 'Pusiste la sopa 🥣 a hervir', dur: 15 }
             ];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const h = 5 + (i % 6);
                 const theme = themes[i % themes.length];
                 const startMins = 5 + (i % 15);
@@ -231,7 +231,7 @@ export const relojQuestions: Record<number, Question[]> = {
         ...(() => {
             const qs: Question[] = [];
             // Preguntas de calendario y unidades largas (Siglos, décadas, etc.)
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 3; i++) {
                 const isMcq = i % 2 === 0;
                 if (i % 4 === 0) {
                     const years = 2 + (i % 5);

@@ -41,7 +41,7 @@ export const problemasQuestions: Record<number, Question[]> = {
                 { item: 'manzanas 🍎', verb: 'recojo', ext: 'una pera 🍐' },
                 { item: 'flores 🌸', verb: 'planto', ext: 'un girasol 🌻' }
             ];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const precio1 = 20 + i;
                 const precio2 = 10 + i;
                 const total = precio1 + precio2;
@@ -75,7 +75,7 @@ export const problemasQuestions: Record<number, Question[]> = {
                 { actor: 'Mi abuela 👵', obj: 'galletas 🍪', gana: 'horneó', pierde: 'se comió' },
                 { actor: 'Un pirata 🏴‍☠️', obj: 'monedas de oro 💰', gana: 'desenterró', pierde: 'se le cayeron al mar' }
             ];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const inicial = 100 + i;
                 const gana = 10 + i;
                 const pierde = 5 + i;
@@ -110,7 +110,7 @@ export const problemasQuestions: Record<number, Question[]> = {
                 { obj: 'dibujos 🎨', verb: 'pintar', actor: 'un artista' },
                 { obj: 'pizzas 🍕', verb: 'cocinar', actor: 'el chef' }
             ];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const n1 = 10 + i;
                 const n2 = 5 + i;
                 const res = (n1 + n2) * 2;
@@ -134,7 +134,7 @@ export const problemasQuestions: Record<number, Question[]> = {
         // === PASO_1 (40) ===
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const vendio = 50 + i * 2;
                 const quedan = 30 + i;
                 const inicial = vendio + quedan;
@@ -156,7 +156,7 @@ export const problemasQuestions: Record<number, Question[]> = {
         // === PASO_2 (40) ===
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 if (i % 3 === 0) {
                     const hembras = 24 + i;
                     const varones = 28 + i;
@@ -218,7 +218,7 @@ export const problemasQuestions: Record<number, Question[]> = {
         // === COMBINADAS (40) ===
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 const total = 100 + i;
                 const s1 = 20 + i;
                 const s2 = 10 + i;
@@ -244,7 +244,7 @@ export const problemasQuestions: Record<number, Question[]> = {
         // === PASO_1 (40) ===
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 qs.push({
                     type: 'input',
                     question: `Una cooperativa sembró ${1200 + i * 10} matas de café en un día. Si el plan es de ${5000 + i * 10}, ¿cuántas faltan? 🌱`,
@@ -260,7 +260,7 @@ export const problemasQuestions: Record<number, Question[]> = {
         // === PASO_2 (40) ===
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 qs.push({
                     type: 'input',
                     question: `Un tren lleva ${200 + i} pasajeros. En una estación bajan la cuarta parte y suben 30. ¿Cuántos hay ahora? 🚆`,
@@ -276,7 +276,7 @@ export const problemasQuestions: Record<number, Question[]> = {
         // === COMBINADAS (40) ===
         ...(() => {
             const qs: Question[] = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 3; i++) {
                 qs.push({
                     type: 'input',
                     question: `Calcula: (${50 + i} x 4) / (2 + 2) = ? 🛡️`,
